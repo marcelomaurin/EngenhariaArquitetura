@@ -12,6 +12,10 @@ Plataforma de aplicações para projetos de Engenharia e Arquitetura. Cada aplic
 | [Especificação da Planta Baixa 2D](Especificacao_Planta_Baixa_2D.md) | 1.0 | Detalhamento do CAD Arquitetônico 2D: ferramentas, objetos inteligentes, medidas, camadas, normas ABNT e critérios da primeira versão |
 | [Decisões de projeto](Decisoes.md) | — | Registro das decisões tomadas durante a concepção e questões em aberto |
 
+### Resumo por aplicativo
+
+[Planejador](../planejador/README.md) · [CAD 2D](../cad2d/README.md) · [Maquete 3D](../maquete3d/README.md) · [Criador de Cenas](../criadorcenas/README.md) · [Elétrica 3D](../eletrica3d/README.md) · [SimuEletrica](../simueletrica/README.md)
+
 ## Linha de produção
 
 ```mermaid
