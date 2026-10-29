@@ -39,7 +39,8 @@ def main():
     ap.add_argument("--require-clean", action="store_true")
     a = ap.parse_args()
 
-    sujo = bool(git("status", "--porcelain"))
+    # bin/, setup/ e dist/ sao saidas da propria geracao
+    sujo = bool(git("status", "--porcelain", "--", ".", ":!bin", ":!setup", ":!dist"))
     if a.require_clean and sujo:
         sys.exit("a release exige árvore git limpa (use --allow-dirty para teste local)")
 

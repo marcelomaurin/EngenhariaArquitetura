@@ -29,7 +29,7 @@ function Find-Tool([string]$Env, [string[]]$Candidates) {
 if (-not $Version) { $Version = Ini "AppVersion" }
 if (-not $SetupSeq) { $SetupSeq = Ini "SetupSeq" }
 if ($SetupSeq -notmatch '^\d{3}$') { throw "SetupSeq invalido: $SetupSeq" }
-if (-not $AllowDirty -and (git status --porcelain)) { throw "A release exige uma arvore Git limpa. Para build local use -AllowDirty." }
+if (-not $AllowDirty -and (git status --porcelain -- . ':!bin' ':!setup' ':!dist')) { throw "A release exige uma arvore Git limpa. Para build local use -AllowDirty." }
 
 $Lazbuild = Find-Tool "LAZBUILD" @("lazbuild.exe", "C:\lazarus\lazbuild.exe")
 $FpcCandidates = @("fpc.exe") + @(Get-ChildItem "C:\lazarus\fpc\*\bin\x86_64-win64\fpc.exe" -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })

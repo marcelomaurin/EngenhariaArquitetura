@@ -27,7 +27,7 @@ export WINEDEBUG=${WINEDEBUG:--all}
 # o Wine precisa de localidade UTF-8 para criar atalhos com acento
 export LC_ALL=${LC_ALL:-C.UTF-8} LANG=${LANG:-C.UTF-8}
 [[ "$SEQ" =~ ^[0-9]{3}$ ]] || { echo "SetupSeq invalido: $SEQ"; exit 1; }
-if [ "$ALLOW_DIRTY" != "--allow-dirty" ] && [ -n "$(git status --porcelain)" ]; then
+if [ "$ALLOW_DIRTY" != "--allow-dirty" ] && [ -n "$(git status --porcelain -- . ':!bin' ':!setup' ':!dist')" ]; then
   echo "A release exige uma arvore Git limpa. Para build local use --allow-dirty."; exit 1
 fi
 rm -rf "$APP"
