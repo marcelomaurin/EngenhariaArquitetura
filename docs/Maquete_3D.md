@@ -7,7 +7,7 @@
 | Estado | Proposta de requisitos (ainda não implementada) |
 | Papel na linha de produção | Terceira etapa: reconstrói a edificação em 3D a partir das plantas |
 | Recebe | Plantas do CAD 2D; DWG, DXF e IFC pelo Motor de Importação; objetos do Editor de Objetos 3D |
-| Produz | Maquete com pavimentos, objetos, texturas e âncoras para o Criador de Cenas e o Elétrica 3D |
+| Produz | Maquete com pavimentos, objetos, texturas e âncoras para o Criador de Cenas, o Elétrica 3D e o SimuTubulações; exibe as disciplinas de instalações publicadas |
 
 > Integrações com os demais componentes: [Integrações](Integracoes.md). Ordem de desenvolvimento: [Plano de desenvolvimento](Plano_Desenvolvimento.md).
 

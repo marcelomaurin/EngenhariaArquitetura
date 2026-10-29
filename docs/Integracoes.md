@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão do documento | 1.0 — 29/10/2026 (derivado da especificação da plataforma 1.8) |
+| Versão do documento | 1.1 — 29/10/2026 (inclui as integrações do SimuTubulações) |
 | Estado | Proposta de contrato (ainda não implementada) |
-| Abrangência | Todas as trocas de dados entre os seis aplicativos, os módulos internos e o Motor de Importação |
+| Abrangência | Todas as trocas de dados entre os sete aplicativos, os módulos internos e o Motor de Importação |
 
 Os aplicativos da plataforma são independentes: cada um tem instalação, executável e arquivos próprios. **A única forma de integração é por arquivos e pacotes versionados.** Nenhum aplicativo lê o banco interno de outro, e nenhum aplicativo altera o arquivo de outro.
 
@@ -22,6 +22,7 @@ flowchart LR
     PLA -->|I-01| CEN
     PLA -->|I-01| ELE
     PLA -->|I-01| SIM
+    PLA -->|I-01| TUB
     CAD -->|I-06 plantas| MAQ[Maquete 3D]
     PLA -->|I-03 objeto e textura| MAQ
     subgraph MAQ_MOD[Maquete 3D]
@@ -36,6 +37,12 @@ flowchart LR
     ELE -->|I-16 modelo elétrico| SIM[SimuEletrica]
     SIM -->|I-17 resultados| ELE
     SIM -->|I-17| MAQ
+    MAQ -->|I-18| TUB[SimuTubulações]
+    TUB -->|I-19 rede| MAQ
+    ELE <-->|I-20 interferências| TUB
+    TUB -->|I-21 apresentação| CEN
+    TUB -->|I-22 resultados| MAQ
+    TUB -->|I-23 coordenação| MAQ
 ```
 
 O retorno de tarefa (I-02) vai de cada aplicativo para o Planejador e não aparece no diagrama para não poluí-lo.
@@ -72,6 +79,12 @@ O retorno de tarefa (I-02) vai de cada aplicativo para o Planejador e não apare
 | I-15 | Elétrica 3D | Criador de Cenas | Pontos de luz, interruptores, comandos e, se houver, arquivo fotométrico | Publicação do projeto elétrico | RFE-030, RFC-016 |
 | I-16 | Elétrica 3D | SimuEletrica | Modelo elétrico: topologia, circuitos, fases, condutores, fontes, proteções e vínculo com a malha 3D | Exportação para simulação | SIM-001 a SIM-003 |
 | I-17 | SimuEletrica | Elétrica 3D e Maquete 3D | Resultados: correntes, tensões, temperaturas, disparos e alertas por segmento e instante | Exportação de resultados | SIM-046, RNF-SIM-07 |
+| I-18 | Maquete 3D | SimuTubulações | Pacote arquitetônico para instalações de fluidos: pavimentos, paredes, vigas, prumadas (shafts), IDs, coordenadas, unidades e revisão | Publicação da maquete | ST-001, ST-002, ST-020 |
+| I-19 | SimuTubulações | Maquete 3D (e IFC, quando homologado) | Disciplina de tubulações: tubos, dutos, conexões, equipamentos, parâmetros, rotas e vínculos espaciais | Publicação da disciplina | ST-053, ST-056, ST-018 |
+| I-20 | Elétrica 3D e SimuTubulações | Um ao outro | Coordenação multidisciplinar: camadas registradas e geometrias para detectar interferências, sem alteração unilateral | Carga da disciplina vizinha | ST-016, ST-054, RFE-019 |
+| I-21 | SimuTubulações | Criador de Cenas | Somente geometria, materiais e estados de apresentação das redes | Publicação para apresentação | ST-055 |
+| I-22 | SimuTubulações | Maquete 3D (visualização opcional) | Resultados de fluidos: pressão, vazão, velocidade, perda de carga, temperatura estimada, caimentos e falhas por trecho | Exportação de resultados | ST-048, ST-053 |
+| I-23 | SimuTubulações | Maquete 3D | Solicitação de coordenação: furos, rasgos, prumadas e passagens necessárias às redes | Conflito ou necessidade de passagem | Princípio 2 do [SimuTubulações](SimuTubulacoes.md) |
 
 ## 4. Pacotes de intercâmbio
 
@@ -90,7 +103,12 @@ O retorno de tarefa (I-02) vai de cada aplicativo para o Planejador e não apare
 | Resultados simulados | SimuEletrica | Elétrica 3D / Maquete 3D (visualização opcional) | Correntes, tensões, temperaturas estimadas, disparos, alertas, segmentos e instantes, sem modificar projeto-fonte |
 | Objeto 3D | Editor de Objetos 3D | Maquete 3D e outras maquetes | Geometria GLB, pivô, dimensões, texturas vinculadas, miniatura, origem e licença |
 | Textura | Gerador de Texturas | Editor de Objetos 3D e Maquete 3D | Mapas, parâmetros procedurais, escala física, miniatura, autoria e versão |
-| Solicitação de coordenação | Elétrica 3D | Maquete 3D | Rasgos, furos, prumadas e aberturas propostos, com localização e justificativa |
+| Solicitação de coordenação | Elétrica 3D ou SimuTubulações | Maquete 3D | Rasgos, furos, prumadas e aberturas propostos, com localização e justificativa |
+| Maquete para instalações de fluidos | Maquete 3D | SimuTubulações | Pavimentos, paredes, vigas, shafts, IDs estáveis, coordenadas, unidades e revisão |
+| Rede de tubulações | SimuTubulações | Maquete 3D / IFC (quando homologado) | Tubos, dutos, conexões, equipamentos, parâmetros físicos, pontos, rotas e vínculos espaciais |
+| Coordenação multidisciplinar | Elétrica 3D / SimuTubulações | Visualizadores de disciplina | Camadas registradas, geometrias para detectar conflitos, solicitações sem alteração unilateral |
+| Cenário de fluidos | SimuTubulações | SimuTubulações | Demandas, estados de válvulas, condições de entrada e saída, fluido, modelo, tolerância, tempo |
+| Resultados de fluidos | SimuTubulações | Maquete 3D / visualização opcional | Pressão, vazão, velocidade, perda de carga, temperatura estimada, caimentos, falhas e mapas por trecho, sem alterar fontes |
 
 **Formato recomendado:** pacote nativo de intercâmbio com manifest JSON versionado + malhas GLB + texturas + propriedades/IDs. **IFC** pode ser oferecido em paralelo para BIM conforme homologação. A nomenclatura final das extensões nativas deve ser definida na implementação, evitando conflito com `.msuite` do MultiSuite.
 
@@ -118,7 +136,7 @@ Todo pacote traz um manifesto com a mesma estrutura:
 }
 ```
 
-Tipos de pacote previstos: `tarefa`, `retorno_tarefa`, `arquitetura_2d`, `maquete`, `cena_visual`, `objeto_3d`, `textura`, `camada_eletrica`, `solicitacao_coordenacao`, `estado_iluminacao`, `modelo_eletrico`, `cenario_simulacao` e `resultado_simulacao`. A extensão dos arquivos será definida na implementação, sem conflito com `.msuite`.
+Tipos de pacote previstos: `tarefa`, `retorno_tarefa`, `arquitetura_2d`, `maquete`, `cena_visual`, `objeto_3d`, `textura`, `camada_eletrica`, `solicitacao_coordenacao`, `estado_iluminacao`, `modelo_eletrico`, `cenario_simulacao`, `resultado_simulacao`, `rede_tubulacoes`, `cenario_fluidos`, `resultado_fluidos` e `coordenacao_disciplinas`. O SimuTubulações propõe as extensões provisórias `.stubproj` (projeto) e `.stubpkg` (pacote), sujeitas à convenção final. A extensão dos arquivos será definida na implementação, sem conflito com `.msuite`.
 
 ## 5. Detalhamento por integração
 
@@ -191,6 +209,14 @@ Exemplo de vínculo elétrico:
 - Os resultados referenciam a revisão e o hash do pacote elétrico de origem; se o projeto elétrico mudar, o SimuEletrica detecta a divergência e não mistura resultados de revisões diferentes.
 - Os resultados voltam como camada opcional de visualização e nunca alteram bitolas, rotas, circuitos ou proteções.
 
+### I-18 a I-23 — SimuTubulações
+- O SimuTubulações abre o pacote arquitetônico sem a Maquete 3D instalada (ST-002) e detecta mudanças de revisão, preservando alinhamentos, conflitos e cenários anteriores (ST-020).
+- Cada tipo de rede (água fria, água quente, gás, ar comprimido, ventilação, esgoto) tem grafo próprio; o pacote nunca liga redes de fluidos diferentes.
+- A disciplina de tubulações e os resultados voltam para a Maquete 3D apenas para exibição; a arquitetura nunca é alterada. Furos, rasgos e passagens viram `solicitacao_coordenacao`, como no Elétrica 3D.
+- Com o Elétrica 3D, a troca é de mão dupla e só geométrica: cada aplicativo carrega a disciplina do outro como referência para apontar interferências, sem editar o arquivo alheio.
+- STL e GLB sem semântica não bastam para simular fluidos; o pacote da rede carrega nós, trechos, diâmetros, materiais, cotas e declividades.
+- Os resultados referenciam a revisão do pacote arquitetônico e da rede; método, condições de contorno, propriedades dos fluidos e versão do solucionador acompanham cada cenário (ST-046).
+
 ## 6. Contrato de tarefa
 
 Definido no documento do [Planejador](Planejador.md#contrato-de-tarefa-proposta).
@@ -216,4 +242,6 @@ Definido no documento do [Planejador](Planejador.md#contrato-de-tarefa-proposta)
 | G5 — Cena visual | I-11 | Maquete 3D M3, Criador de Cenas C1 |
 | G6 — Disciplina elétrica | I-12, I-13, I-14 | Elétrica 3D E1–E4 |
 | G7 — Iluminação | I-15 | Elétrica 3D E6, Criador de Cenas C5 |
-| G8 — Simulação | I-16, I-17 | SimuEletrica S1 |
+| G8 — Simulação elétrica | I-16, I-17 | SimuEletrica S1 |
+| G9 — Tubulações | I-18, I-19, I-22, I-23 | SimuTubulações TB1, Maquete 3D M2 |
+| G10 — Coordenação entre instalações | I-20, I-21 | SimuTubulações TB5, Elétrica 3D E4 |

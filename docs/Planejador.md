@@ -24,7 +24,7 @@ O **Planejador** é a primeira etapa da linha de produção. Funciona como um ge
 | RFP-001 | Essencial | Criar, abrir, salvar e versionar projetos de planejamento do empreendimento. |
 | RFP-002 | Essencial | Criar tarefas com nome, descrição, duração, datas, responsáveis e situação. |
 | RFP-003 | Essencial | Encadear tarefas em grafo, em cadeia ou em paralelo, com dependências entre elas. |
-| RFP-004 | Essencial | Criar **tarefas arquitetônicas** vinculadas ao aplicativo que as executa (CAD 2D, Maquete 3D, Criador de Cenas, Elétrica 3D, SimuEletrica). |
+| RFP-004 | Essencial | Criar **tarefas arquitetônicas** vinculadas ao aplicativo que as executa (CAD 2D, Maquete 3D, Criador de Cenas, Elétrica 3D, SimuEletrica, SimuTubulações). |
 | RFP-005 | Essencial | Abrir a tarefa no aplicativo responsável, entregando arquivos de entrada e parâmetros. |
 | RFP-006 | Essencial | Receber de volta o arquivo produzido, a situação da tarefa e eventuais pendências ou alertas. |
 | RFP-007 | Essencial | Liberar uma tarefa somente quando as tarefas de que depende estiverem concluídas. |

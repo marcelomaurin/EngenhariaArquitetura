@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Tipo | Biblioteca comum, usada pelo CAD 2D, pela Maquete 3D e pelo Editor de Objetos 3D |
+| Tipo | Biblioteca comum, usada pelo CAD 2D, pela Maquete 3D, pelo Editor de Objetos 3D e pelo SimuTubulações (DXF, DWG, CSV e IFC de instalações, ST-018 e ST-019) |
 | Versão do documento | 1.0 — 29/10/2026 (derivado da especificação da plataforma 1.8) |
 | Estado | Proposta de requisitos (ainda não implementada) |
 | Papel na linha de produção | Porta de entrada de arquivos de outros softwares na plataforma |

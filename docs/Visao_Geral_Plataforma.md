@@ -1,9 +1,9 @@
 # Visão geral da plataforma
 
-**Versão:** 1.8 — 28/10/2026  
+**Versão:** 1.9 — 29/10/2026 (inclui o SimuTubulações da especificação recebida em 29/10/2026)  
 **Estado:** proposta de requisitos (ainda não implementada)  
 **Referência funcional:** AutoCAD / AutoCAD Architecture, com interoperabilidade CAD/BIM  
-**Arquitetura proposta:** seis aplicativos independentes (**Planejador**, **CAD Arquitetônico 2D**, **Maquete 3D**, **Criador de Cenas Realistas**, **Elétrica 3D** e **SimuEletrica**) conectados por contratos de intercâmbio versionados. O **Gerador de Texturas (Skins)** e o **Editor de Objetos 3D** são módulos internos da Maquete 3D. O **Elétrica 3D não é plugin e não integra o executável nem o instalador da Maquete 3D**. O Criador de Cenas também é um programa independente. **MultiCNC/MultiCAD é software externo, não incorporado, instalado ou exigido; dele são aceitos somente os arquivos de sólidos (STL e 3MF).**
+**Arquitetura proposta:** sete aplicativos independentes (**Planejador**, **CAD Arquitetônico 2D**, **Maquete 3D**, **Criador de Cenas Realistas**, **Elétrica 3D**, **SimuEletrica** e **SimuTubulações**) conectados por contratos de intercâmbio versionados. O **Gerador de Texturas (Skins)** e o **Editor de Objetos 3D** são módulos internos da Maquete 3D. O **Elétrica 3D não é plugin e não integra o executável nem o instalador da Maquete 3D**. O Criador de Cenas também é um programa independente. O **SimuTubulações** é independente, inclui edição de redes e simulação de fluidos, e pode utilizar o pacote arquitetônico sem depender de outros aplicativos em execução. **MultiCNC/MultiCAD é software externo, não incorporado, instalado ou exigido; dele são aceitos somente os arquivos de sólidos (STL e 3MF).**
 
 > Este documento reúne o que vale para todos os componentes. Cada componente tem documento próprio, listado no [índice](README.md).
 
@@ -39,6 +39,11 @@ Importa a topologia e os parâmetros elétricos definidos no Elétrica 3D e a re
 
 Documento: [SimuEletrica](SimuEletrica.md).
 
+### SimuTubulações (aplicativo independente, integrado à Maquete 3D)
+Software para projetar, representar e simular **redes prediais de água fria/quente, gás combustível (GN e GLP), ar comprimido e ventilação/ar em dutos, e esgoto sanitário**, usando a geometria 3D da edificação como referência. Contém **editor próprio de redes de tubos/dutos e componentes** e **motores de cálculo adequados a cada tipo de fluido e regime de escoamento**. Analisa pressão, vazão, perdas, desníveis, capacidades, eventos, falhas e, quando o modelo permitir, temperatura e mapas espaciais de resultados. Atua como **executável autônomo**, não é plugin do Maquete 3D ou do Elétrica 3D. Os resultados são estudos condicionados por hipóteses e não substituem projeto, certificação nem comissionamento por profissional habilitado.
+
+Documento: [SimuTubulações](SimuTubulacoes.md).
+
 ## 2. Objetivos de negócio
 
 - Aproveitar projetos já produzidos em AutoCAD, Revit, Archicad, SketchUp e outras ferramentas, sem exigir redesenho integral.
@@ -51,25 +56,29 @@ Documento: [SimuEletrica](SimuEletrica.md).
 - Permitir que o Criador de Cenas trabalhe com a maquete pronta, inclusive objetos, materiais e animações cinematográficas.
 - Permitir que o Elétrica 3D opere com instalação e armazenamento próprios, vinculado à maquete sem incorporar seus executáveis ao pacote arquitetônico.
 - Permitir simular eletricamente o projeto em um **SimuEletrica independente**, com cenários de carga, falhas, proteções, modelagem RLC, aquecimento e visualização espacial de resultados, sem alterar os dados-fonte sem aprovação.
+- Criar e simular redes hidráulicas, pneumáticas, de gás combustível e de esgoto em um **SimuTubulações independente**, vinculado geometricamente à maquete e interoperável com a disciplina elétrica para detecção de interferências, mantendo seus arquivos e responsabilidades próprios.
 
 ## 3. Escopo e delimitação
 
-| Responsabilidade | CAD 2D | Maquete 3D | Criador de Cenas | Elétrica 3D | SimuEletrica |
-|---|---|---|---|---|---|
-| Desenho técnico e plantas | **Principal** | Consulta | Não | Não | Não |
-| Edificação volumétrica e biblioteca de objetos/skins | Fornece dados | **Principal** | Consome | Referência | Referência espacial |
-| Câmeras, pessoas, água, vento, render final | Não | Prévia | **Principal** | Não | Não |
-| Cabos, eletrodutos, tomadas, quadros e diagramas elétricos | Não | Exibe vínculo | Visualização opcional | **Principal** | Consome topologia |
-| Cargas, curto-circuito, atuação de relés e sobrecarga | Não | Não | Não | Fornece dados | **Principal** |
-| Capacitância, indutância, harmônicos e análise transitória | Não | Não | Não | Fornece dados | **Principal, por modelo** |
-| Aquecimento de cabos e mapa térmico espacial | Não | Exibe resultado opcional | Não | Fornece geometria | **Principal** |
-| Importação CAD/BIM e dados semânticos | **Principal** | **Principal** | Modelos/maquetes | Maquete/instalação | Pacote elétrico versionado |
-| Instalação própria e arquivos nativos | Sim | Sim | Sim | Sim | Sim |
-| Dependência de instalação do MultiCNC | Não | Não | Não | Não | Não |
+| Responsabilidade | CAD 2D | Maquete 3D | Criador de Cenas | Elétrica 3D | SimuEletrica | SimuTubulações |
+|---|---|---|---|---|---|---|
+| Desenho técnico e plantas | **Principal** | Consulta | Não | Não | Não | Consulta |
+| Edificação volumétrica e biblioteca de objetos/skins | Fornece dados | **Principal** | Consome | Referência | Referência espacial | Referência espacial |
+| Câmeras, pessoas, água, vento, render final | Não | Prévia | **Principal** | Não | Não | Não |
+| Cabos, eletrodutos, tomadas, quadros e diagramas elétricos | Não | Exibe vínculo | Visualização opcional | **Principal** | Consome topologia | Detecta interferências, sem editar elétrica |
+| Cargas, curto-circuito, relés e sobrecarga elétrica | Não | Não | Não | Fornece dados | **Principal** | Não |
+| Capacitância, indutância, harmônicos e transitórios elétricos | Não | Não | Não | Fornece dados | **Principal, por modelo** | Não |
+| Aquecimento de cabos e mapa térmico elétrico | Não | Exibe resultado opcional | Não | Fornece geometria | **Principal** | Não |
+| Traçado de tubos/dutos, válvulas, pontos de consumo e equipamentos de fluidos | Não | Exibe vínculo | Visualização opcional | Coordenação | Não | **Principal** |
+| Vazão, pressão, perdas de carga, falhas e análise de redes de fluidos | Não | Exibe resultados opcionais | Não | Coordenação | Não | **Principal** |
+| Esgoto por gravidade, caimentos, capacidade e refluxo | Não | Exibe vínculo | Não | Coordenação | Não | **Principal** |
+| Importação CAD/BIM e dados semânticos | **Principal** | **Principal** | Modelos/maquetes | Maquete/instalação | Pacote elétrico | Maquete / pacote de redes |
+| Instalação própria e arquivos nativos | Sim | Sim | Sim | Sim | Sim | Sim |
+| Dependência de instalação do MultiCNC | Não | Não | Não | Não | Não | Não |
 
 **Planejador:** não aparece na tabela porque não produz geometria; ele cria, encadeia e acompanha as tarefas executadas em todos os aplicativos acima ([Planejador](Planejador.md)).
 
-**Separação:** o Elétrica 3D é a fonte da verdade do projeto elétrico; o SimuEletrica é a fonte da verdade dos cenários e resultados simulados. Simulações não alteram circuitos, bitolas, rotas ou proteções originais automaticamente.
+**Separação:** o Elétrica 3D é a fonte da verdade do projeto elétrico; o SimuEletrica é a fonte da verdade dos cenários e resultados elétricos simulados. O SimuTubulações é a fonte da verdade da disciplina de tubulações e de seus cenários e resultados de fluidos. A Maquete 3D mantém a arquitetura. Nenhum simulador altera automaticamente os arquivos dos demais.
 
 ## 4. Requisitos não funcionais comuns
 
@@ -101,3 +110,7 @@ Documento: [SimuEletrica](SimuEletrica.md).
 - MultiCAD, branch `fila` — `.mcad`, STL e 3MF: https://github.com/marcelomaurin/multicnc/blob/fila/multicad/README.md
 
 **Nota:** **MultiCNC/MultiCAD não integra o pacote e não é dependência de instalação ou execução.** Os modelos são recebidos por arquivos exportados. Esta especificação descreve o comportamento desejado e as alternativas técnicas. Ela não afirma que importadores, licenças ou compatibilidade com formatos proprietários já estejam implementados.
+
+### Fontes do SimuTubulações
+
+Ver [SimuTubulações](SimuTubulacoes.md#fontes-técnicas-desta-expansão): EPANET, SWMM, Modelica.Fluid, ABNT NBR 5626, catálogo ABNT e ISO 8573-1.

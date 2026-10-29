@@ -2,11 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Versão do documento | 1.0 — 29/10/2026 |
+| Versão do documento | 1.1 — 29/10/2026 (inclui o SimuTubulações) |
 | Estado | Planejamento (nenhuma fase iniciada) |
 | Base | Etapas definidas em cada documento de componente |
 
 O plano organiza as etapas de todos os componentes em **fases** sequenciais. Cada fase só começa quando a anterior atende seus critérios de saída e quando as decisões indicadas estiverem tomadas. A ordem segue a prioridade definida na especificação: **CAD 2D primeiro**, depois a maquete, e só então as disciplinas que dependem dela. O Planejador, embora seja a primeira etapa da linha de produção, entra depois do CAD 2D básico, porque suas tarefas precisam de um aplicativo que as execute.
+
+As fases 9 (Elétrica 3D) e 11 (SimuTubulações) dependem ambas da Maquete 3D e podem ser invertidas se a prioridade mudar; a coordenação entre as duas instalações (integração G10) fica para quando ambas existirem.
 
 ## 1. Visão das fases
 
@@ -23,9 +25,12 @@ flowchart TB
     F6 --> F8[Fase 8<br/>Criador de Cenas]
     F5 --> F9[Fase 9<br/>Elétrica 3D]
     F9 --> F10[Fase 10<br/>SimuEletrica]
-    F9 --> F11[Fase 11<br/>BIM e avançado]
-    F8 --> F11
-    F10 --> F11
+    F5 --> F11[Fase 11<br/>SimuTubulações]
+    F9 -. coordenação .-> F11
+    F9 --> F12[Fase 12<br/>BIM e avançado]
+    F8 --> F12
+    F10 --> F12
+    F11 --> F12
 ```
 
 ## 2. Fases
@@ -43,7 +48,8 @@ flowchart TB
 | **8 — Criador de Cenas** | Imagens, vídeos e passeios | Criador C1–C5; Integrações G5, G7 | Motor de renderização | Cena diurna e noturna, vídeo de passeio, porta abrindo e vegetação ao vento |
 | **9 — Elétrica 3D** | Instalações sobre a maquete | Elétrica E1–E5; Integrações G6 | — | Critérios 1 a 9 do Elétrica 3D |
 | **10 — SimuEletrica** | Simulação e mapa térmico | SimuEletrica S1–S4; Integrações G8 | Forma de integração do OpenDSS e do ngspice | Testes de aceitação 1 a 12 do SimuEletrica |
-| **11 — BIM e avançado** | Interoperabilidade e recursos avançados | Importação I7, I8; CAD 2D A5; Maquete M5, M6; Editor O6; Texturas T5; Elétrica E6; Criador C6; SimuEletrica S5 | Estratégia de IFC | Definido ao iniciar a fase |
+| **11 — SimuTubulações** | Redes de fluidos e esgoto sobre a maquete | SimuTubulações TB1–TB5; Integrações G9, G10 | Escopo predial ou industrial; uso do EPANET, SWMM e OpenModelica; convenção de pressão absoluta e manométrica | Critérios de aceitação 1 a 14 do SimuTubulações |
+| **12 — BIM e avançado** | Interoperabilidade e recursos avançados | Importação I7, I8; CAD 2D A5; Maquete M5, M6; Editor O6; Texturas T5; Elétrica E6; Criador C6; SimuEletrica S5; SimuTubulações TB6 | Estratégia de IFC | Definido ao iniciar a fase |
 
 Itens futuros (Editor O7, Texturas T6 e requisitos marcados como "Futuro") ficam fora das fases até serem priorizados.
 
@@ -58,7 +64,10 @@ Itens futuros (Editor O7, Texturas T6 e requisitos marcados como "Futuro") ficam
 | Texturas em superfícies pelo Planejador | Fase 7 | Só objetos; objetos e superfícies |
 | Motor de renderização final | Fase 8 | LuxCoreRender; Cycles como processo separado |
 | Integração do OpenDSS e do ngspice | Fase 10 | Processo separado; biblioteca; implementação própria |
-| Estratégia de IFC | Fase 11 | Leitor próprio do subconjunto; IfcOpenShell isolado |
+| Escopo inicial do SimuTubulações (predial ou também industrial) | Fase 11 | Predial (recomendado na especificação); predial e industrial |
+| Uso do EPANET, SWMM e OpenModelica (licença, interface e desempenho) | Fase 11 | Processo separado; biblioteca; solucionador próprio |
+| Convenção de pressões absolutas e manométricas e de unidades de fluidos | Fase 11 | A definir no contrato do pacote de redes |
+| Estratégia de IFC | Fase 12 | Leitor próprio do subconjunto; IfcOpenShell isolado |
 
 ## 4. Organização do repositório (*proposta*)
 
@@ -72,6 +81,7 @@ EngenhariaArquitetura/
 ├── criadorcenas/
 ├── eletrica3d/
 ├── simueletrica/
+├── simutubulacoes/
 └── testes/          casos de referência e arquivos de homologação
 ```
 
@@ -98,7 +108,8 @@ EngenhariaArquitetura/
 | 8 — Criador de Cenas | Não iniciada |
 | 9 — Elétrica 3D | Não iniciada |
 | 10 — SimuEletrica | Não iniciada |
-| 11 — BIM e avançado | Não iniciada |
+| 11 — SimuTubulações | Não iniciada |
+| 12 — BIM e avançado | Não iniciada |
 
 ## Anexo — Entregas da especificação original
 
@@ -129,7 +140,7 @@ Adaptadores SKP/RVT, atualização incremental, geração assistida de skins por
 
 | Entrega | Aplicativo | Pré-requisito de integração | Resultado |
 |---|---|---|---|
-| Q — Planejador | Planejador | Contrato de tarefa ([Planejador](Planejador.md)) | Tarefas em grafo, Gantt, vínculos com aplicativos e objetos |
+| PL — Planejador | Planejador | Contrato de tarefa ([Planejador](Planejador.md)) | Tarefas em grafo, Gantt, vínculos com aplicativos e objetos |
 | G — Cenas iniciais | Criador de Cenas | Maquete exportável | Câmeras, iluminação e render estático |
 | H — Cenas dinâmicas | Criador de Cenas | G + objetos com pivô | Pessoas, vento, água, portas e vídeo |
 | I — Elétrica básica | Elétrica 3D | Contrato de maquete e importador | Pontos, quadros, eletrodutos e cabos |
@@ -140,6 +151,10 @@ Adaptadores SKP/RVT, atualização incremental, geração assistida de skins por
 | N — Proteção e falhas | SimuEletrica | M + modelos e parâmetros de dispositivos | Curtos, sobrecargas, disparos e cenários comparáveis |
 | O — Térmica e visualização 3D | SimuEletrica | N + rotas 3D, cabos e dados térmicos | Temperaturas estimadas, evolução temporal e mapa de calor por segmento |
 | P — RLC, qualidade e transitórios | SimuEletrica | O + motor especializado | Efeitos capacitivos/indutivos, harmônicos, chaveamento e estudo de interferência conduzida |
+| Q — Tubulações e dutos 3D | SimuTubulações | Pacote de Maquete 3D | Editor de redes, diâmetros, curvas, conexões, níveis, tabelas e interferências |
+| R — Água e esgoto | SimuTubulações | Q + dados de cargas e declividade | Pressões e vazões de água; escoamento por gravidade e refluxo no esgoto |
+| S — Gás e ar | SimuTubulações | Q + propriedades de fluido e equipamentos | Redes compressíveis, pressões, perdas, reguladores, compressores e dutos |
+| T — Cenários e resultados 3D | SimuTubulações | R + S + testes | Falhas, mapas de pressão/vazão/temperatura, relatórios e comparação de cenários |
 
 **Normas e responsabilidade técnica:** consultar e aplicar a versão vigente das normas ABNT e dos requisitos legais aplicáveis, em particular às instalações elétricas de baixa tensão e, quando pertinente, a edificações especiais. Verificações automáticas serão assistivas e testadas, **não equivalem a aprovação ou assinatura de projeto elétrico**.
 

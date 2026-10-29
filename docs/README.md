@@ -23,6 +23,7 @@ Plataforma de aplicações independentes em Lazarus/Free Pascal para projetos de
 | 4 | Criador de Cenas Realistas | [Criador_Cenas.md](Criador_Cenas.md) | C1–C6 | Câmeras, iluminação, animação, natureza, pessoas e renderização final |
 | 5 | Elétrica 3D | [Eletrica_3D.md](Eletrica_3D.md) | E1–E6 | Instalações elétricas sobre a maquete, circuitos, quantitativos e coordenação |
 | 6 | SimuEletrica | [SimuEletrica.md](SimuEletrica.md) | S1–S5 | Simulação elétrica, falhas, proteções e mapa térmico dos cabos |
+| 7 | SimuTubulações | [SimuTubulacoes.md](SimuTubulacoes.md) | TB1–TB6 | Redes prediais de água, gás, ar comprimido, ventilação e esgoto, com simulação de fluidos |
 
 ### Módulos internos da Maquete 3D
 
@@ -43,8 +44,8 @@ Plataforma de aplicações independentes em Lazarus/Free Pascal para projetos de
 | Documento | Conteúdo |
 |---|---|
 | [Visão geral da plataforma](Visao_Geral_Plataforma.md) | Aplicativos, objetivos de negócio, escopo, requisitos não funcionais comuns e fontes |
-| [Integrações](Integracoes.md) | Catálogo das 17 integrações (I-01 a I-17), pacotes de intercâmbio, manifesto comum, conflitos e etapas G1–G8 |
-| [Plano de desenvolvimento](Plano_Desenvolvimento.md) | Fases 0 a 11, decisões necessárias por fase, organização do repositório e acompanhamento |
+| [Integrações](Integracoes.md) | Catálogo das 23 integrações (I-01 a I-23), pacotes de intercâmbio, manifesto comum, conflitos e etapas G1–G10 |
+| [Plano de desenvolvimento](Plano_Desenvolvimento.md) | Fases 0 a 12, decisões necessárias por fase, organização do repositório e acompanhamento |
 | [Decisões de projeto](Decisoes.md) | Decisões tomadas, pontos técnicos a confirmar e questões em aberto |
 
 ## Linha de produção
@@ -65,6 +66,10 @@ flowchart LR
     D -- luminárias e comandos --> C
     D -- modelo elétrico --> E[SimuEletrica]
     E -- resultados --> D
+    P -. tarefas .-> F
+    B -- maquete --> F[SimuTubulações]
+    F -- redes e resultados --> B
+    D <-. interferências .-> F
 ```
 
 ## Princípios gerais
@@ -87,6 +92,7 @@ flowchart LR
 | RFC | Criador de Cenas |
 | RFE | Elétrica 3D |
 | SIM, RNF-SIM | SimuEletrica |
+| ST, ST-NF | SimuTubulações |
 | RNF | Requisitos não funcionais comuns |
 | I-nn | Integrações |
 
@@ -95,4 +101,5 @@ flowchart LR
 | Data | Alteração |
 |---|---|
 | 28/10/2026 | Especificação da plataforma 1.8 e da Planta Baixa 2D 1.0 em documentos únicos |
+| 29/10/2026 | Incluído o SimuTubulações (sétimo aplicativo), a partir da especificação recebida em 29/10/2026; integrações I-18 a I-23 e fase 11 do plano. Etapas renomeadas para TB1–TB6 e entrega do Planejador para PL, para não colidir com o Gerador de Texturas e com a entrega Q da especificação |
 | 29/10/2026 | Especificação dividida em um documento por componente; criados os documentos de integrações e de plano de desenvolvimento, com etapas por componente. O conteúdo anterior permanece no histórico do git |

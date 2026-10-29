@@ -20,6 +20,7 @@ Registro das decisões tomadas durante a concepção da plataforma (28 e 29/10/2
 | 12 | O Elétrica 3D é um aplicativo independente conectado à Maquete 3D, e não um plugin. | [Elétrica 3D](Eletrica_3D.md) |
 | 13 | O SimuEletrica é o quinto aplicativo de engenharia, independente e vinculado ao Elétrica 3D; não modifica o projeto elétrico original. | [SimuEletrica](SimuEletrica.md) |
 | 14 | Cada componente da plataforma tem um documento específico em `docs`, com especificação e etapas de desenvolvimento; um documento de integrações cobre as trocas entre eles. | [Índice](README.md) |
+| 15 | O **SimuTubulações** é um aplicativo independente, vinculado à Maquete 3D e coordenado com o Elétrica 3D, que edita e simula redes prediais de água fria e quente, gás, ar comprimido, ventilação e esgoto; edição e cálculo ficam no mesmo executável nesta fase. | [SimuTubulações](SimuTubulacoes.md), [Integrações](Integracoes.md): I-18 a I-23 |
 
 ## Pontos técnicos a confirmar
 
@@ -28,6 +29,9 @@ Registro das decisões tomadas durante a concepção da plataforma (28 e 29/10/2
 - **Leitura de IFC:** leitor próprio do subconjunto necessário ou IfcOpenShell como processo externo.
 - **Motor de renderização do Criador de Cenas:** avaliar LuxCoreRender (Apache 2.0, interface em C) e Cycles do Blender como processo separado (GPL).
 - **Personagens animados:** origem com licença de uso comercial.
+- **Motores do SimuTubulações:** avaliar licença de redistribuição, interface e desempenho do EPANET, do SWMM e do OpenModelica.
+- **Pressões e unidades de fluidos:** formalizar pressões absolutas e manométricas, sobretudo para gases.
+- **Gases medicinais e vácuo clínico:** fora do modelo genérico; exigem módulo especializado aprovado à parte (ABNT NBR 12188).
 - **Extensão do pacote nativo** da plataforma, sem conflito com `.msuite`.
 
 ## Questões em aberto
@@ -35,3 +39,4 @@ Registro das decisões tomadas durante a concepção da plataforma (28 e 29/10/2
 1. Quando uma textura da biblioteca é alterada, os objetos vinculados acompanham a mudança automaticamente ou mantêm a versão vinculada até atualização explícita?
 2. O Planejador também vincula texturas às superfícies arquitetônicas da Maquete (paredes, pisos, lajes), ou apenas aos objetos?
 3. Os aplicativos reaproveitarão componentes da suíte CHATGPT (Lazarus/FPC)?
+4. A primeira fase do SimuTubulações será só predial (recomendado na especificação) ou também industrial?

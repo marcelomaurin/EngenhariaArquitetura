@@ -68,6 +68,7 @@ Ele deve ser útil para projetar e revisar a distribuição espacial de infraest
 - **Maquete 3D:** arquitetura e objetos de decoração (fonte da geometria arquitetônica).
 - **Elétrica 3D:** objetos elétricos, circuitos, conexões, rotas, validações e documentação (fonte de verdade elétrica).
 - **Criador de Cenas:** estados e representações visuais de luminárias, quando disponibilizados pela camada elétrica (sem cálculos normativos).
+- **SimuTubulações:** fonte de verdade das redes de fluidos; as duas disciplinas trocam geometria apenas para detectar interferências (integração I-20), sem que uma edite a outra.
 - Uma modificação no elétrico **não altera paredes, lajes, portas e janelas** na Maquete 3D. Alterações que exijam rasgos, furos, shafts ou aberturas devem criar **solicitações de coordenação** ou propostas para aprovação no modelo arquitetônico.
 - O Elétrica 3D deverá ser **instalável e executável sozinho**; para produzir instalações em uma edificação, recebe arquivo ou pacote arquitetônico compatível, sem exigir que a Maquete 3D esteja executando no mesmo computador.
 

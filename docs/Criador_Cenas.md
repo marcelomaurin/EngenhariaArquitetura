@@ -6,7 +6,7 @@
 | Versão do documento | 1.0 — 29/10/2026 (derivado da especificação da plataforma 1.8) |
 | Estado | Proposta de requisitos (ainda não implementada) |
 | Papel na linha de produção | Quarta etapa: transforma a maquete pronta em imagens, vídeos e passeios ultrarrealistas |
-| Recebe | Maquete 3D finalizada; opcionalmente luminárias e interruptores do Elétrica 3D |
+| Recebe | Maquete 3D finalizada; opcionalmente luminárias e interruptores do Elétrica 3D e geometria de apresentação das redes do SimuTubulações |
 | Produz | Imagens em alta resolução, vídeos, passeios virtuais e projeto de cena próprio |
 
 > Integrações com os demais componentes: [Integrações](Integracoes.md). Ordem de desenvolvimento: [Plano de desenvolvimento](Plano_Desenvolvimento.md).

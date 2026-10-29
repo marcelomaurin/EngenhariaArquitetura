@@ -7,7 +7,7 @@
 | Estado | Proposta de requisitos (ainda não implementada) |
 | Papel na linha de produção | Base técnica de todos os componentes: geometria, modelo de dados, persistência e visualização |
 | Recebe | — |
-| Produz | Unidades de código reutilizadas pelos seis aplicativos |
+| Produz | Unidades de código reutilizadas pelos sete aplicativos |
 
 > Integrações com os demais componentes: [Integrações](Integracoes.md). Ordem de desenvolvimento: [Plano de desenvolvimento](Plano_Desenvolvimento.md).
 
@@ -18,10 +18,10 @@ Evitar que cada aplicativo reimplemente geometria, unidades, modelo arquitetôni
 | Pacote (proposta) | Conteúdo | Usado por |
 |---|---|---|
 | `ea_geometria` | vetores 2D/3D, tolerância numérica, interseções, polígonos, offsets, transformações, testes de fechamento, índices espaciais e colisões. | Todos |
-| `ea_modelo` | Modelo arquitetônico interno: projeto, pavimento, objeto, material, origem de importação | CAD 2D, Maquete 3D, Elétrica 3D, Criador de Cenas |
+| `ea_modelo` | Modelo arquitetônico interno: projeto, pavimento, objeto, material, origem de importação | CAD 2D, Maquete 3D, Elétrica 3D, SimuTubulações, Criador de Cenas |
 | `ea_pacote` | Pacotes de intercâmbio: manifesto JSON versionado, hash, identificadores estáveis e referências | Todos |
-| `ea_ancoras` | Âncoras persistentes em pavimento, parede, superfície e ambiente | Maquete 3D, Editor de Objetos, Elétrica 3D |
-| `ea_visual3d` | Visualização 3D interativa em OpenGL: câmera, navegação, seleção e materiais de prévia | Maquete 3D, Criador de Cenas, Elétrica 3D, SimuEletrica |
+| `ea_ancoras` | Âncoras persistentes em pavimento, parede, superfície e ambiente | Maquete 3D, Editor de Objetos, Elétrica 3D, SimuTubulações |
+| `ea_visual3d` | Visualização 3D interativa em OpenGL: câmera, navegação, seleção e materiais de prévia | Maquete 3D, Criador de Cenas, Elétrica 3D, SimuEletrica, SimuTubulações |
 | `ea_interface` | Padrão visual comum: menus, barras, painéis de propriedades e rodapé de estado | Todos |
 
 ## 2. Modelo arquitetônico interno

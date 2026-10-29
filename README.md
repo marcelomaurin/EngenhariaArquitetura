@@ -12,6 +12,7 @@ Plataforma de aplicações independentes em Lazarus/Free Pascal que funcionam co
 | 4 | **Criador de Cenas Realistas** | [`criadorcenas/`](criadorcenas/README.md) | Câmeras, iluminação, animação e renderização fotorrealista |
 | 5 | **Elétrica 3D** | [`eletrica3d/`](eletrica3d/README.md) | Projeto das instalações elétricas sobre a maquete |
 | 6 | **SimuEletrica** | [`simueletrica/`](simueletrica/README.md) | Simulação elétrica, falhas, proteções e análise térmica |
+| 7 | **SimuTubulações** | [`simutubulacoes/`](simutubulacoes/README.md) | Redes de água, gás, ar comprimido, ventilação e esgoto, com simulação de fluidos |
 
 Cada pasta tem um README com o resumo do aplicativo. A documentação completa, com um documento por componente, integrações e plano de desenvolvimento, começa em [`docs/README.md`](docs/README.md).
 
