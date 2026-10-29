@@ -12,6 +12,7 @@
     <TextName Value="Maurinsoft.EngenhariaArquitetura.Planejador" />
     <TextDesc Value="Planejador" />
    </XPManifest>
+   <Icon Value="0" />
   </General>
   <VersionInfo>
    <UseVersionInfo Value="True" />
@@ -36,7 +37,7 @@
  <CompilerOptions>
   <Version Value="11" />
   <Target>
-   <Filename Value="../../bin/planejador" />
+   <Filename Value="../../../bin/planejador" />
   </Target>
   <SearchPaths>
    <IncludeFiles Value="$(ProjOutDir);../../../../CHATGPT/pacote/AI Project;../../../third_party/chatgpt/AIProject" />
@@ -48,7 +49,16 @@
     <SyntaxMode Value="ObjFPC" />
    </SyntaxOptions>
   </Parsing>
+  <CodeGeneration>
+   <Optimizations>
+    <OptimizationLevel Value="2" />
+   </Optimizations>
+  </CodeGeneration>
   <Linking>
+   <Debugging>
+    <GenerateDebugInfo Value="False" />
+    <StripSymbols Value="True" />
+   </Debugging>
    <Options>
     <Win32>
      <GraphicApplication Value="True" />

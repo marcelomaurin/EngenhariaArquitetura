@@ -1,6 +1,10 @@
 # compilacao Lazarus/Free Pascal
 lib/
-bin/
+# bin/ guarda so os executaveis Windows e o instalador, como no MultiCNC
+/bin/*
+!/bin/*.exe
+planejador/bin/
+dist/
 *.o
 *.ppu
 *.compiled

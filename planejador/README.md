@@ -41,13 +41,17 @@ planejador/
 └── screenshots/
 ```
 
+## Instalação
+
+O instalador para Windows 64 bits fica em [`bin/setup_engenhariaarquitetura_001.exe`](../bin/) e o executável avulso em `bin/planejador.exe`, no mesmo padrão do MultiCNC. Como gerar: [installer/windows](../installer/windows/README.md).
+
 ## Como compilar
 
 Requer Lazarus 3.0 ou superior. O projeto procura a CHATGPT em `..\CHATGPT\pacote\` (ao lado desta pasta, em `D:\projetos\maurinsoft\CHATGPT`) e, se não encontrar, usa a cópia em `third_party/chatgpt`.
 
 ```
 lazbuild planejador\src\app\planejador.lpi
-planejador\bin\planejador.exe planejador\examples\residencia.plan.json
+bin\planejador.exe planejador\examples\residencia.plan.json
 ```
 
 Testes do modelo:

@@ -23,4 +23,15 @@ Cada pasta tem um README com o resumo do aplicativo. A documentação completa, 
 | [Plano de desenvolvimento](docs/Plano_Desenvolvimento.md) | Fases, etapas e decisões pendentes |
 | [Decisões](docs/Decisoes.md) | Decisões tomadas e questões em aberto |
 
+## Instalação
+
+O instalador para Windows 64 bits e os executáveis ficam em [`bin/`](bin/), como no MultiCNC:
+
+| Arquivo | Conteúdo |
+|---|---|
+| `bin/setup_engenhariaarquitetura_001.exe` | Instalador da plataforma (versão 0.01) |
+| `bin/planejador.exe` | Planejador para Windows 64 bits |
+
+Como gerar o instalador: [installer/windows](installer/windows/README.md).
+
 > **Estado:** o **Planejador** tem a etapa P1 implementada (tarefas, dependências, caminho crítico, Gantt e gravação); os demais aplicativos estão em especificação.
