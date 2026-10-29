@@ -1,24 +1,25 @@
 # Decisões de projeto
 
-Registro das decisões tomadas durante a concepção da plataforma (28/10/2026).
+Registro das decisões tomadas durante a concepção da plataforma (28 e 29/10/2026). O momento em que cada pendência precisa ser resolvida está no [Plano de desenvolvimento](Plano_Desenvolvimento.md#3-decisões-e-o-momento-de-cada-uma).
 
 ## Decisões
 
-| # | Decisão | Reflexo na especificação |
+| # | Decisão | Onde está |
 |---|---|---|
-| 1 | A plataforma é um conjunto de aplicativos que funcionam como linha de produção, cada um produzindo uma etapa do processo. | Visão geral e seção 15 |
-| 2 | O primeiro aplicativo é um **Planejador** no estilo do Microsoft Project, que cria as tarefas do empreendimento. | Projeto P, seção 19 |
-| 3 | O Planejador cria **tarefas arquitetônicas** executadas nos demais aplicativos. | RFP-004 a RFP-007 |
-| 4 | O Planejador oferece visão de cronograma e os gráficos usados comumente no Microsoft Project. | RFP-010, 19.3 |
-| 5 | O MultiCNC serve de **referência** de organização e padrão visual. | Princípios gerais |
-| 6 | O **MultiCNC não faz parte do projeto**; são aceitos apenas os arquivos de sólidos que ele gera (STL e 3MF). Arquivos `.mcad` e `.msuite` não são lidos. | RF3D-057 e RF3D-058 removidos; RFI-021, 4B.3, matriz de formatos |
-| 7 | CAD 2D e Maquete 3D são projetos independentes, integrados por arquivos de dados arquitetônicos. | Seções 1, 2 e 7 |
-| 8 | O Editor de Objetos 3D faz parte da Maquete 3D. | Seção 4A |
-| 9 | O gerador de texturas fica ligado ao programa que gera objetos; a textura é aplicada ao objeto inteiro ou a uma face dele. | Seção 4C, RF3D-053 |
-| 10 | Ao criar ou importar um objeto, o Planejador pode criar tarefas, anexá-lo a tarefas existentes e vincular texturas, que ficam vinculadas aos objetos. | RFP-008, RFP-009, 19.5 |
-| 11 | O Criador de Cenas Realistas é o terceiro aplicativo, independente. | Seção 13 |
-| 12 | O Elétrica 3D é um aplicativo independente conectado à Maquete 3D, e não um plugin. | Seção 14 |
-| 13 | O SimuEletrica é o quinto aplicativo de engenharia, independente e vinculado ao Elétrica 3D; não modifica o projeto elétrico original. | Seção 18 |
+| 1 | A plataforma é um conjunto de aplicativos que funcionam como linha de produção, cada um produzindo uma etapa do processo. | [Visão geral](Visao_Geral_Plataforma.md), [Integrações](Integracoes.md) |
+| 2 | O primeiro aplicativo é um **Planejador** no estilo do Microsoft Project, que cria as tarefas do empreendimento. | [Planejador](Planejador.md) |
+| 3 | O Planejador cria **tarefas arquitetônicas** executadas nos demais aplicativos. | [Planejador](Planejador.md): RFP-004 a RFP-007 |
+| 4 | O Planejador oferece visão de cronograma e os gráficos usados comumente no Microsoft Project. | [Planejador](Planejador.md): RFP-010 e visões |
+| 5 | O MultiCNC serve de **referência** de organização e padrão visual. | [Índice](README.md), princípios gerais |
+| 6 | O **MultiCNC não faz parte do projeto**; são aceitos apenas os arquivos de sólidos que ele gera (STL e 3MF). Arquivos `.mcad` e `.msuite` não são lidos. | [Editor de Objetos 3D](Editor_Objetos_3D.md): RF3D-057 e RF3D-058 removidos; [Motor de Importação](Motor_Importacao.md): RFI-021 e matriz de formatos |
+| 7 | CAD 2D e Maquete 3D são projetos independentes, integrados por arquivos de dados arquitetônicos. | [Visão geral](Visao_Geral_Plataforma.md), [Integrações](Integracoes.md): I-06 |
+| 8 | O Editor de Objetos 3D faz parte da Maquete 3D. | [Editor de Objetos 3D](Editor_Objetos_3D.md) |
+| 9 | O gerador de texturas fica ligado ao programa que gera objetos; a textura é aplicada ao objeto inteiro ou a uma face dele. | [Gerador de Texturas](Gerador_Texturas.md), RF3D-053 |
+| 10 | Ao criar ou importar um objeto, o Planejador pode criar tarefas, anexá-lo a tarefas existentes e vincular texturas, que ficam vinculadas aos objetos. | [Planejador](Planejador.md): RFP-008, RFP-009; [Integrações](Integracoes.md): I-03 |
+| 11 | O Criador de Cenas Realistas é o terceiro aplicativo, independente. | [Criador de Cenas](Criador_Cenas.md) |
+| 12 | O Elétrica 3D é um aplicativo independente conectado à Maquete 3D, e não um plugin. | [Elétrica 3D](Eletrica_3D.md) |
+| 13 | O SimuEletrica é o quinto aplicativo de engenharia, independente e vinculado ao Elétrica 3D; não modifica o projeto elétrico original. | [SimuEletrica](SimuEletrica.md) |
+| 14 | Cada componente da plataforma tem um documento específico em `docs`, com especificação e etapas de desenvolvimento; um documento de integrações cobre as trocas entre eles. | [Índice](README.md) |
 
 ## Pontos técnicos a confirmar
 

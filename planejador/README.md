@@ -2,7 +2,7 @@
 
 Gerenciador de projetos de engenharia e arquitetura, tendo o Microsoft Project como referência funcional. É a **primeira etapa da linha de produção**: cria as tarefas do empreendimento, define a ordem entre elas e acompanha sua execução nos demais aplicativos da plataforma.
 
-> **Estado:** em especificação. Detalhamento completo na seção 19 da [especificação da plataforma](../docs/Especificacao_Plataforma_Arquitetura.md).
+> **Estado:** em especificação. Especificação completa e etapas de desenvolvimento em [docs/Planejador.md](../docs/Planejador.md); integrações em [docs/Integracoes.md](../docs/Integracoes.md).
 
 ## Posição na plataforma
 

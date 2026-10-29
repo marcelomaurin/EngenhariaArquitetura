@@ -2,7 +2,7 @@
 
 Aplicativo independente para o **projeto das instalações elétricas** usando a maquete 3D como referência. **Não é um plugin da Maquete 3D**: tem instalador, executável, arquivos e versões próprios.
 
-> **Estado:** em especificação. Detalhamento nas seções 14 e 16.1 da [especificação da plataforma](../docs/Especificacao_Plataforma_Arquitetura.md).
+> **Estado:** em especificação. Especificação completa e etapas de desenvolvimento em [docs/Eletrica_3D.md](../docs/Eletrica_3D.md); integrações em [docs/Integracoes.md](../docs/Integracoes.md).
 
 ## Posição na plataforma
 

@@ -13,6 +13,13 @@ Plataforma de aplicações independentes em Lazarus/Free Pascal que funcionam co
 | 5 | **Elétrica 3D** | [`eletrica3d/`](eletrica3d/README.md) | Projeto das instalações elétricas sobre a maquete |
 | 6 | **SimuEletrica** | [`simueletrica/`](simueletrica/README.md) | Simulação elétrica, falhas, proteções e análise térmica |
 
-Cada pasta tem um README com a descrição do aplicativo; a especificação completa fica em [`docs/`](docs/README.md).
+Cada pasta tem um README com o resumo do aplicativo. A documentação completa, com um documento por componente, integrações e plano de desenvolvimento, começa em [`docs/README.md`](docs/README.md).
+
+| Documento | Conteúdo |
+|---|---|
+| [Visão geral](docs/Visao_Geral_Plataforma.md) | Aplicativos, objetivos, escopo e requisitos comuns |
+| [Integrações](docs/Integracoes.md) | Tudo o que cada componente troca com os demais |
+| [Plano de desenvolvimento](docs/Plano_Desenvolvimento.md) | Fases, etapas e decisões pendentes |
+| [Decisões](docs/Decisoes.md) | Decisões tomadas e questões em aberto |
 
 > **Estado:** fase de especificação. Nenhum aplicativo foi implementado ainda.

@@ -2,7 +2,7 @@
 
 Editor profissional de plantas baixas, tendo o AutoCAD e o AutoCAD Architecture como referências funcionais. Trabalha com **objetos arquitetônicos inteligentes** (paredes, portas, janelas, ambientes), e não apenas com linhas independentes. É a **prioridade inicial** da plataforma.
 
-> **Estado:** em especificação. Detalhamento em [Especificação da Planta Baixa 2D](../docs/Especificacao_Planta_Baixa_2D.md) e nas seções 3, 5 a 7 da [especificação da plataforma](../docs/Especificacao_Plataforma_Arquitetura.md).
+> **Estado:** em especificação. Especificação completa e etapas de desenvolvimento em [docs/CAD_Arquitetonico_2D.md](../docs/CAD_Arquitetonico_2D.md); integrações em [docs/Integracoes.md](../docs/Integracoes.md).
 
 ## Posição na plataforma
 

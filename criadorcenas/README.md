@@ -2,7 +2,7 @@
 
 Aplicativo independente que recebe a maquete 3D completa (paredes, pisos, móveis, objetos e texturas) e produz **imagens, vídeos e passeios virtuais ultrarrealistas** de como o ambiente poderá ficar depois de construído.
 
-> **Estado:** em especificação. Detalhamento nas seções 13 e 16.2 da [especificação da plataforma](../docs/Especificacao_Plataforma_Arquitetura.md).
+> **Estado:** em especificação. Especificação completa e etapas de desenvolvimento em [docs/Criador_Cenas.md](../docs/Criador_Cenas.md); integrações em [docs/Integracoes.md](../docs/Integracoes.md).
 
 ## Posição na plataforma
 

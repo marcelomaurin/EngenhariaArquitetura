@@ -2,7 +2,9 @@
 
 Gerador de maquetes tridimensionais. Interpreta uma ou várias plantas baixas, identifica os pavimentos e reconstrói automaticamente a edificação em 3D. Inclui dois módulos internos obrigatórios: o **Editor de Objetos 3D** e o **Gerador de Texturas**.
 
-> **Estado:** em especificação. Detalhamento nas seções 4, 4A, 4B e 4C da [especificação da plataforma](../docs/Especificacao_Plataforma_Arquitetura.md).
+> **Estado:** em especificação. Especificação completa e etapas de desenvolvimento em [docs/Maquete_3D.md](../docs/Maquete_3D.md); integrações em [docs/Integracoes.md](../docs/Integracoes.md).
+
+Módulos internos com documento próprio: [Editor de Objetos 3D](../docs/Editor_Objetos_3D.md) e [Gerador de Texturas](../docs/Gerador_Texturas.md).
 
 ## Posição na plataforma
 

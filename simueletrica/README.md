@@ -2,7 +2,7 @@
 
 Simulador de sistemas elétricos, proteção e análise térmica. Aplicativo independente que transforma o projeto do **Elétrica 3D** em um modelo computacional, simula o funcionamento da instalação, testa situações de falha e mostra os resultados nos cabos, equipamentos e circuitos da maquete.
 
-> **Estado:** em especificação. Detalhamento na seção 18 da [especificação da plataforma](../docs/Especificacao_Plataforma_Arquitetura.md).
+> **Estado:** em especificação. Especificação completa e etapas de desenvolvimento em [docs/SimuEletrica.md](../docs/SimuEletrica.md); integrações em [docs/Integracoes.md](../docs/Integracoes.md).
 
 ## Posição na plataforma
 
