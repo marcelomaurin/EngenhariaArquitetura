@@ -1,0 +1,133 @@
+{
+  "schema_version": "1.0",
+  "package_type": "build_manifest",
+  "product": "EngenhariaArquitetura",
+  "version": "0.01",
+  "binary_version": "0.1.0.0",
+  "setup_seq": "001",
+  "os": "windows",
+  "arch": "amd64",
+  "built_at": "2026-10-29T20:59:35+00:00",
+  "source_commit": "277b0771b797aa5a2705ca63f3daa401de667f33",
+  "source_branch": "fila",
+  "source_dirty": false,
+  "tests": [
+    {
+      "test": "test_planejador_core",
+      "passed": true,
+      "summary": "38 verificações, 0 falhas"
+    }
+  ],
+  "files": [
+    {
+      "path": "documentation/Planejador_README.md",
+      "bytes": 4081,
+      "sha256": "42f31b50b9bd6aa38b1f197afcfcbd59e3ef25b53952435166bdc6c3fefe7d08"
+    },
+    {
+      "path": "documentation/README.md",
+      "bytes": 2376,
+      "sha256": "f1664e5a3f67051492ed916087c7a507698608dfb499371f701ab05290556a00"
+    },
+    {
+      "path": "documentation/docs/CAD_Arquitetonico_2D.md",
+      "bytes": 15794,
+      "sha256": "60c4db2cccf2edde0dc98ea314803db56d1d7d17c7e0fa5c386cc836fc403e28"
+    },
+    {
+      "path": "documentation/docs/Criador_Cenas.md",
+      "bytes": 8195,
+      "sha256": "1db2aed88183c4e1132598830f673331722b443df559fd8e7bcb43af46bb1810"
+    },
+    {
+      "path": "documentation/docs/Decisoes.md",
+      "bytes": 5283,
+      "sha256": "b66339c04960391b9769eb978349401c1563daa6db0ae9417cbb00f4fe14f86e"
+    },
+    {
+      "path": "documentation/docs/Editor_Objetos_3D.md",
+      "bytes": 22311,
+      "sha256": "b1bce5fe8440438ee8d39e8be16f53925262d4b6df8aaaae7f8432141d140c53"
+    },
+    {
+      "path": "documentation/docs/Eletrica_3D.md",
+      "bytes": 9892,
+      "sha256": "86a1e0593fb5977d702af20270d79ed2fa43773318efebb8d4b90b67e065217f"
+    },
+    {
+      "path": "documentation/docs/Gerador_Texturas.md",
+      "bytes": 10903,
+      "sha256": "71f3a3667bd70d68110041891b2489ebf6efee1e65f29dfdf3f32384a0a3a3ed"
+    },
+    {
+      "path": "documentation/docs/Integracoes.md",
+      "bytes": 18779,
+      "sha256": "28520f88d7dcabbc82b4dfeb6f8a851ff912ab2d230e43a5be096d39b63369a0"
+    },
+    {
+      "path": "documentation/docs/Maquete_3D.md",
+      "bytes": 7358,
+      "sha256": "b1a8e36568fec80ae87b5ec62a3e5b3347853481721c1799e123e2d5ccb712db"
+    },
+    {
+      "path": "documentation/docs/Motor_Importacao.md",
+      "bytes": 11461,
+      "sha256": "97555338ff5ab866524ab79ae0767548ff5e3b5064c5910ec3537f3dd22ab0b5"
+    },
+    {
+      "path": "documentation/docs/Nucleo_Comum.md",
+      "bytes": 5253,
+      "sha256": "5c69418548725029abadde52b86a3b9dbca0936f33989fee1a3c978e2f56fab4"
+    },
+    {
+      "path": "documentation/docs/Planejador.md",
+      "bytes": 6489,
+      "sha256": "aeeef6b68d82dd176987541c902289f6e037194a384898c1fab7835c61f4a308"
+    },
+    {
+      "path": "documentation/docs/Plano_Desenvolvimento.md",
+      "bytes": 13109,
+      "sha256": "b781a11fcbcb49180e8a355af54ec37ce1c95e6096b0326b2dc09dd32ef6b23c"
+    },
+    {
+      "path": "documentation/docs/README.md",
+      "bytes": 6276,
+      "sha256": "a3704c6d87881eb0b624a68e9ccce05e35d7e63697479b8c5aaefbd412b156aa"
+    },
+    {
+      "path": "documentation/docs/SimuEletrica.md",
+      "bytes": 19910,
+      "sha256": "1a5bbd06e116b049006968bdda9afdea1e97023593760d45e72c1ce006626e29"
+    },
+    {
+      "path": "documentation/docs/SimuTubulacoes.md",
+      "bytes": 29368,
+      "sha256": "f1147517169e8390a3fe6e8443269a11252ff062c808b3664b44e76aaf5d12a3"
+    },
+    {
+      "path": "documentation/docs/Visao_Geral_Plataforma.md",
+      "bytes": 13305,
+      "sha256": "7fc56495bb3056c44251092bd01d6e2145a12d7b3f6050bef1026369bd090f2a"
+    },
+    {
+      "path": "exemplos/residencia.plan.json",
+      "bytes": 16021,
+      "sha256": "ac24c7ebb2c6c8e92377472271f0a4a851495c61722a434f8c48bff2e6f31cc1"
+    },
+    {
+      "path": "licencas/CHATGPT_LICENSE.txt",
+      "bytes": 35149,
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    {
+      "path": "planejador.exe",
+      "bytes": 3112448,
+      "sha256": "15c3560684c7a3404fa565e0cdbd143a1c7485083c642554ef79b61810d61df2"
+    },
+    {
+      "path": "qa-tests.json",
+      "bytes": 96,
+      "sha256": "c0b3753fa7f7f4928e573dbe70a4c79d3464aa5bb2a9be4f550c65c8dc4650c8"
+    }
+  ]
+}
