@@ -15,7 +15,7 @@ uses
 const
   PL_SCHEMA_VERSION = '1.0';
   PL_PACKAGE_TYPE = 'projeto_planejador';
-  PL_VERSAO_APLICATIVO = '0.1.0';
+  PL_VERSAO_APLICATIVO = '0.2.0';
   PL_EXTENSAO = '.plan.json';
 
 function PLProjetoParaJSON(Doc: TPLProjeto): TJSONObject;

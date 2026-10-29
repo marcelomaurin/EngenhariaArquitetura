@@ -29,7 +29,7 @@ O instalador para Windows 64 bits e os executáveis ficam em [`bin/`](bin/), com
 
 | Arquivo | Conteúdo |
 |---|---|
-| `bin/setup_engenhariaarquitetura_001.exe` | Instalador da plataforma (versão 0.01) |
+| `bin/setup_engenhariaarquitetura_002.exe` | Instalador da plataforma (versão 0.02) |
 | `bin/planejador.exe` | Planejador para Windows 64 bits |
 
 Como gerar o instalador: [installer/windows](installer/windows/README.md).

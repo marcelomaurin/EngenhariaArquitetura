@@ -16,8 +16,8 @@
   </General>
   <VersionInfo>
    <UseVersionInfo Value="True" />
-   <MinorVersionNr Value="1" />
-   <StringTable CompanyName="Maurinsoft" FileDescription="Planejador - tarefas e cronograma de projetos de engenharia e arquitetura" ProductName="EngenhariaArquitetura" ProductVersion="0.1.0" />
+   <MinorVersionNr Value="2" />
+   <StringTable CompanyName="Maurinsoft" FileDescription="Planejador - tarefas e cronograma de projetos de engenharia e arquitetura" ProductName="EngenhariaArquitetura" ProductVersion="0.2.0" />
   </VersionInfo>
   <BuildModes Count="1">
    <Item1 Name="Default" Default="True" />

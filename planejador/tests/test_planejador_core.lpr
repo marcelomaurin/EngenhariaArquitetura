@@ -7,7 +7,7 @@ program test_planejador_core;
 {$mode objfpc}{$H+}
 
 uses
-  SysUtils, DateUtils, aiprojectduration, plan_tipos, plan_documento,
+  SysUtils, DateUtils, aiprojectduration, aitaskgraph, plan_tipos, plan_documento,
   plan_cronograma, plan_json;
 
 var
@@ -101,6 +101,35 @@ begin
   end;
 end;
 
+procedure TesteVinculos;
+var P: TPLProjeto; Err: string; S: TStringArray;
+begin
+  WriteLn('Vínculos individuais (painel, Ctrl+F2 e diagrama de rede)');
+  P := TPLProjeto.Create;
+  try
+    P.NovaTarefa('A'); P.NovaTarefa('B'); P.NovaTarefa('C');
+    Confere(P.VincularProxima(0, Err), 'Ctrl+F2 liga A -> B');
+    ConfereTexto(P.TextoPredecessoras(P[1]), 'T-0001', 'B depende de A');
+    Confere(P.AdicionarVinculo('T-0002', 'T-0003', atlSS, AIMakeLag(PL_MINUTOS_POR_DIA), Err),
+      'vínculo II com latência B -> C');
+    ConfereTexto(P.TextoPredecessoras(P[2]), 'T-0002II+1d', 'texto do vínculo II');
+    Confere(not P.AdicionarVinculo('T-0003', 'T-0001', atlFS, AINoLag, Err), 'recusa ciclo C -> A');
+    Confere(Pos('ciclo', Err) > 0, 'mensagem menciona o ciclo');
+    Confere(not P.AdicionarVinculo('T-0001', 'T-0002', atlFS, AINoLag, Err), 'recusa vínculo repetido');
+    Confere(not P.AdicionarVinculo('T-0001', 'T-0001', atlFS, AINoLag, Err), 'recusa auto-vínculo');
+    Confere(not P.VincularProxima(2, Err), 'última tarefa não tem próxima');
+    S := P.Sucessoras('T-0002');
+    Confere((Length(S) = 1) and (S[0] = 'T-0003'), 'sucessoras de B');
+    Confere(P.RemoverVinculo('T-0002', 'T-0003'), 'remove B -> C');
+    ConfereTexto(P.TextoPredecessoras(P[2]), '', 'C ficou sem predecessoras');
+    P.VincularProxima(1, Err);
+    Confere(P.Desvincular(1) = 2, 'desvincular B remove entrada e saída');
+    Confere((Length(P[1].Predecessoras) = 0) and (Length(P[2].Predecessoras) = 0), 'B isolada');
+  finally
+    P.Free;
+  end;
+end;
+
 procedure TesteCaminhoCritico;
 var P: TPLProjeto; C: TPLCronograma; Err: string;
 begin
@@ -180,6 +209,7 @@ begin
   Total := 0;
   TesteIdsEDuracoes;
   TesteDependencias;
+  TesteVinculos;
   TesteCaminhoCritico;
   TesteJSON;
   WriteLn;

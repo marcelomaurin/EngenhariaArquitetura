@@ -44,6 +44,19 @@ type
     function DefinirPredecessoras(T: TPLTarefa; const ATexto: string;
       out Err: string): Boolean;
     function TextoPredecessoras(T: TPLTarefa): string;
+    { substitui as predecessoras de T, validando IDs, repeticao e ciclo }
+    function DefinirItens(T: TPLTarefa; const AItens: TAIPredecessorItems;
+      out Err: string): Boolean;
+    { vinculos individuais, como no Microsoft Project e no MultiProject }
+    function AdicionarVinculo(const ADe, APara: string; ATipo: TAITaskLinkType;
+      const ALatencia: TAITaskLag; out Err: string): Boolean;
+    function RemoverVinculo(const ADe, APara: string): Boolean;
+    { liga a tarefa I a seguinte da lista (Ctrl+F2) }
+    function VincularProxima(I: Integer; out Err: string): Boolean;
+    { remove todas as predecessoras e sucessoras da tarefa (Ctrl+Shift+F2) }
+    function Desvincular(I: Integer): Integer;
+    { sucessoras diretas de uma tarefa }
+    function Sucessoras(const AId: string): TStringArray;
     function DefinirDuracao(T: TPLTarefa; const ATexto: string; out Err: string): Boolean;
     function TextoDuracao(T: TPLTarefa): string;
     { monta o grafo na ordem das tarefas; Err vazio = consistente }
@@ -205,6 +218,16 @@ end;
 
 function TPLProjeto.DefinirPredecessoras(T: TPLTarefa; const ATexto: string;
   out Err: string): Boolean;
+var Itens: TAIPredecessorItems;
+begin
+  Result := False;
+  if not AITryParsePredecessors(ATexto, PL_MINUTOS_POR_DIA, PL_MINUTOS_POR_SEMANA,
+    @IdExiste, Itens, Err) then Exit;
+  Result := DefinirItens(T, Itens, Err);
+end;
+
+function TPLProjeto.DefinirItens(T: TPLTarefa; const AItens: TAIPredecessorItems;
+  out Err: string): Boolean;
 var
   Itens: TAIPredecessorItems;
   G: TAITaskGraph;
@@ -213,8 +236,8 @@ var
   E: string;
 begin
   Result := False;
-  if not AITryParsePredecessors(ATexto, PL_MINUTOS_POR_DIA, PL_MINUTOS_POR_SEMANA,
-    @IdExiste, Itens, Err) then Exit;
+  Err := '';
+  Itens := Copy(AItens);
   for I := 0 to High(Itens) do
   begin
     if not IdExiste(Itens[I].Id) then
@@ -249,6 +272,79 @@ begin
   T.Predecessoras := Itens;
   MarcarModificado;
   Result := True;
+end;
+
+function TPLProjeto.AdicionarVinculo(const ADe, APara: string; ATipo: TAITaskLinkType;
+  const ALatencia: TAITaskLag; out Err: string): Boolean;
+var
+  I: Integer;
+  T: TPLTarefa;
+  Itens: TAIPredecessorItems;
+begin
+  Result := False;
+  I := IndiceDe(APara);
+  if I < 0 then begin Err := Format('tarefa inexistente: %s', [APara]); Exit; end;
+  if not IdExiste(ADe) then begin Err := Format('tarefa inexistente: %s', [ADe]); Exit; end;
+  T := FTarefas[I];
+  Itens := Copy(T.Predecessoras);
+  SetLength(Itens, Length(Itens) + 1);
+  Itens[High(Itens)].Id := ADe;
+  Itens[High(Itens)].LinkType := ATipo;
+  Itens[High(Itens)].Lag := ALatencia;
+  Result := DefinirItens(T, Itens, Err);
+end;
+
+function TPLProjeto.RemoverVinculo(const ADe, APara: string): Boolean;
+var I, J, L: Integer; T: TPLTarefa;
+begin
+  Result := False;
+  I := IndiceDe(APara);
+  if I < 0 then Exit;
+  T := FTarefas[I];
+  L := 0;
+  for J := 0 to High(T.Predecessoras) do
+    if SameText(T.Predecessoras[J].Id, ADe) then Result := True
+    else
+    begin
+      T.Predecessoras[L] := T.Predecessoras[J];
+      Inc(L);
+    end;
+  SetLength(T.Predecessoras, L);
+  if Result then MarcarModificado;
+end;
+
+function TPLProjeto.VincularProxima(I: Integer; out Err: string): Boolean;
+begin
+  Result := False;
+  if (I < 0) or (I >= FTarefas.Count) then begin Err := 'selecione uma tarefa'; Exit; end;
+  if I + 1 >= FTarefas.Count then begin Err := 'não há tarefa abaixo para vincular'; Exit; end;
+  Result := AdicionarVinculo(FTarefas[I].Id, FTarefas[I + 1].Id, atlFS, AINoLag, Err);
+end;
+
+function TPLProjeto.Desvincular(I: Integer): Integer;
+var Id: string; K: Integer;
+begin
+  Result := 0;
+  if (I < 0) or (I >= FTarefas.Count) then Exit;
+  Id := FTarefas[I].Id;
+  Inc(Result, Length(FTarefas[I].Predecessoras));
+  SetLength(FTarefas[I].Predecessoras, 0);
+  for K := 0 to FTarefas.Count - 1 do
+    if RemoverVinculo(Id, FTarefas[K].Id) then Inc(Result);
+  if Result > 0 then MarcarModificado;
+end;
+
+function TPLProjeto.Sucessoras(const AId: string): TStringArray;
+var K, J: Integer;
+begin
+  Result := nil;
+  for K := 0 to FTarefas.Count - 1 do
+    for J := 0 to High(FTarefas[K].Predecessoras) do
+      if SameText(FTarefas[K].Predecessoras[J].Id, AId) then
+      begin
+        SetLength(Result, Length(Result) + 1);
+        Result[High(Result)] := FTarefas[K].Id;
+      end;
 end;
 
 function TPLProjeto.TextoPredecessoras(T: TPLTarefa): string;

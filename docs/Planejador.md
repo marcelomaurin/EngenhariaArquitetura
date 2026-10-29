@@ -97,6 +97,6 @@ Exemplo de tarefa de objeto com vínculo de textura:
 | P3 — Visões de acompanhamento | Diagrama de rede, calendário, uso de recursos, linha de base e curva S | RFP-010 | Comparar planejado e realizado de um cronograma de obra |
 | P4 — Objetos e texturas | Tarefas de objetos e vínculo de texturas por objeto ou face | RFP-008, RFP-009 | Vincular duas texturas a uma bancada (tampo e corpo) e ver o resultado na Maquete 3D |
 
-**Situação:** P1 concluída em 29/10/2026 (código em `planejador/`, 38 verificações automatizadas), usando o grafo, o calendário, o caminho crítico e o Gantt da suíte CHATGPT. Foi antecipada em relação à ordem do plano, que previa o CAD 2D antes.
+**Situação:** P1 concluída em 29/10/2026 (código em `planejador/`), usando o grafo, o calendário, o caminho crítico e o Gantt da suíte CHATGPT. Foi antecipada em relação à ordem do plano, que previa o CAD 2D antes. Na versão 0.2 entraram os vínculos no padrão do MultiProject (Ctrl+F2, painel Vínculos, Ctrl+Shift+F2) e o **diagrama de rede da etapa P3**, com arrastar para ligar; 52 verificações automatizadas.
 
 **Dependências:** P2 exige o contrato de tarefa do [documento de integrações](Integracoes.md) e ao menos o CAD 2D na etapa 1; P4 exige a Maquete 3D com o Editor de Objetos e o Gerador de Texturas.

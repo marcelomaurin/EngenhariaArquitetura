@@ -50,4 +50,4 @@ Os próximos aplicativos da plataforma entram como novos componentes em `engenha
 
 ## Validação
 
-Não distribuir um instalador se a compilação ou os testes falharem. A versão 0.01 (sequência 001) foi gerada no Linux pelo `build_release_wine.sh` e testada no Wine: assistente em português, instalação completa, atalhos, abertura do Planejador instalado com o exemplo e desinstalação. O `build_release.ps1` segue os mesmos passos, mas ainda não foi executado no Windows.
+Não distribuir um instalador se a compilação ou os testes falharem. A versão 0.01 (sequência 001) e a 0.02 (002) foram geradas no Linux pelo `build_release_wine.sh` e testadas no Wine: assistente em português, instalação completa, atalhos, abertura do Planejador instalado com o exemplo e desinstalação. O `build_release.ps1` segue os mesmos passos, mas ainda não foi executado no Windows.

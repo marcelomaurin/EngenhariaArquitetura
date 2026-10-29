@@ -1,6 +1,6 @@
 unit plan_principal;
 
-{ Planejador - janela principal (etapa P1).
+{ Planejador - janela principal (etapa P1, com vinculos e diagrama de rede).
   Tabela de tarefas e Grafico de Gantt com o componente TAIGanttView da
   suite CHATGPT; caminho critico pelo TAICPMScheduler. A janela e montada
   em codigo, no mesmo estilo das demais aplicacoes da plataforma. }
@@ -12,7 +12,7 @@ interface
 uses
   Classes, SysUtils, Math, DateUtils, StrUtils, Forms, Controls, Graphics, StdCtrls,
   ExtCtrls, Menus, Dialogs, Buttons, Spin, EditBtn, LCLType,
-  aicpmscheduler, aitaskgraph, aiganttview,
+  aiprojectduration, aicpmscheduler, aitaskgraph, aiganttview, ainetworkview,
   plan_tipos, plan_documento, plan_cronograma, plan_json, plan_exemplos, plan_estilo;
 
 type
@@ -25,6 +25,11 @@ type
     { componentes }
     FCabecalho: TPLCabecalho;
     FGantt: TAIGanttView;
+    FRede: TAINetworkView;
+    FVistaRede: Boolean;
+    FVincSucessora, FVincTipo: TComboBox;
+    FVincLatencia: TEdit;
+    FVincLista: TListBox;
     FStatus, FAviso: TLabel;
     FResumo: TLabel;
     FProjNome: TEdit;
@@ -36,14 +41,19 @@ type
     FTarProgresso: TSpinEdit;
     FTarNotas: TMemo;
     FTarDatas: TLabel;
-    FPainelTarefa: TPanel;
+    FPainelTarefa: TWinControl;
     FAbrir: TOpenDialog;
     FSalvar: TSaveDialog;
     procedure MontarMenu;
     procedure MontarBarra;
     procedure MontarPainelProjeto(P: TPanel);
-    procedure MontarPainelTarefa(P: TPanel);
+    procedure MontarPainelTarefa(P: TWinControl);
     procedure MontarGantt(P: TPanel);
+    procedure MontarRede(P: TPanel);
+    procedure PreencherRede;
+    procedure MostrarVinculos;
+    procedure Selecionar(I: Integer);
+    procedure MostrarVista(ARede: Boolean);
     procedure MontarRodape;
     function Selecionada: TPLTarefa;
     procedure Recalcular(const AManterId: string = '');
@@ -81,6 +91,15 @@ type
     procedure AoFecharConsulta(Sender: TObject; var CanClose: Boolean);
     procedure AoMostrar(Sender: TObject);
     procedure AjustarAssincrono(Data: PtrInt);
+    procedure AoVincular(Sender: TObject);
+    procedure AoVincularProxima(Sender: TObject);
+    procedure AoDesvincular(Sender: TObject);
+    procedure AoRemoverVinculo(Sender: TObject);
+    procedure AoVistaGantt(Sender: TObject);
+    procedure AoVistaRede(Sender: TObject);
+    procedure AoRedeSelecionar(Sender: TObject; ANode: Integer);
+    procedure AoRedeLigar(Sender: TObject; AFromNode, AToNode: Integer; AAlt: Boolean);
+    procedure AoRedeDuploClique(Sender: TObject; ANode: Integer);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -147,9 +166,17 @@ begin
   MontarPainelProjeto(Esq);
   Dir := PLPainel(Self, Self, alRight, 280, clPLCartao);
   Dir.BorderSpacing.Left := 1;
-  MontarPainelTarefa(Dir);
+  with TScrollBox.Create(Self) do
+  begin
+    Parent := Dir; Align := alClient; BorderStyle := bsNone;
+    Color := clPLCartao; ParentColor := False;
+    HorzScrollBar.Visible := False;
+    VertScrollBar.Tracking := True;
+    MontarPainelTarefa(TScrollBox(Dir.Controls[Dir.ControlCount - 1]));
+  end;
   Centro := PLPainel(Self, Self, alClient, 0, clPLSuperficie);
   MontarGantt(Centro);
+  MontarRede(Centro);
 
   if (ParamCount >= 1) and FileExists(ParamStr(1)) then
     AbrirArquivo(ParamStr(1))
@@ -201,10 +228,16 @@ begin
   Add(Item, '-', nil);
   Add(Item, '&Subir', @AoSubir, ShortCut(VK_UP, [ssAlt]));
   Add(Item, '&Descer', @AoDescer, ShortCut(VK_DOWN, [ssAlt]));
+  Add(Item, '-', nil);
+  Add(Item, '&Vincular à próxima', @AoVincularProxima, ShortCut(VK_F2, [ssCtrl]));
+  Add(Item, 'Desvi&ncular tarefa', @AoDesvincular, ShortCut(VK_F2, [ssCtrl, ssShift]));
   Item := TMenuItem.Create(M); Item.Caption := '&Exibir'; M.Items.Add(Item);
   Add(Item, '&Ampliar escala', @AoAmpliar, ShortCut(VK_ADD, [ssCtrl]));
   Add(Item, '&Reduzir escala', @AoReduzir, ShortCut(VK_SUBTRACT, [ssCtrl]));
   Add(Item, 'A&justar ao projeto', @AoAjustar, ShortCut(VK_0, [ssCtrl]));
+  Add(Item, '-', nil);
+  Add(Item, '&Gráfico de Gantt', @AoVistaGantt, ShortCut(VK_1, [ssCtrl]));
+  Add(Item, '&Diagrama de rede', @AoVistaRede, ShortCut(VK_2, [ssCtrl]));
   Item := TMenuItem.Create(M); Item.Caption := 'A&juda'; M.Items.Add(Item);
   Add(Item, '&Sobre o Planejador', @AoSobre);
 end;
@@ -217,6 +250,9 @@ begin
   B.BorderSpacing.Bottom := 1;
   { alLeft empilha da esquerda para a direita na ordem de criacao inversa;
     criamos do ultimo para o primeiro }
+  PLBotao(B, 'Rede', 'Diagrama de rede: arraste de uma caixa até outra para ligar (Ctrl+2)', @AoVistaRede);
+  PLBotao(B, 'Gantt', 'Gráfico de Gantt (Ctrl+1)', @AoVistaGantt);
+  PLSeparador(B);
   PLBotao(B, 'Ajustar', 'Ajustar a escala ao projeto (Ctrl+0)', @AoAjustar);
   PLBotao(B, 'Reduzir', 'Reduzir a escala de tempo', @AoReduzir);
   PLBotao(B, 'Ampliar', 'Ampliar a escala de tempo', @AoAmpliar);
@@ -225,6 +261,7 @@ begin
   PLBotao(B, 'Subir', 'Subir a tarefa (Alt+Seta para cima)', @AoSubir);
   PLBotao(B, 'Excluir', 'Excluir a tarefa selecionada (Ctrl+Del)', @AoExcluir);
   PLBotao(B, 'Novo marco', 'Inserir marco (Shift+Insert)', @AoNovoMarco);
+  PLBotao(B, 'Vincular à próxima', 'Ligar a tarefa selecionada à de baixo (Ctrl+F2)', @AoVincularProxima);
   PLBotao(B, 'Nova tarefa', 'Inserir tarefa após a selecionada (Insert)', @AoNovaTarefa);
   PLSeparador(B);
   PLBotao(B, 'Salvar', 'Salvar o projeto (Ctrl+S)', @AoSalvar);
@@ -267,7 +304,7 @@ begin
   FResumo.AutoSize := True;
 end;
 
-procedure TPLJanelaPrincipal.MontarPainelTarefa(P: TPanel);
+procedure TPLJanelaPrincipal.MontarPainelTarefa(P: TWinControl);
 var A: TPLAplicativo; S: TPLSituacao; Y: Integer; Bt: TButton;
 
   function Campo(const ARotulo: string): TEdit;
@@ -322,6 +359,41 @@ begin
   Bt.Caption := 'Aplicar alterações';
   Bt.BorderSpacing.Left := 12; Bt.BorderSpacing.Right := 12; Bt.BorderSpacing.Top := 10;
   Bt.OnClick := @AoAplicarTarefa;
+
+  { vinculos, como na pagina Relacoes do MultiProject }
+  PLRotulo(P, 'VÍNCULOS', True).Top := Y; Inc(Y);
+  FVincSucessora := Lista('Sucessora (tarefa que depende desta)');
+  FVincSucessora.OnChange := nil;
+  FVincTipo := Lista('Tipo');
+  FVincTipo.OnChange := nil;
+  FVincTipo.Items.Add('TI - término-início');
+  FVincTipo.Items.Add('II - início-início');
+  FVincTipo.Items.Add('TT - término-término');
+  FVincTipo.Items.Add('IT - início-término');
+  FVincTipo.ItemIndex := 0;
+  FVincLatencia := Campo('Latência (ex.: +2d, -4h, +10%)');
+  FVincLatencia.OnEditingDone := nil;
+  Bt := TButton.Create(Self);
+  Bt.Parent := P; Bt.Align := alTop; Bt.Top := Y; Inc(Y);
+  Bt.Caption := 'Vincular';
+  Bt.BorderSpacing.Left := 12; Bt.BorderSpacing.Right := 12; Bt.BorderSpacing.Top := 8;
+  Bt.OnClick := @AoVincular;
+  Bt := TButton.Create(Self);
+  Bt.Parent := P; Bt.Align := alTop; Bt.Top := Y; Inc(Y);
+  Bt.Caption := 'Vincular à próxima (Ctrl+F2)';
+  Bt.BorderSpacing.Left := 12; Bt.BorderSpacing.Right := 12; Bt.BorderSpacing.Top := 4;
+  Bt.OnClick := @AoVincularProxima;
+  PLRotulo(P, 'Vínculos da tarefa').Top := Y; Inc(Y);
+  FVincLista := TListBox.Create(Self);
+  FVincLista.Parent := P; FVincLista.Align := alTop; FVincLista.Top := Y; Inc(Y);
+  FVincLista.Height := 110;
+  FVincLista.BorderSpacing.Left := 12; FVincLista.BorderSpacing.Right := 12;
+  Bt := TButton.Create(Self);
+  Bt.Parent := P; Bt.Align := alTop; Bt.Top := Y; Inc(Y);
+  Bt.Caption := 'Remover vínculo';
+  Bt.BorderSpacing.Left := 12; Bt.BorderSpacing.Right := 12; Bt.BorderSpacing.Top := 4;
+  Bt.BorderSpacing.Bottom := 12;
+  Bt.OnClick := @AoRemoverVinculo;
 end;
 
 procedure TPLJanelaPrincipal.MontarGantt(P: TPanel);
@@ -360,6 +432,33 @@ begin
   FGantt.OnSelectRow := @AoSelecionarLinha;
   FGantt.OnCellEdited := @AoEditarCelula;
   FGantt.OnIsWorkingDay := @AoDiaUtil;
+end;
+
+procedure TPLJanelaPrincipal.MontarRede(P: TPanel);
+begin
+  FRede := TAINetworkView.Create(Self);
+  FRede.Parent := P;
+  FRede.Align := alClient;
+  FRede.BorderSpacing.Around := 8;
+  FRede.Font.Name := PL_FONTE;
+  FRede.Font.Size := 9;
+  FRede.BoxWidth := 250;
+  FRede.BoxHeight := 86;
+  FRede.ColorBackground := clPLSuperficie;
+  FRede.ColorBox := clPLCartao;
+  FRede.ColorBorder := clPLBorda;
+  FRede.ColorText := clPLTexto;
+  FRede.ColorMuted := clPLSuave;
+  FRede.ColorCritical := clPLPerigo;
+  FRede.ColorSelection := clPLPrimaria;
+  FRede.ColorPredecessor := RGBToColor(14, 165, 233);
+  FRede.ColorSuccessor := clPLSucesso;
+  FRede.ColorLink := RGBToColor(148, 163, 184);
+  FRede.ColorGroup := clPLSuave;
+  FRede.OnSelect := @AoRedeSelecionar;
+  FRede.OnCreateLink := @AoRedeLigar;
+  FRede.OnNodeDblClick := @AoRedeDuploClique;
+  FRede.Visible := False;
 end;
 
 procedure TPLJanelaPrincipal.MontarRodape;
@@ -449,6 +548,7 @@ begin
   finally
     FGantt.EndUpdate;
   end;
+  PreencherRede;
   if FGantt.Origin <= 0 then
   begin
     FGantt.FitToRows;
@@ -537,6 +637,7 @@ begin
   finally
     FAtualizando := False;
   end;
+  MostrarVinculos;
 end;
 
 { ---------------- arquivos ---------------- }
@@ -696,17 +797,17 @@ end;
 
 procedure TPLJanelaPrincipal.AoAmpliar(Sender: TObject);
 begin
-  FGantt.ZoomBy(1.25);
+  if FVistaRede then FRede.Zoom(1.25) else FGantt.ZoomBy(1.25);
 end;
 
 procedure TPLJanelaPrincipal.AoReduzir(Sender: TObject);
 begin
-  FGantt.ZoomBy(0.8);
+  if FVistaRede then FRede.Zoom(0.8) else FGantt.ZoomBy(0.8);
 end;
 
 procedure TPLJanelaPrincipal.AoAjustar(Sender: TObject);
 begin
-  FGantt.FitToRows;
+  if FVistaRede then FRede.FitAll else FGantt.FitToRows;
 end;
 
 procedure TPLJanelaPrincipal.AoSobre(Sender: TObject);
@@ -797,7 +898,7 @@ end;
 procedure TPLJanelaPrincipal.AoTecla(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if FGantt.Editing then Exit;
-  if (ActiveControl = FGantt) and (Key = VK_F2) and (Selecionada <> nil) then
+  if (ActiveControl = FGantt) and (Key = VK_F2) and (Shift = []) and (Selecionada <> nil) then
   begin
     FGantt.EditCell(FGantt.Selected, COL_NOME);
     Key := 0;
@@ -818,6 +919,231 @@ end;
 procedure TPLJanelaPrincipal.AoFecharConsulta(Sender: TObject; var CanClose: Boolean);
 begin
   CanClose := ConfirmarDescartar;
+end;
+
+{ ---------------- vinculos e diagrama de rede ---------------- }
+
+procedure TPLJanelaPrincipal.Selecionar(I: Integer);
+begin
+  if (I < 0) or (I >= FDoc.Count) then Exit;
+  FGantt.Selected := I;
+  if FRede.IndexOfId(FDoc[I].Id) >= 0 then FRede.Selected := FRede.IndexOfId(FDoc[I].Id);
+  MostrarTarefa;
+end;
+
+procedure TPLJanelaPrincipal.PreencherRede;
+var
+  I, K, Sel: Integer;
+  N: TAINetworkNode;
+  T: TPLTarefa;
+  R: TAICPMResult;
+  Lk: TAITaskLink;
+  Cap, Lag: string;
+begin
+  Sel := FGantt.Selected;
+  FRede.BeginUpdate;
+  try
+    FRede.Clear;
+    for I := 0 to FDoc.Count - 1 do
+    begin
+      T := FDoc[I];
+      N := AINetworkNode(T.Id, T.Id + '  ' + T.Nome, 0);
+      SetLength(N.Lines, 3);
+      if T.Aplicativo = plaNenhum then N.Lines[0] := IfThen(T.Marco, 'Marco', 'Tarefa')
+      else N.Lines[0] := PL_APLICATIVO_NOME[T.Aplicativo];
+      if FCrono.Valido then
+      begin
+        R := FCrono.Resultado[I];
+        N.Lines[1] := FmtData(R.Start) + '  ->  ' + FmtData(R.Finish);
+        N.Lines[2] := 'Duração ' + FDoc.TextoDuracao(T) + '   Folga ' + FmtFolga(R.TotalSlack);
+        N.Critical := R.Critical;
+      end;
+      N.AccentColor := IfThen(T.Marco, clPLMarinho, clPLPrimaria);
+      N.Tag := I;
+      FRede.AddNode(N);
+    end;
+    FRede.SetGroupTitle(0, Format('%s  (%d tarefas)', [FDoc.Nome, FDoc.Count]));
+    if FCrono.Valido then
+      for K := 0 to FCrono.Grafo.LinkCount - 1 do
+      begin
+        Lk := FCrono.Grafo.Links[K];
+        Lag := AIFormatLag(Lk.Lag, PL_MINUTOS_POR_DIA, PL_MINUTOS_POR_SEMANA);
+        if (Lk.LinkType = atlFS) and (Lag = '') then Cap := ''
+        else Cap := AILinkTypeCode(Lk.LinkType) + Lag;
+        FRede.AddLink(Lk.FromNode, Lk.ToNode, Cap);
+      end;
+  finally
+    FRede.EndUpdate;
+  end;
+  if (Sel >= 0) and (Sel < FRede.NodeCount) then FRede.Selected := Sel;
+  { como no MultiProject: reenquadra a rede depois de cada alteracao }
+  if FVistaRede then FRede.FitAll;
+end;
+
+procedure TPLJanelaPrincipal.MostrarVinculos;
+var T: TPLTarefa; I, J: Integer; Suc: TStringArray; Item: TAIPredecessorItem; S, Prev: string;
+begin
+  if FVincLista = nil then Exit;
+  T := Selecionada;
+  Prev := '';
+  if FVincSucessora.ItemIndex >= 0 then Prev := FVincSucessora.Items[FVincSucessora.ItemIndex];
+  FVincLista.Items.Clear;
+  FVincSucessora.Items.Clear;
+  if T = nil then Exit;
+  for I := 0 to FDoc.Count - 1 do
+    if FDoc[I] <> T then FVincSucessora.Items.Add(FDoc[I].Id + '  ' + FDoc[I].Nome);
+  { sugere a tarefa logo abaixo, como o Ctrl+F2 }
+  J := FDoc.IndiceDe(T.Id);
+  if (J + 1 < FDoc.Count) then
+    FVincSucessora.ItemIndex := FVincSucessora.Items.IndexOf(FDoc[J + 1].Id + '  ' + FDoc[J + 1].Nome)
+  else if FVincSucessora.Items.Count > 0 then FVincSucessora.ItemIndex := 0;
+  if (Prev <> '') and (FVincSucessora.Items.IndexOf(Prev) >= 0) then
+    FVincSucessora.ItemIndex := FVincSucessora.Items.IndexOf(Prev);
+  { entradas: predecessoras desta tarefa }
+  for I := 0 to High(T.Predecessoras) do
+  begin
+    Item := T.Predecessoras[I];
+    S := AIFormatPredecessor(Item, PL_MINUTOS_POR_DIA, PL_MINUTOS_POR_SEMANA);
+    S := Copy(S, Length(Item.Id) + 1, MaxInt);
+    if S = '' then S := 'TI';
+    FVincLista.Items.Add(Format('%s -> %s   %s', [Item.Id, T.Id, S]));
+  end;
+  { saidas: tarefas que dependem desta }
+  Suc := FDoc.Sucessoras(T.Id);
+  for I := 0 to High(Suc) do
+    for J := 0 to High(FDoc[FDoc.IndiceDe(Suc[I])].Predecessoras) do
+    begin
+      Item := FDoc[FDoc.IndiceDe(Suc[I])].Predecessoras[J];
+      if not SameText(Item.Id, T.Id) then Continue;
+      S := AIFormatPredecessor(Item, PL_MINUTOS_POR_DIA, PL_MINUTOS_POR_SEMANA);
+      S := Copy(S, Length(Item.Id) + 1, MaxInt);
+      if S = '' then S := 'TI';
+      FVincLista.Items.Add(Format('%s -> %s   %s', [T.Id, Suc[I], S]));
+    end;
+  if FVincLista.Items.Count = 0 then FVincLista.Items.Add('(sem vínculos)');
+end;
+
+procedure TPLJanelaPrincipal.AoVincular(Sender: TObject);
+var T: TPLTarefa; Alvo, Err: string; Lag: TAITaskLag;
+begin
+  T := Selecionada;
+  if (T = nil) or (FVincSucessora.ItemIndex < 0) then
+  begin
+    Mensagem('Selecione a tarefa e a sucessora.', True);
+    Exit;
+  end;
+  Alvo := Copy(FVincSucessora.Items[FVincSucessora.ItemIndex], 1,
+    Pos(' ', FVincSucessora.Items[FVincSucessora.ItemIndex]) - 1);
+  Lag := AINoLag;
+  if (Trim(FVincLatencia.Text) <> '') and not AITryParseLag(FVincLatencia.Text,
+    PL_MINUTOS_POR_DIA, PL_MINUTOS_POR_SEMANA, Lag, Err) then
+  begin
+    Mensagem('Latência inválida: ' + Err, True);
+    Exit;
+  end;
+  if FDoc.AdicionarVinculo(T.Id, Alvo, TAITaskLinkType(Max(0, FVincTipo.ItemIndex)), Lag, Err) then
+  begin
+    FVincLatencia.Text := '';
+    Mensagem(Format('Vínculo %s -> %s criado.', [T.Id, Alvo]));
+    Recalcular(T.Id);
+  end
+  else
+    Mensagem(Format('%s -> %s: %s', [T.Id, Alvo, Err]), True);
+end;
+
+procedure TPLJanelaPrincipal.AoVincularProxima(Sender: TObject);
+var I: Integer; Err: string;
+begin
+  I := FGantt.Selected;
+  if FDoc.VincularProxima(I, Err) then
+  begin
+    Mensagem(Format('Vínculo %s -> %s (TI) criado.', [FDoc[I].Id, FDoc[I + 1].Id]));
+    Recalcular(FDoc[I + 1].Id);
+  end
+  else
+    Mensagem(Err, True);
+end;
+
+procedure TPLJanelaPrincipal.AoDesvincular(Sender: TObject);
+var T: TPLTarefa; N: Integer;
+begin
+  T := Selecionada;
+  if T = nil then Exit;
+  N := FDoc.Desvincular(FGantt.Selected);
+  Mensagem(Format('%s: %d vínculo(s) removido(s).', [T.Id, N]));
+  Recalcular(T.Id);
+end;
+
+procedure TPLJanelaPrincipal.AoRemoverVinculo(Sender: TObject);
+var S, De, Para: string; P: Integer; T: TPLTarefa;
+begin
+  T := Selecionada;
+  if (T = nil) or (FVincLista.ItemIndex < 0) then Exit;
+  S := FVincLista.Items[FVincLista.ItemIndex];
+  P := Pos(' -> ', S);
+  if P = 0 then Exit;
+  De := Copy(S, 1, P - 1);
+  Para := Copy(S, P + 4, MaxInt);
+  Para := Copy(Para, 1, Pos(' ', Para + ' ') - 1);
+  if FDoc.RemoverVinculo(De, Para) then
+  begin
+    Mensagem(Format('Vínculo %s -> %s removido.', [De, Para]));
+    Recalcular(T.Id);
+  end;
+end;
+
+procedure TPLJanelaPrincipal.MostrarVista(ARede: Boolean);
+begin
+  FVistaRede := ARede;
+  FRede.Visible := ARede;
+  FGantt.Visible := not ARede;
+  if ARede then
+  begin
+    FRede.FitAll;
+    Mensagem('Diagrama de rede: arraste de uma caixa até outra para ligar (Alt = início-início).');
+  end
+  else
+    Mensagem('');
+end;
+
+procedure TPLJanelaPrincipal.AoVistaGantt(Sender: TObject);
+begin
+  MostrarVista(False);
+end;
+
+procedure TPLJanelaPrincipal.AoVistaRede(Sender: TObject);
+begin
+  MostrarVista(True);
+end;
+
+procedure TPLJanelaPrincipal.AoRedeSelecionar(Sender: TObject; ANode: Integer);
+begin
+  if FAtualizando or (ANode < 0) then Exit;
+  FGantt.Selected := FRede.Node(ANode).Tag;
+  MostrarTarefa;
+end;
+
+procedure TPLJanelaPrincipal.AoRedeLigar(Sender: TObject; AFromNode, AToNode: Integer; AAlt: Boolean);
+var A, B, Err: string; Tipo: TAITaskLinkType;
+begin
+  A := FRede.Node(AFromNode).Id;
+  B := FRede.Node(AToNode).Id;
+  if AAlt then Tipo := atlSS else Tipo := atlFS;
+  if FDoc.AdicionarVinculo(A, B, Tipo, AINoLag, Err) then
+  begin
+    Mensagem(Format('Vínculo %s -> %s (%s) criado.', [A, B, AILinkTypeCode(Tipo)]));
+    Recalcular(B);
+  end
+  else
+    Mensagem(Format('%s -> %s: %s', [A, B, Err]), True);
+end;
+
+procedure TPLJanelaPrincipal.AoRedeDuploClique(Sender: TObject; ANode: Integer);
+begin
+  if ANode < 0 then Exit;
+  FGantt.Selected := FRede.Node(ANode).Tag;
+  MostrarTarefa;
+  if FTarNome.CanFocus then FTarNome.SetFocus;
 end;
 
 end.
