@@ -23,4 +23,4 @@ Cada pasta tem um README com o resumo do aplicativo. A documentação completa, 
 | [Plano de desenvolvimento](docs/Plano_Desenvolvimento.md) | Fases, etapas e decisões pendentes |
 | [Decisões](docs/Decisoes.md) | Decisões tomadas e questões em aberto |
 
-> **Estado:** fase de especificação. Nenhum aplicativo foi implementado ainda.
+> **Estado:** o **Planejador** tem a etapa P1 implementada (tarefas, dependências, caminho crítico, Gantt e gravação); os demais aplicativos estão em especificação.

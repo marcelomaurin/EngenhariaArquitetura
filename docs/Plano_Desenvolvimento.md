@@ -57,7 +57,7 @@ Itens futuros (Editor O7, Texturas T6 e requisitos marcados como "Futuro") ficam
 
 | Decisão | Necessária até | Opções levantadas |
 |---|---|---|
-| Reaproveitar componentes da suíte CHATGPT | Fase 0 | Sim, como no MultiCNC; não, núcleo próprio |
+| Reaproveitar componentes da suíte CHATGPT | Fase 0 | **Decidido em 29/10/2026: sim, como no MultiCNC** |
 | Biblioteca de DWG | Fase 4 | SDK da Open Design Alliance (licenciado), LibreDWG (GPL), conversor externo |
 | Convenção de eixos do STL/3MF do MultiCAD | Fase 6 | Confirmar no código do exportador |
 | Versionamento das texturas vinculadas | Fase 6 | Acompanhar automaticamente; manter versão até atualização explícita |
@@ -100,7 +100,7 @@ EngenhariaArquitetura/
 | 0 — Fundação | Não iniciada |
 | 1 — CAD 2D básico | Não iniciada |
 | 2 — CAD 2D arquitetônico | Não iniciada |
-| 3 — Planejador básico | Não iniciada |
+| 3 — Planejador básico | Em andamento: P1 concluída em 29/10/2026 (antecipada); falta P2 |
 | 4 — Documentação 2D e mercado | Não iniciada |
 | 5 — Maquete 3D automática | Não iniciada |
 | 6 — Objetos e texturas | Não iniciada |

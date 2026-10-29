@@ -4,7 +4,7 @@
 |---|---|
 | Tipo | Aplicativo independente |
 | Versão do documento | 1.0 — 29/10/2026 (derivado da especificação da plataforma 1.8) |
-| Estado | Proposta de requisitos (ainda não implementada) |
+| Estado | Etapa P1 implementada em 29/10/2026; etapas P2 a P4 em especificação |
 | Papel na linha de produção | Primeira etapa: cria, encadeia e acompanha as tarefas executadas em todos os aplicativos |
 | Recebe | Retornos de tarefa (arquivo produzido, situação, alertas) |
 | Produz | Tarefas, cronograma, dependências e vínculos objeto–textura |
@@ -96,5 +96,7 @@ Exemplo de tarefa de objeto com vínculo de textura:
 | P2 — Tarefas nos aplicativos | Contrato de tarefa, abertura no aplicativo responsável, retorno e liberação automática | RFP-004 a RFP-007 | Tarefa "Planta do térreo" abre no CAD 2D e volta concluída com o arquivo produzido |
 | P3 — Visões de acompanhamento | Diagrama de rede, calendário, uso de recursos, linha de base e curva S | RFP-010 | Comparar planejado e realizado de um cronograma de obra |
 | P4 — Objetos e texturas | Tarefas de objetos e vínculo de texturas por objeto ou face | RFP-008, RFP-009 | Vincular duas texturas a uma bancada (tampo e corpo) e ver o resultado na Maquete 3D |
+
+**Situação:** P1 concluída em 29/10/2026 (código em `planejador/`, 38 verificações automatizadas), usando o grafo, o calendário, o caminho crítico e o Gantt da suíte CHATGPT. Foi antecipada em relação à ordem do plano, que previa o CAD 2D antes.
 
 **Dependências:** P2 exige o contrato de tarefa do [documento de integrações](Integracoes.md) e ao menos o CAD 2D na etapa 1; P4 exige a Maquete 3D com o Editor de Objetos e o Gerador de Texturas.

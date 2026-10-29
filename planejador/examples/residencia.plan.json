@@ -1,0 +1,727 @@
+{
+  "schema_version" : "1.0",
+  "package_type" : "projeto_planejador",
+  "created_by" : {
+    "application" : "Planejador",
+    "version" : "0.1.0"
+  },
+  "units" : "mm",
+  "projeto" : {
+    "nome" : "Residência unifamiliar — exemplo",
+    "objetivo" : "Projeto completo de uma residência de dois pavimentos: plantas, maquete, instalações elétricas e hidrossanitárias e imagens para o cliente.",
+    "inicio" : "2026-11-03",
+    "calendario" : {
+      "name" : "Padrão",
+      "week" : [
+        [
+        ],
+        [
+          [
+            480,
+            720
+          ],
+          [
+            780,
+            1020
+          ]
+        ],
+        [
+          [
+            480,
+            720
+          ],
+          [
+            780,
+            1020
+          ]
+        ],
+        [
+          [
+            480,
+            720
+          ],
+          [
+            780,
+            1020
+          ]
+        ],
+        [
+          [
+            480,
+            720
+          ],
+          [
+            780,
+            1020
+          ]
+        ],
+        [
+          [
+            480,
+            720
+          ],
+          [
+            780,
+            1020
+          ]
+        ],
+        [
+        ]
+      ],
+      "exceptions" : [
+        {
+          "date" : "2025-01-01",
+          "name" : "Confraternizacao Universal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2025-04-18",
+          "name" : "Sexta-feira Santa",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2025-04-21",
+          "name" : "Tiradentes",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2025-05-01",
+          "name" : "Dia do Trabalho",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2025-09-07",
+          "name" : "Independencia do Brasil",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2025-10-12",
+          "name" : "Nossa Senhora Aparecida",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2025-11-02",
+          "name" : "Finados",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2025-11-15",
+          "name" : "Proclamacao da Republica",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2025-11-20",
+          "name" : "Dia Nacional de Zumbi e da Consciencia Negra",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2025-12-25",
+          "name" : "Natal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2026-01-01",
+          "name" : "Confraternizacao Universal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2026-04-03",
+          "name" : "Sexta-feira Santa",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2026-04-21",
+          "name" : "Tiradentes",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2026-05-01",
+          "name" : "Dia do Trabalho",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2026-09-07",
+          "name" : "Independencia do Brasil",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2026-10-12",
+          "name" : "Nossa Senhora Aparecida",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2026-11-02",
+          "name" : "Finados",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2026-11-15",
+          "name" : "Proclamacao da Republica",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2026-11-20",
+          "name" : "Dia Nacional de Zumbi e da Consciencia Negra",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2026-12-25",
+          "name" : "Natal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2027-01-01",
+          "name" : "Confraternizacao Universal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2027-03-26",
+          "name" : "Sexta-feira Santa",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2027-04-21",
+          "name" : "Tiradentes",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2027-05-01",
+          "name" : "Dia do Trabalho",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2027-09-07",
+          "name" : "Independencia do Brasil",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2027-10-12",
+          "name" : "Nossa Senhora Aparecida",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2027-11-02",
+          "name" : "Finados",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2027-11-15",
+          "name" : "Proclamacao da Republica",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2027-11-20",
+          "name" : "Dia Nacional de Zumbi e da Consciencia Negra",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2027-12-25",
+          "name" : "Natal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2028-01-01",
+          "name" : "Confraternizacao Universal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2028-04-14",
+          "name" : "Sexta-feira Santa",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2028-04-21",
+          "name" : "Tiradentes",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2028-05-01",
+          "name" : "Dia do Trabalho",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2028-09-07",
+          "name" : "Independencia do Brasil",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2028-10-12",
+          "name" : "Nossa Senhora Aparecida",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2028-11-02",
+          "name" : "Finados",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2028-11-15",
+          "name" : "Proclamacao da Republica",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2028-11-20",
+          "name" : "Dia Nacional de Zumbi e da Consciencia Negra",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2028-12-25",
+          "name" : "Natal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2029-01-01",
+          "name" : "Confraternizacao Universal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2029-03-30",
+          "name" : "Sexta-feira Santa",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2029-04-21",
+          "name" : "Tiradentes",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2029-05-01",
+          "name" : "Dia do Trabalho",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2029-09-07",
+          "name" : "Independencia do Brasil",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2029-10-12",
+          "name" : "Nossa Senhora Aparecida",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2029-11-02",
+          "name" : "Finados",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2029-11-15",
+          "name" : "Proclamacao da Republica",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2029-11-20",
+          "name" : "Dia Nacional de Zumbi e da Consciencia Negra",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2029-12-25",
+          "name" : "Natal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2030-01-01",
+          "name" : "Confraternizacao Universal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2030-04-19",
+          "name" : "Sexta-feira Santa",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2030-04-21",
+          "name" : "Tiradentes",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2030-05-01",
+          "name" : "Dia do Trabalho",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2030-09-07",
+          "name" : "Independencia do Brasil",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2030-10-12",
+          "name" : "Nossa Senhora Aparecida",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2030-11-02",
+          "name" : "Finados",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2030-11-15",
+          "name" : "Proclamacao da Republica",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2030-11-20",
+          "name" : "Dia Nacional de Zumbi e da Consciencia Negra",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2030-12-25",
+          "name" : "Natal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2031-01-01",
+          "name" : "Confraternizacao Universal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2031-04-11",
+          "name" : "Sexta-feira Santa",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2031-04-21",
+          "name" : "Tiradentes",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2031-05-01",
+          "name" : "Dia do Trabalho",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2031-09-07",
+          "name" : "Independencia do Brasil",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2031-10-12",
+          "name" : "Nossa Senhora Aparecida",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2031-11-02",
+          "name" : "Finados",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2031-11-15",
+          "name" : "Proclamacao da Republica",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2031-11-20",
+          "name" : "Dia Nacional de Zumbi e da Consciencia Negra",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2031-12-25",
+          "name" : "Natal",
+          "intervals" : [
+          ]
+        }
+      ]
+    }
+  },
+  "tarefas" : [
+    {
+      "task_id" : "T-0001",
+      "nome" : "Levantamento e programa de necessidades",
+      "aplicativo" : "",
+      "duracao_min" : 2400,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "",
+      "depende_de" : [
+      ]
+    },
+    {
+      "task_id" : "T-0002",
+      "nome" : "Estudo preliminar",
+      "aplicativo" : "CAD2D",
+      "duracao_min" : 2400,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "",
+      "depende_de" : [
+        {
+          "task_id" : "T-0001",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0003",
+      "nome" : "Planta do térreo",
+      "aplicativo" : "CAD2D",
+      "duracao_min" : 2400,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "",
+      "depende_de" : [
+        {
+          "task_id" : "T-0002",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0004",
+      "nome" : "Planta do pavimento superior",
+      "aplicativo" : "CAD2D",
+      "duracao_min" : 1920,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "",
+      "depende_de" : [
+        {
+          "task_id" : "T-0002",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0005",
+      "nome" : "Aprovação do estudo pelo cliente",
+      "aplicativo" : "",
+      "duracao_min" : 0,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : true,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "",
+      "depende_de" : [
+        {
+          "task_id" : "T-0003",
+          "tipo" : "TI",
+          "latencia" : ""
+        },
+        {
+          "task_id" : "T-0004",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0006",
+      "nome" : "Maquete da edificação",
+      "aplicativo" : "Maquete3D",
+      "duracao_min" : 1920,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "",
+      "depende_de" : [
+        {
+          "task_id" : "T-0005",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0007",
+      "nome" : "Projeto elétrico",
+      "aplicativo" : "Eletrica3D",
+      "duracao_min" : 2880,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "",
+      "depende_de" : [
+        {
+          "task_id" : "T-0006",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0008",
+      "nome" : "Projeto hidrossanitário",
+      "aplicativo" : "SimuTubulacoes",
+      "duracao_min" : 2880,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "",
+      "depende_de" : [
+        {
+          "task_id" : "T-0006",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0009",
+      "nome" : "Simulação elétrica e proteções",
+      "aplicativo" : "SimuEletrica",
+      "duracao_min" : 960,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "",
+      "depende_de" : [
+        {
+          "task_id" : "T-0007",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0010",
+      "nome" : "Imagens realistas para o cliente",
+      "aplicativo" : "CriadorCenas",
+      "duracao_min" : 1440,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "",
+      "depende_de" : [
+        {
+          "task_id" : "T-0006",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0011",
+      "nome" : "Entrega do projeto",
+      "aplicativo" : "",
+      "duracao_min" : 0,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : true,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "",
+      "depende_de" : [
+        {
+          "task_id" : "T-0008",
+          "tipo" : "TI",
+          "latencia" : ""
+        },
+        {
+          "task_id" : "T-0009",
+          "tipo" : "TI",
+          "latencia" : ""
+        },
+        {
+          "task_id" : "T-0010",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    }
+  ]
+}

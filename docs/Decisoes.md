@@ -21,6 +21,8 @@ Registro das decisões tomadas durante a concepção da plataforma (28 e 29/10/2
 | 13 | O SimuEletrica é o quinto aplicativo de engenharia, independente e vinculado ao Elétrica 3D; não modifica o projeto elétrico original. | [SimuEletrica](SimuEletrica.md) |
 | 14 | Cada componente da plataforma tem um documento específico em `docs`, com especificação e etapas de desenvolvimento; um documento de integrações cobre as trocas entre eles. | [Índice](README.md) |
 | 15 | O **SimuTubulações** é um aplicativo independente, vinculado à Maquete 3D e coordenado com o Elétrica 3D, que edita e simula redes prediais de água fria e quente, gás, ar comprimido, ventilação e esgoto; edição e cálculo ficam no mesmo executável nesta fase. | [SimuTubulações](SimuTubulacoes.md), [Integrações](Integracoes.md): I-18 a I-23 |
+| 16 | Os aplicativos **reaproveitam a suíte CHATGPT**, como o MultiCNC: o Planejador usa os pacotes AIProjectCore e AIProject (grafo, calendário, caminho crítico, Gantt). Os projetos procuram a CHATGPT em `..\CHATGPT\pacote\` e usam a cópia em `third_party/chatgpt` como reserva. | [Planejador](Planejador.md), [Núcleo Comum](Nucleo_Comum.md) |
+| 17 | O desenvolvimento começou pelo **Planejador** (etapa P1), antecipando a fase 3 do plano. | [Plano de desenvolvimento](Plano_Desenvolvimento.md) |
 
 ## Pontos técnicos a confirmar
 
@@ -38,5 +40,4 @@ Registro das decisões tomadas durante a concepção da plataforma (28 e 29/10/2
 
 1. Quando uma textura da biblioteca é alterada, os objetos vinculados acompanham a mudança automaticamente ou mantêm a versão vinculada até atualização explícita?
 2. O Planejador também vincula texturas às superfícies arquitetônicas da Maquete (paredes, pisos, lajes), ou apenas aos objetos?
-3. Os aplicativos reaproveitarão componentes da suíte CHATGPT (Lazarus/FPC)?
-4. A primeira fase do SimuTubulações será só predial (recomendado na especificação) ou também industrial?
+3. A primeira fase do SimuTubulações será só predial (recomendado na especificação) ou também industrial?

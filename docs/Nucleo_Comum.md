@@ -76,4 +76,4 @@ RNF-001 (precisão em dupla precisão e unidades explícitas), RNF-002 (portabil
 | N5 — Visualização 3D | `ea_visual3d` com navegação orbital, seleção e materiais de prévia | Malha de teste navegável e selecionável |
 | N6 — Âncoras | `ea_ancoras` com reposicionamento após mudança de parede | Ponto ancorado acompanha parede deslocada |
 
-**Questão em aberto:** reaproveitar componentes da suíte CHATGPT (Lazarus/FPC) no núcleo, como ocorre no MultiCNC (ver [Decisões](Decisoes.md)).
+**Decisão (29/10/2026):** o núcleo reaproveita a suíte CHATGPT, como o MultiCNC; o que puder ser genérico vira componente da CHATGPT primeiro. Grafo de tarefas, calendário, durações e caminho crítico já vêm de lá (AIProjectCore), copiados em `third_party/chatgpt` como reserva (ver [Decisões](Decisoes.md)).

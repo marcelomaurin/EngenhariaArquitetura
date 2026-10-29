@@ -1,0 +1,10 @@
+# compilacao Lazarus/Free Pascal
+lib/
+bin/
+*.o
+*.ppu
+*.compiled
+*.res
+*.lps
+backup/
+tests/lib/

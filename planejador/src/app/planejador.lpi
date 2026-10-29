@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+ <ProjectOptions>
+  <Version Value="12" />
+  <General>
+   <Title Value="Planejador" />
+   <UseAppBundle Value="False" />
+   <ResourceType Value="res" />
+   <UseXPManifest Value="True" />
+   <XPManifest>
+    <DpiAware Value="True/PM_V2" />
+    <TextName Value="Maurinsoft.EngenhariaArquitetura.Planejador" />
+    <TextDesc Value="Planejador" />
+   </XPManifest>
+  </General>
+  <VersionInfo>
+   <UseVersionInfo Value="True" />
+   <MinorVersionNr Value="1" />
+   <StringTable CompanyName="Maurinsoft" FileDescription="Planejador - tarefas e cronograma de projetos de engenharia e arquitetura" ProductName="EngenhariaArquitetura" ProductVersion="0.1.0" />
+  </VersionInfo>
+  <BuildModes Count="1">
+   <Item1 Name="Default" Default="True" />
+  </BuildModes>
+  <Units Count="1">
+   <Unit0>
+    <Filename Value="planejador.lpr" />
+    <IsPartOfProject Value="True" />
+   </Unit0>
+  </Units>
+  <RequiredPackages Count="1">
+   <Item1>
+    <PackageName Value="LCL" />
+   </Item1>
+  </RequiredPackages>
+ </ProjectOptions>
+ <CompilerOptions>
+  <Version Value="11" />
+  <Target>
+   <Filename Value="../../bin/planejador" />
+  </Target>
+  <SearchPaths>
+   <IncludeFiles Value="$(ProjOutDir);../../../../CHATGPT/pacote/AI Project;../../../third_party/chatgpt/AIProject" />
+   <OtherUnitFiles Value="../core;../io;../view;../../../../CHATGPT/pacote/AI Project Core;../../../../CHATGPT/pacote/AI Project;../../../third_party/chatgpt/AIProjectCore;../../../third_party/chatgpt/AIProject" />
+   <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)" />
+  </SearchPaths>
+  <Parsing>
+   <SyntaxOptions>
+    <SyntaxMode Value="ObjFPC" />
+   </SyntaxOptions>
+  </Parsing>
+  <Linking>
+   <Options>
+    <Win32>
+     <GraphicApplication Value="True" />
+    </Win32>
+   </Options>
+  </Linking>
+ </CompilerOptions>
+</CONFIG>

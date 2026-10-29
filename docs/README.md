@@ -2,7 +2,7 @@
 
 Plataforma de aplicações independentes em Lazarus/Free Pascal para projetos de Engenharia e Arquitetura. Cada aplicativo funciona como uma etapa de uma **linha de produção**: o resultado de uma etapa alimenta a seguinte, por meio de arquivos de intercâmbio versionados.
 
-> **Estado:** fase de especificação e planejamento. Nenhum aplicativo foi implementado ainda.
+> **Estado:** o Planejador tem a etapa P1 implementada (código em [`planejador/`](../planejador/README.md)); os demais componentes estão em especificação.
 
 ## Como ler esta documentação
 

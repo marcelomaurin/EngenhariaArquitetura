@@ -2,83 +2,65 @@
 
 Gerenciador de projetos de engenharia e arquitetura, tendo o Microsoft Project como referência funcional. É a **primeira etapa da linha de produção**: cria as tarefas do empreendimento, define a ordem entre elas e acompanha sua execução nos demais aplicativos da plataforma.
 
-> **Estado:** em especificação. Especificação completa e etapas de desenvolvimento em [docs/Planejador.md](../docs/Planejador.md); integrações em [docs/Integracoes.md](../docs/Integracoes.md).
+> **Estado:** etapa **P1 implementada** (29/10/2026): tarefas, dependências em grafo, caminho crítico, Gráfico de Gantt e gravação do projeto. Especificação completa e demais etapas em [docs/Planejador.md](../docs/Planejador.md); integrações em [docs/Integracoes.md](../docs/Integracoes.md).
+
+![Planejador com o exemplo da residência](screenshots/planejador_gantt.png)
 
 ## Posição na plataforma
 
 | Recebe | Produz | Destino |
 |---|---|---|
-| Retornos de tarefa (arquivo produzido, situação, alertas) de todos os aplicativos | Tarefas, cronograma, dependências e vínculos | CAD 2D, Maquete 3D, Criador de Cenas, Elétrica 3D, SimuEletrica |
+| Retornos de tarefa (arquivo produzido, situação, alertas) de todos os aplicativos | Tarefas, cronograma, dependências e vínculos | CAD 2D, Maquete 3D, Criador de Cenas, Elétrica 3D, SimuEletrica, SimuTubulações |
 
 O Planejador **não produz geometria** e não edita os arquivos dos outros aplicativos: ele referencia arquivos e recebe os retornos.
 
-## Funcionalidades
+## O que já funciona (etapa P1)
 
-### Tarefas
-- Criação de tarefas com nome, descrição, duração, datas, responsáveis e situação.
-- Encadeamento em grafo, em cadeia ou em paralelo, com dependências.
-- Liberação automática de uma tarefa quando as anteriores estiverem concluídas.
+- **Projeto:** nome, objetivo e data de início, com calendário de segunda a sexta (08:00–12:00 e 13:00–17:00) e feriados nacionais.
+- **Tarefas:** inclusão (Insert), marcos (Shift+Insert), exclusão, mudança de ordem (Alt+setas), nome, duração (`5d`, `2sem`, `4h`; `0d` = marco), aplicativo responsável, responsável, situação, progresso e notas.
+- **Dependências:** coluna Predecessoras no formato do Microsoft Project (`T-0001; T-0002II+1d`), com vínculos TI, II, TT e IT e latência. Auto-vínculo, tarefa inexistente e ciclo são recusados, e o rodapé mostra o caminho do ciclo.
+- **Cronograma:** datas pelo caminho crítico, folga total e tarefas críticas em vermelho no Gantt, com setas de vínculo.
+- **Edição na tabela:** duplo clique ou F2 nas colunas Nome, Duração e Predecessoras.
+- **Arquivo:** projeto em JSON versionado (`.plan.json`), com `schema_version` e `package_type`, seguindo o manifesto de [docs/Integracoes.md](../docs/Integracoes.md). O programa também abre um arquivo passado na linha de comando.
+- **Exemplo:** Arquivo → Abrir exemplo (residência), também disponível em [examples/residencia.plan.json](examples/residencia.plan.json).
 
-### Tarefas arquitetônicas
-- Cada tarefa pode ser vinculada ao aplicativo que a executa. Exemplo: "Planta do térreo" abre no CAD 2D; "Maquete da edificação" abre na Maquete 3D quando as plantas dos pavimentos estiverem concluídas.
-- O Planejador entrega ao aplicativo os arquivos de entrada e os parâmetros e recebe de volta o arquivo produzido.
+O grafo, o calendário, o caminho crítico e o Gráfico de Gantt vêm da **suíte CHATGPT** (pacotes AIProjectCore e AIProject); ver [third_party/chatgpt](../third_party/chatgpt/README.md).
 
-### Objetos e texturas
-- Ao criar ou importar um objeto 3D, o Planejador pode criar tarefas para ele ou anexá-lo a tarefas existentes.
-- Pelas tarefas, vincula texturas aos objetos; o vínculo é aplicado na Maquete 3D ao objeto inteiro ou a uma face dele.
-- A textura continua sendo uma entidade independente da biblioteca; o objeto guarda a referência.
+## Estrutura
 
-### Visões e gráficos (*proposta*)
-| Visão | Uso |
-|---|---|
-| Gráfico de Gantt | Barras no tempo, dependências, marcos e caminho crítico |
-| Diagrama de rede (PERT) | Grafo das tarefas, com cadeia e paralelismo |
-| Calendário | Tarefas por dia, semana ou mês |
-| Uso de recursos | Alocação de pessoas e equipamentos, com aviso de sobrecarga |
-| Linha de base | Planejado comparado ao realizado |
-| Curva S | Avanço físico ou financeiro acumulado da obra |
-
-## Requisitos
-
-| Faixa | Assunto |
-|---|---|
-| RFP-001 a RFP-003 | Projeto, tarefas e grafo de dependências |
-| RFP-004 a RFP-007 | Tarefas executadas nos outros aplicativos e retorno |
-| RFP-008 a RFP-009 | Tarefas de objetos e vínculo de texturas |
-| RFP-010 | Cronograma e gráficos |
-
-## Contrato de tarefa (*proposta*)
-
-```json
-{
-  "schema_version": "1.0",
-  "task_id": "T-0012",
-  "nome": "Planta do térreo",
-  "aplicativo": "CAD2D",
-  "depende_de": ["T-0010"],
-  "entradas": [{"arquivo": "levantamento.dxf", "hash": "..."}],
-  "parametros": {"pavimento": "terreo", "escala": "1:50"},
-  "prazo": "2026-11-15",
-  "retorno": {"situacao": "concluida", "saidas": [], "alertas": []}
-}
+```
+planejador/
+├── src/
+│   ├── app/    planejador.lpi, planejador.lpr, plan_principal.pas (janela)
+│   ├── core/   plan_tipos, plan_documento, plan_cronograma, plan_exemplos
+│   ├── io/     plan_json (gravação e leitura)
+│   └── view/   plan_estilo (paleta e componentes visuais)
+├── tests/      test_planejador_core (38 verificações do modelo)
+├── tools/      gerar_exemplo (gera examples/residencia.plan.json)
+├── examples/   residencia.plan.json
+└── screenshots/
 ```
 
-Tarefa de objeto com vínculo de textura:
+## Como compilar
 
-```json
-{
-  "task_id": "T-0031",
-  "nome": "Acabamento da bancada da recepção",
-  "aplicativo": "Maquete3D",
-  "objeto": "bancada_recepcao_001",
-  "texturas": [
-    {"textura_id": "granito_cinza", "destino": "face", "face_id": "tampo"},
-    {"textura_id": "mdf_branco", "destino": "objeto"}
-  ]
-}
+Requer Lazarus 3.0 ou superior. O projeto procura a CHATGPT em `..\CHATGPT\pacote\` (ao lado desta pasta, em `D:\projetos\maurinsoft\CHATGPT`) e, se não encontrar, usa a cópia em `third_party/chatgpt`.
+
+```
+lazbuild planejador\src\app\planejador.lpi
+planejador\bin\planejador.exe planejador\examples\residencia.plan.json
 ```
 
-## Questões em aberto
+Testes do modelo:
 
-1. Quando uma textura é alterada, os objetos vinculados acompanham a mudança ou mantêm a versão vinculada?
-2. O Planejador também vincula texturas a paredes, pisos e lajes, ou apenas a objetos?
+```
+lazbuild planejador\tests\test_planejador_core.lpi
+planejador\tests\lib\test_planejador_core.exe
+```
+
+## Próximas etapas
+
+| Etapa | Escopo |
+|---|---|
+| P2 | Contrato de tarefa: abrir a tarefa no aplicativo responsável e receber o retorno |
+| P3 | Diagrama de rede, calendário, uso de recursos, linha de base e curva S |
+| P4 | Tarefas de objetos e vínculo de texturas por objeto ou face |

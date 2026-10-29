@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+ <ProjectOptions>
+  <Version Value="12" />
+  <General>
+   <Flags>
+    <MainUnitHasCreateFormStatements Value="False" />
+    <MainUnitHasTitleStatement Value="False" />
+    <MainUnitHasScaledStatement Value="False" />
+   </Flags>
+   <Title Value="test_planejador_core" />
+   <UseAppBundle Value="False" />
+  </General>
+  <BuildModes Count="1">
+   <Item1 Name="Default" Default="True" />
+  </BuildModes>
+  <Units Count="1">
+   <Unit0>
+    <Filename Value="test_planejador_core.lpr" />
+    <IsPartOfProject Value="True" />
+   </Unit0>
+  </Units>
+ </ProjectOptions>
+ <CompilerOptions>
+  <Version Value="11" />
+  <Target>
+   <Filename Value="lib/test_planejador_core" />
+  </Target>
+  <SearchPaths>
+   <OtherUnitFiles Value="../src/core;../src/io;../../../CHATGPT/pacote/AI Project Core;../../third_party/chatgpt/AIProjectCore" />
+   <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)" />
+  </SearchPaths>
+  <Parsing>
+   <SyntaxOptions>
+    <SyntaxMode Value="ObjFPC" />
+   </SyntaxOptions>
+  </Parsing>
+ </CompilerOptions>
+</CONFIG>
