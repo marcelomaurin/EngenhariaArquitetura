@@ -122,3 +122,10 @@ O CAD 2D agora tem ferramentas iniciais para representar **parede**, **porta** e
 ## Etapa dimensional EACAD2 (2026-10-30)
 
 Objetos do tipo parede têm espessura inicial de 150 mm; porta e janela têm largura nominal inicial de 900 e 1200 mm. O comando **Editar último** permite alterar a dimensão do último objeto arquitetônico. O formato **EACAD2** persiste esta propriedade e lê arquivos antigos **EACAD1**, atribuindo valores iniciais. A geometria permanece baseada em segmentos: ainda **não existem vãos reais** cortados nas paredes, associação automática de esquadrias com paredes, seleção de qualquer objeto ou dimensões vinculadas ao DXF. Isso deve ser implementado e testado em uma etapa posterior.
+
+
+## Seleção e edição inicial
+
+Ferramenta **Selecionar** localiza o segmento mais próximo do clique (até 12 pixels), destaca-o e permite **Excluir seleção**. **Editar último** passa a usar o segmento selecionado quando existente e, na ausência de seleção, o último segmento. A edição ainda altera somente a propriedade dimensional, não os pontos geométricos. Faltam movimentação, cópia, rotação, grips, snaps geométricos reais, associação de aberturas com paredes e operações CAD mais completas.
+
+**Estado:** protótipo, não homologado como CAD de produção. O projeto não está concluído. A compilação de cada commit deve ser conferida no GitHub Actions.
