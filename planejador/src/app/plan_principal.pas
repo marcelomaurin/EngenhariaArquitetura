@@ -323,7 +323,11 @@ begin
   FTarefaPainel.Visible := ANumero <> 1;
   if ANumero = 1 then FProjetoPainel.BringToFront
   else FTarefaPainel.BringToFront;
-  MostrarVista(ANumero = 3);
+  { A etapa Objetivo preserva a vista escolhida, como no MultiProject. }
+  case ANumero of
+    2, 5: MostrarVista(False);
+    3: MostrarVista(True);
+  end;
 end;
 
 procedure TPLJanelaPrincipal.AoNavegar(Sender: TObject);
@@ -363,10 +367,13 @@ begin
   Vistas := PLPainel(Self, B, alTop, 44, clPLCartao);
   Acoes := PLPainel(Self, B, alClient, 0, clPLCartao);
   { alLeft exibe os botoes em ordem inversa a criacao. }
+  { Vistas futuras ficam ocultas ate a implementacao, como no MultiProject. }
   Btn := PLBotao(Vistas, 'Linha do tempo', 'Vista planejada (ainda indisponivel)', nil);
   Btn.Enabled := False;
-  Btn := PLBotao(Vistas, 'Calendario', 'Vista planejada (ainda indisponivel)', nil);
+  Btn.Visible := False;
+  Btn := PLBotao(Vistas, 'Calendário', 'Vista planejada (ainda indisponivel)', nil);
   Btn.Enabled := False;
+  Btn.Visible := False;
   Btn := PLBotao(Vistas, 'Equipe', 'Vista planejada (ainda indisponivel)', nil);
   Btn.Enabled := False;
   Btn := PLBotao(Vistas, 'Quadro', 'Vista planejada (ainda indisponivel)', nil);
@@ -378,14 +385,11 @@ begin
   FBotaoGantt.GroupIndex := 2;
   FBotaoGantt.AllowAllUp := False;
   FBotaoGantt.Down := True;
+  { Barra curta para funcionar com 1024x768; gestao de tarefas no painel e menu. }
   PLBotao(Acoes, 'Ajustar', 'Ajustar a escala (Ctrl+0)', @AoAjustar);
   PLBotao(Acoes, 'Reduzir', 'Reduzir a escala de tempo', @AoReduzir);
   PLBotao(Acoes, 'Ampliar', 'Ampliar a escala de tempo', @AoAmpliar);
   PLSeparador(Acoes);
-  PLBotao(Acoes, 'Descer', 'Descer tarefa (Alt+Seta para baixo)', @AoDescer);
-  PLBotao(Acoes, 'Subir', 'Subir tarefa (Alt+Seta para cima)', @AoSubir);
-  PLBotao(Acoes, 'Vincular', 'Vincular a proxima tarefa (Ctrl+F2)', @AoVincularProxima);
-  PLBotao(Acoes, 'Marco', 'Inserir marco (Shift+Insert)', @AoNovoMarco);
   PLBotao(Acoes, 'Nova tarefa', 'Inserir tarefa (Insert)', @AoNovaTarefa);
 end;
 
