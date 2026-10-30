@@ -22,6 +22,8 @@ type
     FMillimetersPerPixel: Integer;
     FPath: string;
     FSelected: Integer;
+    FZoom: Double;
+    procedure ZoomDrawing(Sender: TObject);
     procedure SelectObjectAt(const P: TPoint);
     procedure DeleteSelected(Sender: TObject);
     procedure TransformSelected(Sender: TObject);
@@ -59,6 +61,7 @@ begin
   Color := RGBToColor(244,246,250); Font.Size := 10;
   FGrid := 20;
   FSelected := -1;
+  FZoom := 1.0;
   FMillimetersPerPixel := 50; // grade de 20 pixels equivale a 1 metro
   TopBar := TPanel.Create(Self); TopBar.Parent := Self; TopBar.Align := alTop;
   TopBar.Height := 48; TopBar.BevelOuter := bvNone;
@@ -73,6 +76,8 @@ begin
   B.Tag := 0;
   AddButton('Copiar seleção', @TransformSelected);
   B.Tag := 1;
+  AddButton('Zoom +', @ZoomDrawing); B.Tag := 1;
+  AddButton('Zoom -', @ZoomDrawing); B.Tag := -1;
   FLayerSelect := TComboBox.Create(Self); FLayerSelect.Parent := TopBar;
   FLayerSelect.Align := alRight; FLayerSelect.Width := 150;
   FLayerSelect.Style := csDropDownList;
@@ -100,8 +105,15 @@ begin
 end;
 function TCADMainForm.Snap(P: TPoint): TPoint;
 begin
-  Result.X := Round(P.X / FGrid) * FGrid;
-  Result.Y := Round(P.Y / FGrid) * FGrid;
+  Result.X := Round(P.X / (FGrid * FZoom)) * FGrid;
+  Result.Y := Round(P.Y / (FGrid * FZoom)) * FGrid;
+end;
+procedure TCADMainForm.ZoomDrawing(Sender: TObject);
+begin
+  if TButton(Sender).Tag > 0 then FZoom := Min(4.0, FZoom * 1.25)
+  else FZoom := Max(0.5, FZoom / 1.25);
+  FCanvas.Invalidate;
+  RefreshStatus('Zoom ajustado para ' + IntToStr(Round(FZoom*100)) + '%');
 end;
 procedure TCADMainForm.SelectionChanged(Sender: TObject);
 begin
@@ -138,11 +150,13 @@ begin
   FCanvas.Canvas.FillRect(R);
   FCanvas.Canvas.Pen.Color := RGBToColor(232,236,244);
   FCanvas.Canvas.Pen.Width := 1;
-  for X := 0 to FCanvas.Width div FGrid do begin
-    FCanvas.Canvas.MoveTo(X*FGrid,0); FCanvas.Canvas.LineTo(X*FGrid,FCanvas.Height);
+  for X := 0 to Round(FCanvas.Width / (FGrid * FZoom)) do begin
+    FCanvas.Canvas.MoveTo(Round(X*FGrid*FZoom),0);
+    FCanvas.Canvas.LineTo(Round(X*FGrid*FZoom),FCanvas.Height);
   end;
-  for Y := 0 to FCanvas.Height div FGrid do begin
-    FCanvas.Canvas.MoveTo(0,Y*FGrid); FCanvas.Canvas.LineTo(FCanvas.Width,Y*FGrid);
+  for Y := 0 to Round(FCanvas.Height / (FGrid * FZoom)) do begin
+    FCanvas.Canvas.MoveTo(0,Round(Y*FGrid*FZoom));
+    FCanvas.Canvas.LineTo(FCanvas.Width,Round(Y*FGrid*FZoom));
   end;
   FCanvas.Canvas.Pen.Color := RGBToColor(28,70,150);
   FCanvas.Canvas.Pen.Width := 2;
@@ -162,13 +176,14 @@ begin
       FCanvas.Canvas.Pen.Color := clFuchsia;
       FCanvas.Canvas.Pen.Width := Max(3, FCanvas.Canvas.Pen.Width);
     end;
-    FCanvas.Canvas.MoveTo(FLines[I].A.X, FLines[I].A.Y);
-    FCanvas.Canvas.LineTo(FLines[I].B.X, FLines[I].B.Y);
+    FCanvas.Canvas.MoveTo(Round(FLines[I].A.X*FZoom), Round(FLines[I].A.Y*FZoom));
+    FCanvas.Canvas.LineTo(Round(FLines[I].B.X*FZoom), Round(FLines[I].B.Y*FZoom));
   end;
   FCanvas.Canvas.Pen.Width := 1;
   if FHasStart then begin
     FCanvas.Canvas.Brush.Color := clRed;
-    FCanvas.Canvas.Ellipse(FStart.X-4,FStart.Y-4,FStart.X+4,FStart.Y+4);
+    FCanvas.Canvas.Ellipse(Round(FStart.X*FZoom)-4,Round(FStart.Y*FZoom)-4,
+      Round(FStart.X*FZoom)+4,Round(FStart.Y*FZoom)+4);
   end;
 end;
 procedure TCADMainForm.CanvasClick(Sender: TObject; Button: TMouseButton;
@@ -181,7 +196,7 @@ begin
   if Button <> mbLeft then Exit;
   P := Snap(Point(X,Y));
   if FToolSelect.ItemIndex = 5 then begin
-    SelectObjectAt(Point(X,Y)); Exit;
+    SelectObjectAt(Point(Round(X/FZoom),Round(Y/FZoom))); Exit;
   end;
   if not FHasStart then begin
     FStart := P; FHasStart := True;
@@ -232,7 +247,7 @@ begin
     T := ((P.X-FLines[I].A.X)*DX+(P.Y-FLines[I].A.Y)*DY)/(DX*DX+DY*DY);
     T := Max(0.0,Min(1.0,T));
     Dist := Sqrt(Sqr(P.X-FLines[I].A.X-T*DX)+Sqr(P.Y-FLines[I].A.Y-T*DY));
-    if (Dist <= 12) and (Dist < Best) then begin Best := Dist; Nearest := I; end;
+    if (Dist <= 12/FZoom) and (Dist < Best) then begin Best := Dist; Nearest := I; end;
   end;
   FSelected := Nearest; FCanvas.Invalidate;
   if FSelected >= 0 then RefreshStatus('Objeto selecionado')
