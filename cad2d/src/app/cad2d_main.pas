@@ -24,6 +24,8 @@ type
     FPath: string;
     FSelected: Integer;
     FZoom: Double;
+    FPanX, FPanY: Integer;
+    procedure PanDrawing(Sender: TObject);
     FNextGroup: Integer;
     FUndo: array of TCADLine;
     procedure RedoDrawing(Sender: TObject);
@@ -67,6 +69,7 @@ begin
   FGrid := 20;
   FSelected := -1;
   FZoom := 1.0;
+  FPanX := 0; FPanY := 0;
   FNextGroup := 1;
   FMillimetersPerPixel := 50; // grade de 20 pixels equivale a 1 metro
   TopBar := TPanel.Create(Self); TopBar.Parent := Self; TopBar.Align := alTop;
@@ -85,6 +88,10 @@ begin
   B.Tag := 1;
   AddButton('Zoom +', @ZoomDrawing); B.Tag := 1;
   AddButton('Zoom -', @ZoomDrawing); B.Tag := -1;
+  AddButton('Pan esquerda', @PanDrawing); B.Tag := 1;
+  AddButton('Pan direita', @PanDrawing); B.Tag := 2;
+  AddButton('Pan cima', @PanDrawing); B.Tag := 3;
+  AddButton('Pan baixo', @PanDrawing); B.Tag := 4;
   FLayerSelect := TComboBox.Create(Self); FLayerSelect.Parent := TopBar;
   FLayerSelect.Align := alRight; FLayerSelect.Width := 150;
   FLayerSelect.Style := csDropDownList;
@@ -113,8 +120,19 @@ begin
 end;
 function TCADMainForm.Snap(P: TPoint): TPoint;
 begin
-  Result.X := Round(P.X / (FGrid * FZoom)) * FGrid;
-  Result.Y := Round(P.Y / (FGrid * FZoom)) * FGrid;
+  Result.X := Round((P.X-FPanX) / (FGrid * FZoom)) * FGrid;
+  Result.Y := Round((P.Y-FPanY) / (FGrid * FZoom)) * FGrid;
+end;
+procedure TCADMainForm.PanDrawing(Sender: TObject);
+begin
+  case TButton(Sender).Tag of
+    1: Dec(FPanX,40);
+    2: Inc(FPanX,40);
+    3: Dec(FPanY,40);
+    4: Inc(FPanY,40);
+  end;
+  FCanvas.Invalidate;
+  RefreshStatus('Vista deslocada');
 end;
 procedure TCADMainForm.ZoomDrawing(Sender: TObject);
 begin
@@ -178,12 +196,12 @@ begin
   FCanvas.Canvas.Pen.Color := RGBToColor(232,236,244);
   FCanvas.Canvas.Pen.Width := 1;
   for X := 0 to Round(FCanvas.Width / (FGrid * FZoom)) do begin
-    FCanvas.Canvas.MoveTo(Round(X*FGrid*FZoom),0);
-    FCanvas.Canvas.LineTo(Round(X*FGrid*FZoom),FCanvas.Height);
+    FCanvas.Canvas.MoveTo(Round(X*FGrid*FZoom)+FPanX,0);
+    FCanvas.Canvas.LineTo(Round(X*FGrid*FZoom)+FPanX,FCanvas.Height);
   end;
   for Y := 0 to Round(FCanvas.Height / (FGrid * FZoom)) do begin
-    FCanvas.Canvas.MoveTo(0,Round(Y*FGrid*FZoom));
-    FCanvas.Canvas.LineTo(FCanvas.Width,Round(Y*FGrid*FZoom));
+    FCanvas.Canvas.MoveTo(0,Round(Y*FGrid*FZoom)+FPanY);
+    FCanvas.Canvas.LineTo(FCanvas.Width,Round(Y*FGrid*FZoom)+FPanY);
   end;
   FCanvas.Canvas.Pen.Color := RGBToColor(28,70,150);
   FCanvas.Canvas.Pen.Width := 2;
@@ -203,14 +221,14 @@ begin
       FCanvas.Canvas.Pen.Color := clFuchsia;
       FCanvas.Canvas.Pen.Width := Max(3, FCanvas.Canvas.Pen.Width);
     end;
-    FCanvas.Canvas.MoveTo(Round(FLines[I].A.X*FZoom), Round(FLines[I].A.Y*FZoom));
-    FCanvas.Canvas.LineTo(Round(FLines[I].B.X*FZoom), Round(FLines[I].B.Y*FZoom));
+    FCanvas.Canvas.MoveTo(Round(FLines[I].A.X*FZoom)+FPanX, Round(FLines[I].A.Y*FZoom)+FPanY);
+    FCanvas.Canvas.LineTo(Round(FLines[I].B.X*FZoom)+FPanX, Round(FLines[I].B.Y*FZoom)+FPanY);
   end;
   FCanvas.Canvas.Pen.Width := 1;
   if FHasStart then begin
     FCanvas.Canvas.Brush.Color := clRed;
-    FCanvas.Canvas.Ellipse(Round(FStart.X*FZoom)-4,Round(FStart.Y*FZoom)-4,
-      Round(FStart.X*FZoom)+4,Round(FStart.Y*FZoom)+4);
+    FCanvas.Canvas.Ellipse(Round(FStart.X*FZoom)+FPanX-4,Round(FStart.Y*FZoom)+FPanY-4,
+      Round(FStart.X*FZoom)+FPanX+4,Round(FStart.Y*FZoom)+FPanY+4);
   end;
 end;
 procedure TCADMainForm.CanvasClick(Sender: TObject; Button: TMouseButton;
@@ -223,7 +241,7 @@ begin
   if Button <> mbLeft then Exit;
   P := Snap(Point(X,Y));
   if FToolSelect.ItemIndex = 5 then begin
-    SelectObjectAt(Point(Round(X/FZoom),Round(Y/FZoom))); Exit;
+    SelectObjectAt(Point(Round((X-FPanX)/FZoom),Round((Y-FPanY)/FZoom))); Exit;
   end;
   if not FHasStart then begin
     FStart := P; FHasStart := True;
