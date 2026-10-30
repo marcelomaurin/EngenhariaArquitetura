@@ -101,3 +101,12 @@ A aplicação independente `cad2d/src/app/cad2d.lpi` foi iniciada em Lazarus/LCL
 **Ainda não implementados:** persistência/editoração de arquivos nativos, importação DXF/DWG, camadas, blocos, objetos arquitetônicos (paredes, portas, janelas), cotas, ortogonal/polar, coordenadas em metros/milímetros e integração BIM com Maquete 3D. Não usar para projeto executivo.
 
 A compilação Windows/Linux, o teste de interface e a validação do DXF exportado seguem pendentes até aprovação das respectivas verificações.
+
+
+## Evolução do protótipo — camadas e unidades
+
+- Ferramentas de linha e retângulo por dois pontos, com snap à grade.
+- Três camadas iniciais: Arquitetura, Estrutura e Instalações, com cores diferentes.
+- Escala inicial fixa de 50 mm/pixel (grade 20 px = 1.000 mm). Ainda sem calibração, zoom ou pan.
+- Exportação DXF LINE com coordenadas em milímetros e camada de cada segmento. A importação e o projeto nativo permanecem pendentes.
+- Esta é uma evolução de protótipo, **não** um editor CAD pronto para projeto executivo. Necessita compilação e homologação visual.
