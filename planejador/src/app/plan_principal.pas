@@ -27,6 +27,10 @@ type
     FAtualizando: Boolean;
     { componentes }
     FCabecalho: TPLCabecalho;
+    FProjetoPainel: TPanel;
+    FTarefaPainel: TScrollBox;
+    FPassos: array[1..7] of TSpeedButton;
+    FEtapa: Integer;
     FGantt: TAIGanttView;
     FRede: TAINetworkView;
     FVistaRede: Boolean;
@@ -48,7 +52,11 @@ type
     FAbrir: TOpenDialog;
     FSalvar: TSaveDialog;
     procedure MontarMenu;
-    procedure MontarBarra;
+    procedure MontarNavegacao(P: TPanel);
+    procedure MontarBarra(P: TPanel);
+    procedure ExibirEtapa(ANumero: Integer);
+    procedure AoNavegar(Sender: TObject);
+    procedure AoValidar(Sender: TObject);
     procedure MontarPainelProjeto(P: TPanel);
     procedure MontarPainelTarefa(P: TWinControl);
     procedure MontarGantt(P: TPanel);
@@ -121,6 +129,9 @@ const
   COL_ID = 0; COL_NOME = 1; COL_DURACAO = 2; COL_INICIO = 3; COL_TERMINO = 4;
   COL_PRED = 5; COL_APP = 6; COL_FOLGA = 7;
   TITULO = 'Planejador';
+  PL_ETAPAS: array[1..7] of string = (
+    '1  Objetivo', '2  Tarefas', '3  Relações', '4  Recursos',
+    '5  Cronograma', '6  Acompanhar', '7  Relatórios');
 
 function FmtData(D: TDateTime): string;
 begin
@@ -142,8 +153,8 @@ begin
   FDoc := TPLProjeto.Create;
   FCrono := TPLCronograma.Create;
   Caption := TITULO;
-  Width := 1280; Height := 800;
-  Constraints.MinWidth := 1000; Constraints.MinHeight := 600;
+  Width := 1360; Height := 880;
+  Constraints.MinWidth := 1000; Constraints.MinHeight := 680;
   Position := poScreenCenter;
   Font.Name := PL_FONTE; Font.Size := 10;
   Color := clPLSuperficie;
@@ -166,24 +177,28 @@ begin
   FCabecalho := TPLCabecalho.Create(Self);
   FCabecalho.Parent := Self;
   FCabecalho.Configurar('Planejador', 'Engenharia e Arquitetura  •  tarefas, dependências e cronograma');
-  MontarBarra;
   MontarRodape;
-  Esq := PLPainel(Self, Self, alLeft, 230, clPLCartao);
+  Esq := PLPainel(Self, Self, alLeft, 214, clPLCartao);
   Esq.BorderSpacing.Right := 1;
-  MontarPainelProjeto(Esq);
-  Dir := PLPainel(Self, Self, alRight, 280, clPLCartao);
+  MontarNavegacao(Esq);
+  Dir := PLPainel(Self, Self, alRight, 336, clPLCartao);
   Dir.BorderSpacing.Left := 1;
-  with TScrollBox.Create(Self) do
-  begin
-    Parent := Dir; Align := alClient; BorderStyle := bsNone;
-    Color := clPLCartao; ParentColor := False;
-    HorzScrollBar.Visible := False;
-    VertScrollBar.Tracking := True;
-    MontarPainelTarefa(TScrollBox(Dir.Controls[Dir.ControlCount - 1]));
-  end;
+  FProjetoPainel := PLPainel(Self, Dir, alClient, 0, clPLCartao);
+  MontarPainelProjeto(FProjetoPainel);
+  FTarefaPainel := TScrollBox.Create(Self);
+  FTarefaPainel.Parent := Dir;
+  FTarefaPainel.Align := alClient;
+  FTarefaPainel.BorderStyle := bsNone;
+  FTarefaPainel.Color := clPLCartao;
+  FTarefaPainel.ParentColor := False;
+  FTarefaPainel.HorzScrollBar.Visible := False;
+  FTarefaPainel.VertScrollBar.Tracking := True;
+  MontarPainelTarefa(FTarefaPainel);
   Centro := PLPainel(Self, Self, alClient, 0, clPLSuperficie);
+  MontarBarra(Centro);
   MontarGantt(Centro);
   MontarRede(Centro);
+  ExibirEtapa(1);
 
   if (ParamCount >= 1) and FileExists(ParamStr(1)) then
     AbrirArquivo(ParamStr(1))
@@ -253,31 +268,109 @@ begin
   Add(Item, '&Sobre o Planejador', @AoSobre);
 end;
 
-procedure TPLJanelaPrincipal.MontarBarra;
-var B: TPanel;
+procedure TPLJanelaPrincipal.MontarNavegacao(P: TPanel);
+var
+  I: Integer;
+  B: TSpeedButton;
+
+  function Botao(const ATexto, ADica: string; X, Y, W: Integer;
+    AClick: TNotifyEvent): TSpeedButton;
+  begin
+    Result := TSpeedButton.Create(Self);
+    Result.Parent := P;
+    Result.SetBounds(X, Y, W, 34);
+    Result.Caption := ATexto;
+    Result.Hint := ADica;
+    Result.ShowHint := True;
+    Result.Flat := True;
+    Result.Font.Name := PL_FONTE;
+    Result.Font.Size := 10;
+    Result.OnClick := AClick;
+  end;
 begin
-  B := PLPainel(Self, Self, alTop, 42, clPLCartao);
-  B.Top := FCabecalho.Top + FCabecalho.Height;
+  for I := 1 to 7 do
+  begin
+    FPassos[I] := Botao(PL_ETAPAS[I], 'Etapa do projeto', 12,
+      16 + (I - 1) * 44, 190, @AoNavegar);
+    FPassos[I].Tag := I;
+    FPassos[I].GroupIndex := 1;
+    FPassos[I].AllowAllUp := False;
+    if not (I in [1, 2, 3, 5]) then
+    begin
+      FPassos[I].Enabled := False;
+      FPassos[I].Hint := 'Etapa em desenvolvimento; ainda nao disponivel';
+    end;
+  end;
+  B := Botao('Novo', 'Novo projeto (Ctrl+N)', 12, 332, 92, @AoNovo);
+  B := Botao('Abrir arquivo', 'Abrir arquivo local (Ctrl+O)',
+    110, 332, 92, @AoAbrir);
+  B := Botao('Salvar', 'Salvar projeto no destino atual (Ctrl+S)',
+    12, 372, 92, @AoSalvar);
+  B := Botao('Exemplo', 'Abrir residencia de exemplo',
+    110, 372, 92, @AoAbrirExemplo);
+end;
+
+procedure TPLJanelaPrincipal.ExibirEtapa(ANumero: Integer);
+begin
+  if not (ANumero in [1, 2, 3, 5]) then Exit;
+  FEtapa := ANumero;
+  FPassos[ANumero].Down := True;
+  FProjetoPainel.Visible := ANumero = 1;
+  FTarefaPainel.Visible := ANumero <> 1;
+  if ANumero = 1 then FProjetoPainel.BringToFront
+  else FTarefaPainel.BringToFront;
+  MostrarVista(ANumero = 3);
+end;
+
+procedure TPLJanelaPrincipal.AoNavegar(Sender: TObject);
+begin
+  if Sender is TSpeedButton then
+    ExibirEtapa(TSpeedButton(Sender).Tag);
+end;
+
+procedure TPLJanelaPrincipal.AoValidar(Sender: TObject);
+begin
+  Recalcular;
+  if FCrono.Valido then
+    Mensagem(Format('Cronograma valido: %d tarefa(s), %d critica(s), %d aviso(s).',
+      [FDoc.Count, FCrono.Criticas, FCrono.Avisos.Count]))
+  else
+    Mensagem('Cronograma invalido: ' + FCrono.Erro, True);
+end;
+
+procedure TPLJanelaPrincipal.MontarBarra(P: TPanel);
+var
+  B, Vistas, Acoes: TPanel;
+  Btn: TSpeedButton;
+begin
+  B := PLPainel(Self, P, alTop, 88, clPLCartao);
   B.BorderSpacing.Bottom := 1;
-  { alLeft empilha da esquerda para a direita na ordem de criacao inversa;
-    criamos do ultimo para o primeiro }
-  PLBotao(B, 'Rede', 'Diagrama de rede: arraste de uma caixa até outra para ligar (Ctrl+2)', @AoVistaRede);
-  PLBotao(B, 'Gantt', 'Gráfico de Gantt (Ctrl+1)', @AoVistaGantt);
-  PLSeparador(B);
-  PLBotao(B, 'Ajustar', 'Ajustar a escala ao projeto (Ctrl+0)', @AoAjustar);
-  PLBotao(B, 'Reduzir', 'Reduzir a escala de tempo', @AoReduzir);
-  PLBotao(B, 'Ampliar', 'Ampliar a escala de tempo', @AoAmpliar);
-  PLSeparador(B);
-  PLBotao(B, 'Descer', 'Descer a tarefa (Alt+Seta para baixo)', @AoDescer);
-  PLBotao(B, 'Subir', 'Subir a tarefa (Alt+Seta para cima)', @AoSubir);
-  PLBotao(B, 'Excluir', 'Excluir a tarefa selecionada (Ctrl+Del)', @AoExcluir);
-  PLBotao(B, 'Novo marco', 'Inserir marco (Shift+Insert)', @AoNovoMarco);
-  PLBotao(B, 'Vincular à próxima', 'Ligar a tarefa selecionada à de baixo (Ctrl+F2)', @AoVincularProxima);
-  PLBotao(B, 'Nova tarefa', 'Inserir tarefa após a selecionada (Insert)', @AoNovaTarefa);
-  PLSeparador(B);
-  PLBotao(B, 'Salvar', 'Salvar o projeto (Ctrl+S)', @AoSalvar);
-  PLBotao(B, 'Abrir', 'Abrir arquivo local (Ctrl+O)', @AoAbrir);
-  PLBotao(B, 'Novo', 'Novo projeto (Ctrl+N)', @AoNovo);
+  Vistas := PLPainel(Self, B, alTop, 44, clPLCartao);
+  Acoes := PLPainel(Self, B, alClient, 0, clPLCartao);
+  { alLeft exibe os botoes em ordem inversa a criacao. }
+  Btn := PLBotao(Vistas, 'Linha do tempo', 'Vista planejada (ainda indisponivel)', nil);
+  Btn.Enabled := False;
+  Btn := PLBotao(Vistas, 'Calendario', 'Vista planejada (ainda indisponivel)', nil);
+  Btn.Enabled := False;
+  Btn := PLBotao(Vistas, 'Equipe', 'Vista planejada (ainda indisponivel)', nil);
+  Btn.Enabled := False;
+  Btn := PLBotao(Vistas, 'Quadro', 'Vista planejada (ainda indisponivel)', nil);
+  Btn.Enabled := False;
+  Btn := PLBotao(Vistas, 'Rede', 'Diagrama de rede (Ctrl+2)', @AoVistaRede);
+  Btn.GroupIndex := 2;
+  Btn.AllowAllUp := False;
+  Btn := PLBotao(Vistas, 'Gantt', 'Grafico de Gantt (Ctrl+1)', @AoVistaGantt);
+  Btn.GroupIndex := 2;
+  Btn.AllowAllUp := False;
+  PLBotao(Acoes, 'Ajustar', 'Ajustar a escala (Ctrl+0)', @AoAjustar);
+  PLBotao(Acoes, 'Reduzir', 'Reduzir a escala de tempo', @AoReduzir);
+  PLBotao(Acoes, 'Ampliar', 'Ampliar a escala de tempo', @AoAmpliar);
+  PLSeparador(Acoes);
+  PLBotao(Acoes, 'Descer', 'Descer tarefa (Alt+Seta para baixo)', @AoDescer);
+  PLBotao(Acoes, 'Subir', 'Subir tarefa (Alt+Seta para cima)', @AoSubir);
+  PLBotao(Acoes, 'Vincular', 'Vincular a proxima tarefa (Ctrl+F2)', @AoVincularProxima);
+  PLBotao(Acoes, 'Marco', 'Inserir marco (Shift+Insert)', @AoNovoMarco);
+  PLBotao(Acoes, 'Nova tarefa', 'Inserir tarefa (Insert)', @AoNovaTarefa);
 end;
 
 procedure TPLJanelaPrincipal.MontarPainelProjeto(P: TPanel);
@@ -473,16 +566,27 @@ begin
 end;
 
 procedure TPLJanelaPrincipal.MontarRodape;
-var R: TPanel;
+var R: TPanel; Validar: TButton;
 begin
-  R := PLPainel(Self, Self, alBottom, 30, clPLCartao);
+  R := PLPainel(Self, Self, alBottom, 66, clPLCartao);
+  Validar := TButton.Create(Self);
+  Validar.Parent := R;
+  Validar.Align := alRight;
+  Validar.Width := 115;
+  Validar.Caption := 'Validar';
+  Validar.Hint := 'Conferir o cronograma e o caminho critico';
+  Validar.ShowHint := True;
+  Validar.OnClick := @AoValidar;
+  Validar.BorderSpacing.Right := 16;
+  Validar.BorderSpacing.Top := 14;
+  Validar.BorderSpacing.Bottom := 14;
   FStatus := TLabel.Create(Self);
-  FStatus.Parent := R; FStatus.Align := alLeft;
-  FStatus.BorderSpacing.Left := 14; FStatus.Layout := tlCenter;
+  FStatus.Parent := R; FStatus.Align := alTop;
+  FStatus.BorderSpacing.Left := 14; FStatus.BorderSpacing.Top := 9;
   FStatus.Font.Color := clPLTexto;
   FAviso := TLabel.Create(Self);
   FAviso.Parent := R; FAviso.Align := alClient;
-  FAviso.BorderSpacing.Left := 24; FAviso.Layout := tlCenter;
+  FAviso.BorderSpacing.Left := 14; FAviso.BorderSpacing.Top := 4;
   FAviso.Font.Color := clPLSuave;
 end;
 
