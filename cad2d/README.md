@@ -188,3 +188,8 @@ O comando **Estender até linha** prolonga o segmento selecionado até a interse
 ## Trim — aparar segmento (2026-10-30)
 
 O comando **Aparar (Trim)** trabalha sobre o segmento selecionado e solicita o índice do segmento de limite, seguido da extremidade A ou B que será removida. Exige que a interseção esteja dentro de ambos os segmentos e registra a alteração no Desfazer/Refazer. Limitações: operação somente sobre linhas retas, sem seleção gráfica do limite, múltiplos cortes, curvas ou tolerâncias geométricas avançadas; coordenadas são arredondadas para pontos inteiros.
+
+
+## Chamfer (2026-10-30)
+
+Ferramenta **Chanfro**: selecionar primeira linha, informar número da segunda linha e distância em milímetros. Calcula a interseção das retas, ajusta a extremidade mais próxima de cada segmento e insere o segmento do chanfro. Integra-se ao histórico Desfazer/Refazer. **Limitações:** segmentos precisam ter comprimento suficiente até a interseção, a operação não cobre curvas nem grupos, e coordenadas são arredondadas aos pontos inteiros atuais. É uma implementação inicial, a testar com diferentes quadrantes e ângulos.
