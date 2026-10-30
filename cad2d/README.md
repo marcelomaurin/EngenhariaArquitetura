@@ -168,3 +168,8 @@ Os botões **Desfazer** e **Refazer** utilizam snapshots do desenho, com limite 
 - **Retângulo:** os quatro lados agora são armazenados como linhas comuns (Kind=0), evitando confundi-los com objetos arquitetônicos.
 
 Esta entrega **não** implementa suporte DWG, PDF, IFC, cotas associativas, edição paramétrica de paredes, portas/janelas com vãos reais, nem validação profissional dos arquivos. Esses itens permanecem pendentes.
+
+
+## Rotação e espelhamento (2026-10-30)
+
+O desenho permite **Girar seleção** por ângulo em graus (em torno do ponto médio do segmento) e **Espelhar X/Y** em torno dos eixos que passam pelo ponto médio. Estas operações registram estado para Desfazer/Refazer e preservam as propriedades da entidade. O protótipo ainda arredonda as coordenadas em pixels inteiros, o que limita a precisão, e opera sobre o segmento selecionado individualmente, não sobre todo o grupo geométrico.
