@@ -42,7 +42,7 @@ Prioridades indicadas nesta auditoria: **P0 = condição para entrega confiável
 | **PL-001** | **P0** | Integridade ao abrir | Ler e validar novo arquivo em **documento temporário**; somente substituir o atual após sucesso. JSON inválido preserva tarefa, cronograma, caminho e modificações anteriores. |
 | **PL-002** | **P0** | Edição de tarefa consistente | Validar campos antes de confirmar alterações; falha de duração/predecessora impede atualização parcial e exibe mensagem específica. |
 | **PL-003** | **P0** | Persistência robusta | Salvar com arquivo temporário, substituição segura, esquema validado, backup/recuperação quando pertinente e teste de falha de escrita. |
-| **PL-004** | **P0** | Modelo de tarefa P2 | Acrescentar ID persistente, status de execução/validação, aplicativo, entradas, saídas, parâmetros, diretório de trabalho, revisão, hash, avisos e histórico de retorno; serializar e migrar compatível com `.plan.json` antigo. |
+| **PL-004** | **P0** | Modelo de tarefa P2 | **Preservar o `task_id` persistente já existente** e acrescentar IDs de execução/artefatos, status de execução/validação, entradas, saídas, parâmetros, diretório de trabalho, revisão, hash, avisos e histórico de retorno; serializar e migrar compatível com `.plan.json` antigo. |
 | **PL-005** | **P0** | Contrato de despacho | Gerar pacote `.task.json` conforme o contrato em `docs/Planejador.md` e `docs/Integracoes.md`, com tarefa, entradas, dependências, parâmetros, versão e hashes. |
 | **PL-006** | **P0** | Abrir no aplicativo | Localizar executável compatível por registro/configuração; lançar com argumentos explícitos e caminho seguro; informar indisponibilidade, erro ou cancelamento, sem marcar tarefa concluída. |
 | **PL-007** | **P0** | Receber retorno | Ler e validar retorno da tarefa: arquivos, ID, revisão de entrada, hash das saídas, estado, avisos; rejeitar retorno incompatível e registrar rastreabilidade. |
@@ -61,6 +61,9 @@ Prioridades indicadas nesta auditoria: **P0 = condição para entrega confiável
 | **PL-020** | **P2** | Tarefas de objetos P4 | Criar tarefas relacionadas a `object_id` da Maquete 3D, com origem/revisão, e anexar artefatos de objetos existentes. |
 | **PL-021** | **P2** | Skins por objeto/face P4 | Vínculo versionado de `texture_id` por `object_id`/`face_id`, sem manipular geometria ou modificar a biblioteca da Maquete diretamente. |
 | **PL-022** | **P2** | Acompanhamento de objetos P4 | Ao receber confirmação da Maquete, registrar vínculo aplicado/pendente/conflitante e manter histórico de revisões. |
+| **PL-023** | **P0** | Validar grafo importado | Ao carregar `.plan.json`, rejeitar ciclos, autovínculos e vínculos duplicados **antes de confirmar o novo documento**, inclusive quando o JSON é editado externamente. |
+| **PL-024** | **P0** | Validar domínio dos campos importados | Rejeitar duração negativa, progresso fora de 0–100, estados incoerentes e estruturas/campos obrigatórios malformados; distinguir incompatibilidade de aviso de migração. |
+| **PL-025** | **P0** | Evolução segura de esquema | Não aceitar silenciosamente qualquer `1.x`: definir versões menores suportadas, migrações e tratamento explícito de campos desconhecidos para evitar perda de dados em regravação. |
 
 ## 4. Fragilidades específicas encontradas na leitura do código
 
@@ -84,11 +87,21 @@ Em `plan_principal.pas`, `AoAplicarTarefa` pode editar `Nome`, `Aplicativo`, `Si
 
 `TPLTarefa` contém `Id`, `Nome`, `Responsavel`, `Notas`, `Duracao`, `Marco`, `Aplicativo`, `Situacao`, `Progresso` e `Predecessoras`, mas ainda não contém entradas, saídas, parâmetros, hash/revisão ou retorno. `plan_json.pas` serializa o modelo básico. **Correção:** acrescentar classes/records para os artefatos e contratos e testar ida/volta JSON de versões antigas e novas.
 
+### Complemento de 30/10/2026 — validações ainda ausentes no importador
+
+A segunda leitura do código mostrou três lacunas adicionais, sem execução dos testes:
+
+- **PL-023, grafo:** `plan_json.pas/PLProjetoDeJSON` verifica a existência da predecessora, mas insere diretamente itens em `Tar.Predecessoras` e encerra sem chamar `TPLProjeto.MontarGrafo` ou `DefinirItens` para validar o grafo. Já `plan_cronograma.pas/Calcular` faz a validação posteriormente. Consequência possível: arquivo aceito na importação, mas cronograma inválido.
+- **PL-024, valores:** o JSON fornece diretamente `duracao_min`, `situacao` e `progresso` à tarefa, sem verificar limites numéricos ou coerência entre marco/duração e situação/progresso. Validar **antes de substituir** projeto em memória.
+- **PL-025, compatibilidade:** `Copy(Versao, 1, 2) = '1.'` trata qualquer versão menor de `1.x` como aceitável; campos futuros desconhecidos não são reemitidos pelo serializador básico. Definir política explícita de versão/round-trip.
+
+**Correção de precisão:** o identificador persistente da tarefa **já existe** como `TPLTarefa.Id` e `task_id` no JSON. O P2 deve acrescentar identificação de **execução e artefatos**, não recriar o ID da tarefa.
+
 ## 5. Sequência de execução indicada
 
 | Ciclo | Escopo | Critério de conclusão |
 |---|---|---|
-| **A — Proteger dados** | PL-001, PL-002, PL-003 | Abrir arquivo inválido e editar campo inválido não perde dados; salvar não destrói versão anterior em falha. |
+| **A — Proteger dados** | PL-001, PL-002, PL-003, PL-023, PL-024, PL-025 | Abrir arquivo inválido ou incompatível e editar campo inválido não perde dados; salvar não destrói versão anterior em falha. |
 | **B — Contrato de tarefas P2** | PL-004, PL-005, PL-007, PL-010 | Aplicativo simulado recebe tarefa e devolve artefato/resultado com IDs e hash validados. |
 | **C — Fluxo P2 completo** | PL-006, PL-008, PL-009, PL-011, PL-012 | Planejador despacha tarefa, recebe retorno, libera sucessoras quando admissível, reage a revisão da origem. |
 | **D — Gestão completa P3** | PL-013 a PL-019 | Recursos/custos, linha de base, Curva S, calendário e relatórios persistem e são comparáveis. |
@@ -112,6 +125,9 @@ Em `plan_principal.pas`, `AoAplicarTarefa` pode editar `Nome`, `Aplicativo`, `Si
 | PL-AT-10 | Tarefa de objeto/face: referências sobrevivem a salvar/abrir e retorno compatível da Maquete 3D. |
 | PL-AT-11 | Build/teste em Windows e Linux a partir de checkout limpo, sem depender de pasta local do desenvolvedor. |
 | PL-AT-12 | Instalar apenas Planejador: abre projeto, gerencia tarefas e informa claramente que aplicativo destino está indisponível. |
+| PL-AT-13 | JSON com ciclo A→B→A, autovínculo ou vínculo repetido: recusa importação preservando o projeto anterior e o caminho de arquivo. |
+| PL-AT-14 | JSON com progresso -1/101 ou duração negativa: retorna erro específico e não confirma carregamento; testa combinação marco/duração inconsistente. |
+| PL-AT-15 | JSON `schema_version=1.999` com campo adicional desconhecido: não o aceita silenciosamente nem descarta os dados ao salvar; política de migração/versão demonstrada. |
 
 ## 7. Limites e dependências
 
