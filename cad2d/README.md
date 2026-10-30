@@ -203,3 +203,8 @@ A ferramenta **Arredondar canto** usa duas linhas selecionadas por índice e um 
 ## Cotas de referência sobre os segmentos
 
 O comando **Exibir cotas** alterna rótulos com os comprimentos dos segmentos em metros, posicionados próximos ao ponto médio. Os valores são recalculados na renderização e acompanham o zoom/pan. **São anotações visuais automáticas**, não objetos de cota associativos editáveis ou persistidos. Em geometrias densas pode haver sobreposição de textos; impressão, setas, estilo de cotagem e deslocamento configurável continuam pendentes.
+
+
+## Espessura de paredes no zoom
+
+A largura gráfica dos segmentos do tipo **Parede** acompanha a ampliação do viewport: a espessura nominal em milímetros é convertida em pixels considerando a escala de modelo e o zoom. **Importante:** isto é apenas representação com traço espesso; ainda não cria faces vetoriais de paredes, junções de canto ou vãos reais para portas e janelas.
