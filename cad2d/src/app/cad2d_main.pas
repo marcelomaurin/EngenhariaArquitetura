@@ -41,6 +41,7 @@ type
     procedure TransformSelected(Sender: TObject);
     procedure RotateSelected(Sender: TObject);
     procedure MirrorSelected(Sender: TObject);
+    procedure OffsetSelected(Sender: TObject);
     procedure SelectionChanged(Sender: TObject);
     procedure AddSegment(const A, B: TPoint);
     procedure AddCircle(const Center, Edge: TPoint);
@@ -104,6 +105,7 @@ begin
   AddButton('Girar seleção', @RotateSelected);
   AddButton('Espelhar X', @MirrorSelected); B.Tag := 0;
   AddButton('Espelhar Y', @MirrorSelected); B.Tag := 1;
+  AddButton('Offset seleção', @OffsetSelected);
   AddButton('Zoom +', @ZoomDrawing); B.Tag := 1;
   AddButton('Zoom -', @ZoomDrawing); B.Tag := -1;
   AddButton('Pan esquerda', @PanDrawing); B.Tag := 1;
@@ -505,6 +507,42 @@ begin
     FLines[Id].B.X := Round(2*CX-FLines[Id].B.X);
   end;
   FCanvas.Invalidate; RefreshStatus('Objeto espelhado');
+end;
+procedure TCADMainForm.OffsetSelected(Sender: TObject);
+var N, Id: Integer; DistanceText: string; MM, DX, DY, Len, ShiftX, ShiftY: Double;
+begin
+  Id := FSelected;
+  if (Id < 0) or (Id >= Length(FLines)) then begin
+    ShowMessage('Selecione uma linha antes de aplicar offset.'); Exit;
+  end;
+  DistanceText := '200';
+  if not InputQuery('Offset paralelo',
+     'Distância assinada em milímetros:', DistanceText) then Exit;
+  if not TryStrToFloat(DistanceText,MM) then begin
+    ShowMessage('Distância inválida.'); Exit;
+  end;
+  if IsNan(MM) or IsInfinite(MM) or (Abs(MM)>1000000) then begin
+    ShowMessage('Distância fora do limite.'); Exit;
+  end;
+  DX := FLines[Id].B.X-FLines[Id].A.X;
+  DY := FLines[Id].B.Y-FLines[Id].A.Y;
+  Len := Hypot(DX,DY);
+  if Len < 1 then Exit;
+  ShiftX := -DY*MM/(Len*FMillimetersPerPixel);
+  ShiftY := DX*MM/(Len*FMillimetersPerPixel);
+  RecordChange;
+  N := Length(FLines);
+  SetLength(FLines,N+1);
+  FLines[N] := FLines[Id];
+  FLines[N].A.X := Round(FLines[N].A.X+ShiftX);
+  FLines[N].A.Y := Round(FLines[N].A.Y+ShiftY);
+  FLines[N].B.X := Round(FLines[N].B.X+ShiftX);
+  FLines[N].B.Y := Round(FLines[N].B.Y+ShiftY);
+  FLines[N].GroupID := FNextGroup;
+  Inc(FNextGroup);
+  FSelected := N;
+  FCanvas.Invalidate;
+  RefreshStatus('Offset paralelo criado');
 end;
 procedure TCADMainForm.EditLastObject(Sender: TObject);
 var V: string; MM, N: Integer;
