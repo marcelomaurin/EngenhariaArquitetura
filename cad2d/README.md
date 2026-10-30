@@ -139,3 +139,8 @@ A seleção agora oferece **Mover seleção** e **Copiar seleção** com desloca
 ## Zoom do viewport
 
 Controles Zoom + e Zoom - (50% a 400%) foram adicionados ao protótipo. A transformação de visualização aplica-se à grade, aos segmentos, ao marcador de início e à seleção por clique, preservando as coordenadas do arquivo. **Pan, ajuste à tela, coordenadas vetoriais de precisão e ensaios de interface permanecem pendentes.**
+
+
+## Círculos e ortogonal (protótipo)
+
+A ferramenta **Círculo** recebe centro e um ponto do raio e cria aproximação poligonal de 48 segmentos. Não representa entidade CIRCLE nativa em DXF e o comando Desfazer remove somente o último segmento, não o círculo inteiro. Segurar **Shift** ao definir o segundo ponto restringe linhas e objetos lineares aos eixos horizontal ou vertical. Estas funções exigem validação visual e evolução para geometria vetorial paramétrica.
