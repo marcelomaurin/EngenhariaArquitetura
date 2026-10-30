@@ -154,3 +154,8 @@ Desfazer e Refazer agrupam linhas geradas na mesma operação, como retângulos 
 ## Pan da vista
 
 Comandos Pan esquerda/direita/cima/baixo deslocam a visualização em passos de 40 pixels. Grade, objetos, ponto inicial e seleção usam a mesma transformação de coordenadas, sem alterar a geometria persistida. A grade atual mantém origem (0,0) e ainda precisa de repetição para offsets negativos, arraste pelo mouse e ajuste automático à tela. Histórico completo para operações de mover, copiar, excluir e editar continua pendente.
+
+
+## Histórico de edição expandido
+
+Os botões **Desfazer** e **Refazer** utilizam snapshots do desenho, com limite de 60 estados desfazíveis. O histórico abrange criação de segmentos e formas, mover, copiar, excluir, alterar dimensão e limpar o desenho. O histórico é reiniciado ao abrir projeto, e não é gravado no EACAD3. O histórico anterior por grupos permanece no código como implementação legada. Ainda exige testes funcionais de múltiplas sequências de operações e correção de casos de falha de arquivo, não sendo um sistema de transações CAD de produção.
