@@ -69,6 +69,8 @@ lazbuild planejador\tests\test_planejador_core.lpi
 planejador\tests\lib\test_planejador_core.exe
 ```
 
+> **Plano detalhado das pendências:** [Auditoria focada do Planejador — 30/10/2026](../docs/Pendencias_Planejador_2026-10-30.md). Reúne correções de segurança de arquivos, integração entre aplicativos (P2), gestão (P3), objetos/skins (P4) e testes necessários. A presença de testes no repositório não equivale à validação nesta auditoria.
+
 ## Próximas etapas
 
 | Etapa | Escopo |
