@@ -44,7 +44,7 @@ $Dist = Join-Path $Root "dist"; $App = Join-Path $Dist "app"; $Bin = Join-Path $
 if (Test-Path $App) { Remove-Item -Recurse -Force $App }
 New-Item -ItemType Directory -Force $App, $Bin, (Join-Path $Dist "build-logs"), (Join-Path $Dist "tests"), "setup" | Out-Null
 
-$Targets = @(@{ Project = "planejador\src\app\planejador"; Name = "planejador" })
+$Targets = @(@{ Project = "planejador\src\app\planejador"; Name = "planejador" }, @{ Project = "launcher\src\app\engenhariaarquitetura"; Name = "engenhariaarquitetura" })
 foreach ($t in $Targets) {
   Write-Host "Compilando $($t.Name)..."
   $log = Join-Path $Dist "build-logs\$($t.Name).log"
