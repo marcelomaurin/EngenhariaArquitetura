@@ -3,8 +3,10 @@
 | Campo | Valor |
 |---|---|
 | Versão do documento | 1.1 — 29/10/2026 (inclui o SimuTubulações) |
-| Estado | Planejamento (nenhuma fase iniciada) |
+| Estado | Planejamento em execução parcial: Planejador P1 implementada antecipadamente; demais fases previstas, conforme acompanhamento abaixo |
 | Base | Etapas definidas em cada documento de componente |
+
+> **Auditoria de 30/10/2026:** consulte [Lacunas, prioridades e testes de aceite](Auditoria_Lacunas_2026-10-30.md) para o diagnóstico baseado na estrutura atual do repositório. A etapa P1 do Planejador foi antecipada e não comprova que as fases fundamentais 0–2 foram concluídas.
 
 O plano organiza as etapas de todos os componentes em **fases** sequenciais. Cada fase só começa quando a anterior atende seus critérios de saída e quando as decisões indicadas estiverem tomadas. A ordem segue a prioridade definida na especificação: **CAD 2D primeiro**, depois a maquete, e só então as disciplinas que dependem dela. O Planejador, embora seja a primeira etapa da linha de produção, entra depois do CAD 2D básico, porque suas tarefas precisam de um aplicativo que as execute.
 
