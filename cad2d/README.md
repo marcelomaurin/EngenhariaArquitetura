@@ -134,3 +134,8 @@ Ferramenta **Selecionar** localiza o segmento mais próximo do clique (até 12 p
 ## Transformações geométricas iniciais
 
 A seleção agora oferece **Mover seleção** e **Copiar seleção** com deslocamentos X e Y informados em milímetros. O eixo Y positivo representa a direção superior da planta. Como a geometria ainda utiliza pontos inteiros da tela, deslocamentos menores que a resolução de 50 mm/pixel são arredondados; zoom e geometria vetorial em dupla precisão são pendências importantes. Esta etapa não deve ser confundida com operações CAD de precisão profissional.
+
+
+## Zoom do viewport
+
+Controles Zoom + e Zoom - (50% a 400%) foram adicionados ao protótipo. A transformação de visualização aplica-se à grade, aos segmentos, ao marcador de início e à seleção por clique, preservando as coordenadas do arquivo. **Pan, ajuste à tela, coordenadas vetoriais de precisão e ensaios de interface permanecem pendentes.**
