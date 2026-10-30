@@ -92,3 +92,12 @@ DXF vem antes do DWG; o DWG depende de biblioteca ou conversor a homologar.
 4. Identificar o ambiente fechado e calcular a área interna.
 5. Salvar, reabrir e editar sem perder medidas ou vínculos.
 6. Exportar DXF editável e PDF com escala verificável.
+
+
+## Protótipo executável inicial (2026-10-30)
+
+A aplicação independente `cad2d/src/app/cad2d.lpi` foi iniciada em Lazarus/LCL. Inclui grade visual, captura de dois pontos com snap à grade, linhas, desfazer a última linha e exportação **DXF R12** de entidades LINE. A geometria está atualmente em coordenadas de grade/pixels, **sem escala física calibrada**, e o DXF deve ser tratado como experimental.
+
+**Ainda não implementados:** persistência/editoração de arquivos nativos, importação DXF/DWG, camadas, blocos, objetos arquitetônicos (paredes, portas, janelas), cotas, ortogonal/polar, coordenadas em metros/milímetros e integração BIM com Maquete 3D. Não usar para projeto executivo.
+
+A compilação Windows/Linux, o teste de interface e a validação do DXF exportado seguem pendentes até aprovação das respectivas verificações.
