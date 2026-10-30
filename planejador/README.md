@@ -78,3 +78,14 @@ planejador\tests\lib\test_planejador_core.exe
 | P2 | Contrato de tarefa: abrir a tarefa no aplicativo responsável e receber o retorno |
 | P3 | Calendário, uso de recursos, linha de base e curva S (o diagrama de rede já está pronto) |
 | P4 | Tarefas de objetos e vínculo de texturas por objeto ou face |
+
+
+## PostgreSQL: inicialização opcional e múltiplos projetos (base inicial — 30/10/2026)
+
+A estrutura `sql/migrations/` contém **seis scripts numerados**: organizações, projetos, tarefas, dependências, recursos e atribuições. Em cada abertura do desktop, a unidade `src/io/plan_pg_bootstrap.pas` procura a configuração `config/postgres.ini` **junto ao executável** (ou no caminho indicado em `PLANEJADOR_DB_CONFIG`). Se `enabled=true`, abre PostgreSQL e executa apenas migrações ainda não registradas em `planejador.schema_migrations`. Cada migração tem uma transação e bloqueio de concorrência; uma falha reverte a migração e mostra aviso, sem excluir o projeto JSON local.
+
+**Preparação de uma instalação:** crie antes um banco PostgreSQL vazio (ex.: `projetos`) e um usuário de aplicação com permissão de criar o schema/tabelas na primeira inicialização; após o provisionamento, use uma conta de operação com privilégios restritos. Copie `config/postgres.example.ini` para `config/postgres.ini` **na pasta do executável** (ex.: `bin/config/postgres.ini` em um instalador) e ajuste `host`, `port`, `database`, `user`, `schema` e `enabled=true`. A senha vem da variável de ambiente `PLANEJADOR_DB_PASSWORD`; `postgres.ini` é ignorado pelo Git. Opcionalmente use `PLANEJADOR_DB_CONFIG` apontando para um INI privado. Distribua também `sql/migrations/` ao lado do executável ou defina `migrations_dir` absoluto.
+
+A conexão usa `SQLDB` e `PQConnection` padrão do Free Pascal, que requer a biblioteca cliente `libpq` do PostgreSQL disponível no sistema. O MNote2 foi referência para configuração, interface PostgreSQL e bibliotecas Windows/Linux; seus binários legados não foram copiados sem checagem de versões, dependências e licenças. No servidor da nuvem, os clientes devem futuramente acessar uma **API HTTPS**, não a porta 5432 exposta publicamente.
+
+**Estado funcional exato:** scripts e inicialização opt-in publicados; ainda **não** há CRUD de projetos/tarefas persistidos pelo desktop na base, importação automática dos arquivos `.plan.json`, API ou site web. Os arquivos JSON atuais continuam a fonte de dados do aplicativo até a implementação do repositório remoto. Os scripts criam a estrutura para 20 ou mais projetos distintos, sem afirmar que os fluxos multiprojeto já funcionem na interface. Compilação e teste com servidor PostgreSQL real ainda pendentes.
