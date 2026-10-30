@@ -43,6 +43,7 @@ Plataforma de aplicações independentes em Lazarus/Free Pascal para projetos de
 
 | Documento | Conteúdo |
 |---|---|
+| [Auditoria de lacunas (30/10/2026)](Auditoria_Lacunas_2026-10-30.md) | Estado observado do código, prioridades P0/P1/P2, critérios de aceite e plano de implementação sem incorporar o MultiCNC |
 | [Visão geral da plataforma](Visao_Geral_Plataforma.md) | Aplicativos, objetivos de negócio, escopo, requisitos não funcionais comuns e fontes |
 | [Integrações](Integracoes.md) | Catálogo das 23 integrações (I-01 a I-23), pacotes de intercâmbio, manifesto comum, conflitos e etapas G1–G10 |
 | [Plano de desenvolvimento](Plano_Desenvolvimento.md) | Fases 0 a 12, decisões necessárias por fase, organização do repositório e acompanhamento |
@@ -97,6 +98,8 @@ flowchart LR
 | I-nn | Integrações |
 
 ## Histórico
+
+| 30/10/2026 | Auditoria de lacunas na branch `fila`: status do código, prioridades e validações pendentes; manter MultiCNC externo |
 
 | Data | Alteração |
 |---|---|
