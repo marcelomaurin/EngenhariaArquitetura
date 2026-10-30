@@ -312,7 +312,10 @@ begin
     else FCanvas.Canvas.Pen.Color := RGBToColor(28,70,150);
     end;
     case FLines[I].Kind of
-      2: FCanvas.Canvas.Pen.Width := Max(1, Round(FLines[I].WidthMM / FMillimetersPerPixel));
+      2: begin
+        FCanvas.Canvas.Pen.Width := Max(1, Round(FLines[I].WidthMM * FZoom / FMillimetersPerPixel));
+        FCanvas.Canvas.Pen.Color := RGBToColor(70,78,88);
+      end;
       3: begin FCanvas.Canvas.Pen.Width := 3; FCanvas.Canvas.Pen.Color := clRed; end;
       4: begin FCanvas.Canvas.Pen.Width := 3; FCanvas.Canvas.Pen.Color := clAqua; end;
     else FCanvas.Canvas.Pen.Width := 2;
