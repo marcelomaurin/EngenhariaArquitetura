@@ -13,7 +13,8 @@ uses
   Classes, SysUtils, Math, DateUtils, StrUtils, Forms, Controls, Graphics, StdCtrls,
   ExtCtrls, Menus, Dialogs, Buttons, Spin, EditBtn, LCLType,
   aiprojectduration, aicpmscheduler, aitaskgraph, aiganttview, ainetworkview,
-  plan_tipos, plan_documento, plan_cronograma, plan_json, plan_exemplos, plan_estilo;
+  fpjson, jsonparser, plan_tipos, plan_documento, plan_cronograma, plan_json,
+  plan_exemplos, plan_estilo, plan_pg_store, plan_pg_picker;
 
 type
   TPLJanelaPrincipal = class(TForm)
@@ -21,6 +22,8 @@ type
     FDoc: TPLProjeto;
     FCrono: TPLCronograma;
     FArquivo: string;
+    FDBProjectId: string;
+    FDBRevision: Int64;
     FAtualizando: Boolean;
     { componentes }
     FCabecalho: TPLCabecalho;
@@ -65,6 +68,10 @@ type
     function ConfirmarDescartar: Boolean;
     procedure AbrirArquivo(const AArquivo: string);
     function SalvarEm(const AArquivo: string): Boolean;
+    function SalvarBanco: Boolean;
+    procedure AoAbrirBanco(Sender: TObject);
+    procedure AoSalvarBanco(Sender: TObject);
+    procedure AoExcluirBanco(Sender: TObject);
     { eventos }
     procedure AoNovo(Sender: TObject);
     procedure AoAbrir(Sender: TObject);
@@ -221,6 +228,10 @@ begin
   Add(Item, 'Salvar &como...', @AoSalvarComo, ShortCut(VK_S, [ssCtrl, ssShift]));
   Add(Item, '-', nil);
   Add(Item, 'Sai&r', @AoSair);
+  Item := TMenuItem.Create(M); Item.Caption := '&Banco de dados'; M.Items.Add(Item);
+  Add(Item, '&Abrir projeto do PostgreSQL...', @AoAbrirBanco);
+  Add(Item, '&Salvar projeto no PostgreSQL...', @AoSalvarBanco);
+  Add(Item, '&Excluir projeto do PostgreSQL...', @AoExcluirBanco);
   Item := TMenuItem.Create(M); Item.Caption := '&Tarefa'; M.Items.Add(Item);
   Add(Item, '&Nova tarefa', @AoNovaTarefa, ShortCut(VK_INSERT, []));
   Add(Item, 'Novo &marco', @AoNovoMarco, ShortCut(VK_INSERT, [ssShift]));
@@ -648,7 +659,8 @@ begin
   if not FDoc.Modificado then Exit;
   case MessageDlg('Planejador', 'O projeto tem alterações não salvas. Deseja salvá-las?',
     mtConfirmation, [mbYes, mbNo, mbCancel], 0) of
-    mrYes: Result := SalvarEm(FArquivo);
+    mrYes: if FDBProjectId <> '' then Result := SalvarBanco
+      else Result := SalvarEm(FArquivo);
     mrNo: Result := True;
   else
     Result := False;
@@ -662,6 +674,8 @@ begin
       troca o projeto ativo; uma falha nao altera nome, caminho ou tarefas. }
     PLCarregarProjeto(FDoc, AArquivo);
     FArquivo := AArquivo;
+    FDBProjectId := '';
+    FDBRevision := 0;
     Mensagem('Projeto aberto: ' + ExtractFileName(AArquivo));
   except
     on E: Exception do
@@ -690,12 +704,138 @@ begin
   try
     PLSalvarProjeto(FDoc, A);
     FArquivo := A;
+    FDBProjectId := '';
+    FDBRevision := 0;
     Mensagem('Projeto salvo: ' + ExtractFileName(A));
     Result := True;
   except
     on E: Exception do Mensagem('Erro ao salvar: ' + E.Message, True);
   end;
   AtualizarTitulo;
+end;
+
+
+{ ---------------- banco PostgreSQL opcional ---------------- }
+
+function TPLJanelaPrincipal.SalvarBanco: Boolean;
+var
+  O: TJSONObject;
+  DocumentText, NewId: string;
+  NewRevision: Int64;
+begin
+  Result := False;
+  if not PLPGEnabled then
+  begin
+    Mensagem('PostgreSQL desabilitado. Use Arquivo > Salvar ou configure o banco.', True);
+    Exit;
+  end;
+  O := nil;
+  try
+    O := PLProjetoParaJSON(FDoc);
+    DocumentText := O.AsJSON;
+    if FDBProjectId = '' then
+    begin
+      PLPGCreate(FDoc.Nome, DocumentText, NewId, NewRevision);
+      FDBProjectId := NewId;
+    end
+    else
+      PLPGUpdate(FDBProjectId, FDoc.Nome, DocumentText, FDBRevision, NewRevision);
+    FDBRevision := NewRevision;
+    FArquivo := '';
+    FDoc.Modificado := False;
+    AtualizarTitulo;
+    Mensagem('Projeto salvo no PostgreSQL (revisão ' + IntToStr(NewRevision) + ').');
+    Result := True;
+  except
+    on E: Exception do
+      Mensagem('PostgreSQL: ' + E.Message, True);
+  end;
+  O.Free;
+end;
+
+procedure TPLJanelaPrincipal.AoSalvarBanco(Sender: TObject);
+begin
+  SalvarBanco;
+end;
+
+procedure TPLJanelaPrincipal.AoAbrirBanco(Sender: TObject);
+var
+  Projects: TPLStoredProjects;
+  Index: Integer;
+  ProjectName, DocumentText: string;
+  NewRevision: Int64;
+  Data: TJSONData;
+  Temp: TPLProjeto;
+begin
+  if not PLPGEnabled then
+  begin
+    Mensagem('PostgreSQL desabilitado; os arquivos locais continuam disponíveis.', True);
+    Exit;
+  end;
+  try
+    PLPGList(Projects);
+    if not PLPGChooseProject(Self, Projects, Index) then Exit;
+    if not ConfirmarDescartar then Exit;
+    PLPGRead(Projects[Index].Id, ProjectName, DocumentText, NewRevision);
+    Data := GetJSON(DocumentText);
+    try
+      if not (Data is TJSONObject) then
+        raise Exception.Create('Documento armazenado não é um objeto JSON.');
+      Temp := TPLProjeto.Create;
+      try
+        PLProjetoDeJSON(Temp, TJSONObject(Data));
+        FDoc.TrocarCom(Temp);
+      finally
+        Temp.Free;
+      end;
+    finally
+      Data.Free;
+    end;
+    FDoc.Modificado := False;
+    FArquivo := '';
+    FDBProjectId := Projects[Index].Id;
+    FDBRevision := NewRevision;
+    MostrarProjeto;
+    FGantt.Origin := 0;
+    Recalcular;
+    Mensagem('Projeto aberto do PostgreSQL: ' + ProjectName);
+  except
+    on E: Exception do Mensagem('Falha ao abrir do PostgreSQL: ' + E.Message, True);
+  end;
+end;
+
+procedure TPLJanelaPrincipal.AoExcluirBanco(Sender: TObject);
+var
+  Projects: TPLStoredProjects;
+  Index: Integer;
+  Revision: Int64;
+begin
+  if not PLPGEnabled then
+  begin
+    Mensagem('PostgreSQL desabilitado.', True);
+    Exit;
+  end;
+  try
+    PLPGList(Projects);
+    if not PLPGChooseProject(Self, Projects, Index) then Exit;
+    if MessageDlg('Excluir projeto no PostgreSQL',
+      'Excluir permanentemente o projeto "' + Projects[Index].Name +
+      '" do banco? Os arquivos locais não serão apagados.',
+      mtConfirmation, [mbYes, mbNo], 0) <> mrYes then Exit;
+    Revision := Projects[Index].Revision;
+    if Projects[Index].Id = FDBProjectId then Revision := FDBRevision;
+    PLPGDelete(Projects[Index].Id, Revision);
+    if Projects[Index].Id = FDBProjectId then
+    begin
+      FDBProjectId := '';
+      FDBRevision := 0;
+      FDoc.Modificado := True;
+      AtualizarTitulo;
+    end;
+    Mensagem('Projeto excluído apenas do PostgreSQL. Arquivos locais preservados.');
+  except
+    on E: Exception do Mensagem('Falha ao excluir do PostgreSQL: ' + E.Message, True);
+  end;
 end;
 
 { ---------------- eventos ---------------- }
@@ -705,6 +845,8 @@ begin
   if not ConfirmarDescartar then Exit;
   FDoc.Novo('Novo projeto', Date);
   FArquivo := '';
+  FDBProjectId := '';
+  FDBRevision := 0;
   MostrarProjeto;
   FGantt.Origin := 0;
   Recalcular;
@@ -722,6 +864,8 @@ begin
   if not ConfirmarDescartar then Exit;
   PLCarregarExemploResidencia(FDoc, IncDay(Date, 1));
   FArquivo := '';
+  FDBProjectId := '';
+  FDBRevision := 0;
   MostrarProjeto;
   FGantt.Origin := 0;
   Recalcular;
