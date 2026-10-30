@@ -25,6 +25,7 @@ type
     FSelected: Integer;
     FZoom: Double;
     FPanX, FPanY: Integer;
+    FShowDimensions: Boolean;
     FNextGroup: Integer;
     FUndo: array of TCADLine;
     FHistoryUndo, FHistoryRedo: TStringList;
@@ -57,6 +58,7 @@ type
     procedure ExportDXF(Sender: TObject);
     procedure ExportSVG(Sender: TObject);
     procedure MeasureSelected(Sender: TObject);
+    procedure ToggleDimensions(Sender: TObject);
     procedure SaveDrawing(Sender: TObject);
     procedure OpenDrawing(Sender: TObject);
     procedure UndoLine(Sender: TObject);
@@ -86,6 +88,7 @@ begin
   FSelected := -1;
   FZoom := 1.0;
   FPanX := 0; FPanY := 0;
+  FShowDimensions := False;
   FNextGroup := 1;
   FHistoryUndo := TStringList.Create;
   FHistoryRedo := TStringList.Create;
@@ -95,6 +98,7 @@ begin
   AddButton('Exportar DXF', @ExportDXF);
   AddButton('Exportar SVG', @ExportSVG);
   AddButton('Medir seleção', @MeasureSelected);
+  AddButton('Exibir cotas', @ToggleDimensions);
   AddButton('Desfazer', @UndoHistory);
   AddButton('Refazer', @RedoHistory);
   AddButton('Novo desenho', @NewDrawing);
@@ -284,7 +288,7 @@ begin
     [S, Length(FLines), FGrid * FMillimetersPerPixel, FLayerSelect.Text]);
 end;
 procedure TCADMainForm.PaintDrawing(Sender: TObject);
-var X, Y, I: Integer; R: TRect;
+var X, Y, I, MX, MY: Integer; R: TRect; MM: Double;
 begin
   R := FCanvas.ClientRect;
   FCanvas.Canvas.Brush.Color := clWhite;
@@ -319,6 +323,16 @@ begin
     end;
     FCanvas.Canvas.MoveTo(Round(FLines[I].A.X*FZoom)+FPanX, Round(FLines[I].A.Y*FZoom)+FPanY);
     FCanvas.Canvas.LineTo(Round(FLines[I].B.X*FZoom)+FPanX, Round(FLines[I].B.Y*FZoom)+FPanY);
+    if FShowDimensions then begin
+      MM := Hypot(FLines[I].B.X-FLines[I].A.X,
+        FLines[I].B.Y-FLines[I].A.Y)*FMillimetersPerPixel;
+      MX := Round((FLines[I].A.X+FLines[I].B.X)*FZoom/2)+FPanX;
+      MY := Round((FLines[I].A.Y+FLines[I].B.Y)*FZoom/2)+FPanY;
+      FCanvas.Canvas.Font.Color := clBlack;
+      FCanvas.Canvas.Brush.Style := bsClear;
+      FCanvas.Canvas.TextOut(MX+5,MY-14,FormatFloat('0.00',MM/1000)+' m');
+      FCanvas.Canvas.Brush.Style := bsSolid;
+    end;
   end;
   FCanvas.Canvas.Pen.Width := 1;
   if FHasStart then begin
@@ -841,6 +855,13 @@ begin
   FLines[N].WidthMM := MM;
   FCanvas.Invalidate;
   RefreshStatus('Dimensão atualizada');
+end;
+procedure TCADMainForm.ToggleDimensions(Sender: TObject);
+begin
+  FShowDimensions := not FShowDimensions;
+  FCanvas.Invalidate;
+  if FShowDimensions then RefreshStatus('Cotas visíveis em metros')
+  else RefreshStatus('Cotas ocultas');
 end;
 procedure TCADMainForm.MeasureSelected(Sender: TObject);
 var A, B: TPoint; MM: Double; V: string;
