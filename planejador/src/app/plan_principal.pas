@@ -155,7 +155,7 @@ begin
 
   FAbrir := TOpenDialog.Create(Self);
   FAbrir.Filter := 'Projeto do Planejador (*.plan.json)|*.plan.json|Todos os arquivos (*.*)|*.*';
-  FAbrir.Title := 'Abrir projeto';
+  FAbrir.Title := 'Abrir arquivo local';
   FSalvar := TSaveDialog.Create(Self);
   FSalvar.Filter := FAbrir.Filter;
   FSalvar.DefaultExt := 'plan.json';
@@ -221,17 +221,17 @@ begin
   Menu := M;
   Item := TMenuItem.Create(M); Item.Caption := '&Arquivo'; M.Items.Add(Item);
   Add(Item, '&Novo projeto', @AoNovo, ShortCut(VK_N, [ssCtrl]));
-  Add(Item, '&Abrir...', @AoAbrir, ShortCut(VK_O, [ssCtrl]));
+  Add(Item, '&Abrir arquivo...', @AoAbrir, ShortCut(VK_O, [ssCtrl]));
   Add(Item, 'Abrir &exemplo (residência)', @AoAbrirExemplo);
   Add(Item, '-', nil);
   Add(Item, '&Salvar', @AoSalvar, ShortCut(VK_S, [ssCtrl]));
   Add(Item, 'Salvar &como...', @AoSalvarComo, ShortCut(VK_S, [ssCtrl, ssShift]));
   Add(Item, '-', nil);
   Add(Item, 'Sai&r', @AoSair);
-  Item := TMenuItem.Create(M); Item.Caption := '&Banco de dados'; M.Items.Add(Item);
-  Add(Item, '&Abrir projeto do PostgreSQL...', @AoAbrirBanco);
-  Add(Item, '&Salvar projeto no PostgreSQL...', @AoSalvarBanco);
-  Add(Item, '&Excluir projeto do PostgreSQL...', @AoExcluirBanco);
+  Item := TMenuItem.Create(M); Item.Caption := '&Nuvem (opcional)'; M.Items.Add(Item);
+  Add(Item, '&Abrir na nuvem...', @AoAbrirBanco);
+  Add(Item, '&Salvar na nuvem...', @AoSalvarBanco);
+  Add(Item, '&Excluir da nuvem...', @AoExcluirBanco);
   Item := TMenuItem.Create(M); Item.Caption := '&Tarefa'; M.Items.Add(Item);
   Add(Item, '&Nova tarefa', @AoNovaTarefa, ShortCut(VK_INSERT, []));
   Add(Item, 'Novo &marco', @AoNovoMarco, ShortCut(VK_INSERT, [ssShift]));
@@ -276,7 +276,7 @@ begin
   PLBotao(B, 'Nova tarefa', 'Inserir tarefa após a selecionada (Insert)', @AoNovaTarefa);
   PLSeparador(B);
   PLBotao(B, 'Salvar', 'Salvar o projeto (Ctrl+S)', @AoSalvar);
-  PLBotao(B, 'Abrir', 'Abrir um projeto (Ctrl+O)', @AoAbrir);
+  PLBotao(B, 'Abrir', 'Abrir arquivo local (Ctrl+O)', @AoAbrir);
   PLBotao(B, 'Novo', 'Novo projeto (Ctrl+N)', @AoNovo);
 end;
 
@@ -504,7 +504,9 @@ end;
 procedure TPLJanelaPrincipal.AtualizarTitulo;
 var N: string;
 begin
-  if FArquivo = '' then N := 'sem título' else N := ExtractFileName(FArquivo);
+  if FDBProjectId <> '' then N := FDoc.Nome + ' [nuvem]'
+  else if FArquivo = '' then N := 'sem título [local]'
+  else N := ExtractFileName(FArquivo) + ' [local]';
   if FDoc.Modificado then N := N + ' *';
   Caption := Format('%s — %s', [TITULO, N]);
 end;
@@ -874,7 +876,8 @@ end;
 
 procedure TPLJanelaPrincipal.AoSalvar(Sender: TObject);
 begin
-  SalvarEm(FArquivo);
+  if FDBProjectId <> '' then SalvarBanco
+  else SalvarEm(FArquivo);
 end;
 
 procedure TPLJanelaPrincipal.AoSalvarComo(Sender: TObject);
