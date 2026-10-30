@@ -9,6 +9,7 @@ type
     Layer: Integer;
     Kind: Integer; // 0 linha, 1 retangulo, 2 parede, 3 porta, 4 janela
     WidthMM: Integer;
+    GroupID: Integer;
   end;
   TCADMainForm = class(TForm)
   private
@@ -23,6 +24,9 @@ type
     FPath: string;
     FSelected: Integer;
     FZoom: Double;
+    FNextGroup: Integer;
+    FUndo: array of TCADLine;
+    procedure RedoDrawing(Sender: TObject);
     procedure ZoomDrawing(Sender: TObject);
     procedure SelectObjectAt(const P: TPoint);
     procedure DeleteSelected(Sender: TObject);
@@ -63,11 +67,13 @@ begin
   FGrid := 20;
   FSelected := -1;
   FZoom := 1.0;
+  FNextGroup := 1;
   FMillimetersPerPixel := 50; // grade de 20 pixels equivale a 1 metro
   TopBar := TPanel.Create(Self); TopBar.Parent := Self; TopBar.Align := alTop;
   TopBar.Height := 48; TopBar.BevelOuter := bvNone;
   AddButton('Exportar DXF', @ExportDXF);
-  AddButton('Desfazer linha', @UndoLine);
+  AddButton('Desfazer', @UndoLine);
+  AddButton('Refazer', @RedoDrawing);
   AddButton('Novo desenho', @NewDrawing);
   AddButton('Salvar projeto', @SaveDrawing);
   AddButton('Abrir projeto', @OpenDrawing);
@@ -130,6 +136,7 @@ begin
   N := Length(FLines); SetLength(FLines, N+1);
   FLines[N].A := A; FLines[N].B := B;
   FLines[N].Layer := FLayerSelect.ItemIndex;
+  FLines[N].GroupID := FNextGroup;
   FLines[N].Kind := FToolSelect.ItemIndex;
   case FLines[N].Kind of
     2: FLines[N].WidthMM := 150;
@@ -233,8 +240,10 @@ begin
       AddSegment(P, Point(FStart.X,P.Y));
       AddSegment(Point(FStart.X,P.Y),FStart);
     end else AddSegment(FStart,P);
+    Inc(FNextGroup);
+    SetLength(FUndo,0);
     FHasStart := False;
-    RefreshStatus('Linha criada');
+    RefreshStatus('Desenho criado');
   end;
   FCanvas.Invalidate;
 end;
@@ -251,15 +260,34 @@ begin
   if (Length(FLines) > 0) and
     (MessageDlg('Novo desenho','Descartar o desenho atual?',
      mtConfirmation,[mbYes,mbNo],0) <> mrYes) then Exit;
-  SetLength(FLines,0); FHasStart := False; FSelected := -1; FPath := '';
+  SetLength(FLines,0); SetLength(FUndo,0);
+  FNextGroup := 1; FHasStart := False; FSelected := -1; FPath := '';
   FCanvas.Invalidate; RefreshStatus('Novo desenho');
 end;
 procedure TCADMainForm.UndoLine(Sender: TObject);
+var G, N: Integer;
 begin
   if Length(FLines) = 0 then Exit;
-  SetLength(FLines,Length(FLines)-1);
+  G := FLines[High(FLines)].GroupID;
+  repeat
+    N := Length(FUndo); SetLength(FUndo,N+1);
+    FUndo[N] := FLines[High(FLines)];
+    SetLength(FLines,Length(FLines)-1);
+  until (Length(FLines) = 0) or (FLines[High(FLines)].GroupID <> G);
   FSelected := -1;
-  FCanvas.Invalidate; RefreshStatus('Última linha desfeita');
+  FCanvas.Invalidate; RefreshStatus('Operação desfeita');
+end;
+procedure TCADMainForm.RedoDrawing(Sender: TObject);
+var G, N: Integer;
+begin
+  if Length(FUndo) = 0 then Exit;
+  G := FUndo[High(FUndo)].GroupID;
+  repeat
+    N := Length(FLines); SetLength(FLines,N+1);
+    FLines[N] := FUndo[High(FUndo)];
+    SetLength(FUndo,Length(FUndo)-1);
+  until (Length(FUndo)=0) or (FUndo[High(FUndo)].GroupID <> G);
+  FCanvas.Invalidate; RefreshStatus('Operação refeita');
 end;
 procedure TCADMainForm.SelectObjectAt(const P: TPoint);
 var I: Integer; DX, DY, T, Dist, Best: Double; Nearest: Integer;
@@ -423,6 +451,7 @@ begin
         ((not Legacy) and (Fields.Count <> 7)) then
         raise Exception.CreateFmt('Linha %d inválida',[I+1]);
       N := I-2;
+      Temp[N].GroupID := N + 1;
       Temp[N].A.X := StrToInt(Fields[0]); Temp[N].A.Y := StrToInt(Fields[1]);
       Temp[N].B.X := StrToInt(Fields[2]); Temp[N].B.Y := StrToInt(Fields[3]);
       Temp[N].Layer := StrToInt(Fields[4]); Temp[N].Kind := StrToInt(Fields[5]);
@@ -438,7 +467,8 @@ begin
          (Temp[N].Kind < 0) or (Temp[N].Kind > 4) then
         raise Exception.CreateFmt('Objeto inválido na linha %d',[I+1]);
     end;
-    FLines := Temp; FSelected := -1; FMillimetersPerPixel := Scale;
+    FLines := Temp; SetLength(FUndo,0); FNextGroup := Length(FLines)+1;
+    FSelected := -1; FMillimetersPerPixel := Scale;
     FHasStart := False; FPath := D.FileName;
     FCanvas.Invalidate; RefreshStatus('Projeto aberto: '+ExtractFileName(FPath));
   except on E: Exception do
