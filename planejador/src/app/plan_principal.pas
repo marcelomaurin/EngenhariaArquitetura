@@ -430,6 +430,7 @@ end;
 
 procedure TPLJanelaPrincipal.MontarPainelTarefa(P: TWinControl);
 var A: TPLAplicativo; S: TPLSituacao; Y: Integer; Bt: TButton;
+  ActionRow: TPanel;
 
   function Campo(const ARotulo: string): TEdit;
   begin
@@ -453,6 +454,35 @@ var A: TPLAplicativo; S: TPLSituacao; Y: Integer; Bt: TButton;
 begin
   FPainelTarefa := P;
   Y := 0;
+  { Mesmas acoes da etapa Tarefas do MultiProject, no painel lateral direito. }
+  ActionRow := TPanel.Create(Self);
+  ActionRow.Parent := P;
+  ActionRow.Align := alTop;
+  ActionRow.Height := 44;
+  ActionRow.BevelOuter := bvNone;
+  ActionRow.Color := clPLCartao;
+  Bt := TButton.Create(Self);
+  Bt.Parent := ActionRow;
+  Bt.SetBounds(12, 5, 92, 32);
+  Bt.Caption := 'Nova tarefa';
+  Bt.Hint := 'Inserir tarefa (Insert)';
+  Bt.ShowHint := True;
+  Bt.OnClick := @AoNovaTarefa;
+  Bt := TButton.Create(Self);
+  Bt.Parent := ActionRow;
+  Bt.SetBounds(112, 5, 84, 32);
+  Bt.Caption := 'Marco';
+  Bt.Hint := 'Inserir marco (Shift+Insert)';
+  Bt.ShowHint := True;
+  Bt.OnClick := @AoNovoMarco;
+  Bt := TButton.Create(Self);
+  Bt.Parent := ActionRow;
+  Bt.SetBounds(204, 5, 94, 32);
+  Bt.Caption := 'Excluir';
+  Bt.Hint := 'Excluir a tarefa selecionada';
+  Bt.ShowHint := True;
+  Bt.OnClick := @AoExcluir;
+  Inc(Y);
   PLRotulo(P, 'TAREFA', True).Top := Y; Inc(Y);
   FTarId := PLRotulo(P, '—'); FTarId.Top := Y; Inc(Y);
   FTarId.Font.Color := clPLPrimaria; FTarId.Font.Style := [fsBold];
