@@ -159,3 +159,12 @@ Comandos Pan esquerda/direita/cima/baixo deslocam a visualização em passos de 
 ## Histórico de edição expandido
 
 Os botões **Desfazer** e **Refazer** utilizam snapshots do desenho, com limite de 60 estados desfazíveis. O histórico abrange criação de segmentos e formas, mover, copiar, excluir, alterar dimensão e limpar o desenho. O histórico é reiniciado ao abrir projeto, e não é gravado no EACAD3. O histórico anterior por grupos permanece no código como implementação legada. Ainda exige testes funcionais de múltiplas sequências de operações e correção de casos de falha de arquivo, não sendo um sistema de transações CAD de produção.
+
+
+## Entrega de exportação e medição (2026-10-30)
+
+- **Exportar SVG:** gera um desenho vetorial SVG com os segmentos existentes e o enquadramento geométrico da planta, usando milímetros como unidades do sistema de desenho; trata-se de exportação de linhas, não de elementos BIM.
+- **Medir seleção:** calcula o comprimento euclidiano da linha selecionada e o exibe em metros e milímetros. A medida ainda segue a resolução geométrica do protótipo (pontos inteiros).
+- **Retângulo:** os quatro lados agora são armazenados como linhas comuns (Kind=0), evitando confundi-los com objetos arquitetônicos.
+
+Esta entrega **não** implementa suporte DWG, PDF, IFC, cotas associativas, edição paramétrica de paredes, portas/janelas com vãos reais, nem validação profissional dos arquivos. Esses itens permanecem pendentes.
