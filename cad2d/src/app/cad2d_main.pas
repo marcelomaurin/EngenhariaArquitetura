@@ -1,0 +1,169 @@
+unit cad2d_main;
+{$mode objfpc}{$H+}
+interface
+uses Classes, SysUtils, Forms, Controls, ExtCtrls, StdCtrls, Menus,
+  Graphics, Types, Math, Dialogs;
+type
+  TCADLine = record
+    A, B: TPoint;
+  end;
+  TCADMainForm = class(TForm)
+  private
+    FCanvas: TPaintBox;
+    FStatus: TLabel;
+    FLines: array of TCADLine;
+    FHasStart: Boolean;
+    FStart: TPoint;
+    FGrid: Integer;
+    FPath: string;
+    procedure PaintDrawing(Sender: TObject);
+    procedure CanvasClick(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure MouseMoveDrawing(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure NewDrawing(Sender: TObject);
+    procedure ExportDXF(Sender: TObject);
+    procedure UndoLine(Sender: TObject);
+    function Snap(P: TPoint): TPoint;
+    procedure RefreshStatus(const S: string);
+  public
+    constructor Create(AOwner: TComponent); override;
+  end;
+var CADMainForm: TCADMainForm;
+implementation
+constructor TCADMainForm.Create(AOwner: TComponent);
+var TopBar, Footer: TPanel; B: TButton;
+  procedure AddButton(const Caption: string; Action: TNotifyEvent);
+  begin
+    B := TButton.Create(Self); B.Parent := TopBar; B.Align := alLeft;
+    B.Width := 125; B.Caption := Caption; B.OnClick := Action;
+  end;
+begin
+  inherited CreateNew(AOwner, 1);
+  Caption := 'CAD Arquitetônico 2D — desenho inicial';
+  Width := 1100; Height := 730; Position := poScreenCenter;
+  Constraints.MinWidth := 700; Constraints.MinHeight := 480;
+  Color := RGBToColor(244,246,250); Font.Size := 10;
+  FGrid := 20;
+  TopBar := TPanel.Create(Self); TopBar.Parent := Self; TopBar.Align := alTop;
+  TopBar.Height := 48; TopBar.BevelOuter := bvNone;
+  AddButton('Exportar DXF', @ExportDXF);
+  AddButton('Desfazer linha', @UndoLine);
+  AddButton('Novo desenho', @NewDrawing);
+  Footer := TPanel.Create(Self); Footer.Parent := Self; Footer.Align := alBottom;
+  Footer.Height := 32; Footer.BevelOuter := bvNone; Footer.Color := clWhite;
+  FStatus := TLabel.Create(Self); FStatus.Parent := Footer; FStatus.Align := alClient;
+  FStatus.BorderSpacing.Left := 12; FStatus.BorderSpacing.Top := 7;
+  FCanvas := TPaintBox.Create(Self); FCanvas.Parent := Self;
+  FCanvas.Align := alClient;
+  FCanvas.OnPaint := @PaintDrawing; FCanvas.OnMouseDown := @CanvasClick;
+  FCanvas.OnMouseMove := @MouseMoveDrawing;
+  RefreshStatus('Clique para começar uma linha. Botão direito cancela.');
+end;
+function TCADMainForm.Snap(P: TPoint): TPoint;
+begin
+  Result.X := Round(P.X / FGrid) * FGrid;
+  Result.Y := Round(P.Y / FGrid) * FGrid;
+end;
+procedure TCADMainForm.RefreshStatus(const S: string);
+begin
+  FStatus.Caption := Format('%s   |   %d linha(s)   |   grade %d px',
+    [S, Length(FLines), FGrid]);
+end;
+procedure TCADMainForm.PaintDrawing(Sender: TObject);
+var X, Y, I: Integer; R: TRect;
+begin
+  R := FCanvas.ClientRect;
+  FCanvas.Canvas.Brush.Color := clWhite;
+  FCanvas.Canvas.FillRect(R);
+  FCanvas.Canvas.Pen.Color := RGBToColor(232,236,244);
+  FCanvas.Canvas.Pen.Width := 1;
+  for X := 0 to FCanvas.Width div FGrid do begin
+    FCanvas.Canvas.MoveTo(X*FGrid,0); FCanvas.Canvas.LineTo(X*FGrid,FCanvas.Height);
+  end;
+  for Y := 0 to FCanvas.Height div FGrid do begin
+    FCanvas.Canvas.MoveTo(0,Y*FGrid); FCanvas.Canvas.LineTo(FCanvas.Width,Y*FGrid);
+  end;
+  FCanvas.Canvas.Pen.Color := RGBToColor(28,70,150);
+  FCanvas.Canvas.Pen.Width := 2;
+  for I := 0 to High(FLines) do begin
+    FCanvas.Canvas.MoveTo(FLines[I].A.X, FLines[I].A.Y);
+    FCanvas.Canvas.LineTo(FLines[I].B.X, FLines[I].B.Y);
+  end;
+  if FHasStart then begin
+    FCanvas.Canvas.Brush.Color := clRed;
+    FCanvas.Canvas.Ellipse(FStart.X-4,FStart.Y-4,FStart.X+4,FStart.Y+4);
+  end;
+end;
+procedure TCADMainForm.CanvasClick(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+var P: TPoint; N: Integer;
+begin
+  if Button = mbRight then begin
+    FHasStart := False; FCanvas.Invalidate; RefreshStatus('Linha cancelada'); Exit;
+  end;
+  if Button <> mbLeft then Exit;
+  P := Snap(Point(X,Y));
+  if not FHasStart then begin
+    FStart := P; FHasStart := True;
+    RefreshStatus('Selecione o segundo ponto');
+  end else begin
+    if (P.X <> FStart.X) or (P.Y <> FStart.Y) then begin
+      N := Length(FLines); SetLength(FLines,N+1);
+      FLines[N].A := FStart; FLines[N].B := P;
+    end;
+    FHasStart := False;
+    RefreshStatus('Linha criada');
+  end;
+  FCanvas.Invalidate;
+end;
+procedure TCADMainForm.MouseMoveDrawing(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+var P: TPoint;
+begin
+  if not FHasStart then Exit;
+  P := Snap(Point(X,Y));
+  RefreshStatus(Format('Início (%d,%d) — próximo (%d,%d)',
+    [FStart.X,FStart.Y,P.X,P.Y]));
+end;
+procedure TCADMainForm.NewDrawing(Sender: TObject);
+begin
+  if (Length(FLines) > 0) and
+    (MessageDlg('Novo desenho','Descartar o desenho atual?',
+     mtConfirmation,[mbYes,mbNo],0) <> mrYes) then Exit;
+  SetLength(FLines,0); FHasStart := False; FPath := '';
+  FCanvas.Invalidate; RefreshStatus('Novo desenho');
+end;
+procedure TCADMainForm.UndoLine(Sender: TObject);
+begin
+  if Length(FLines) = 0 then Exit;
+  SetLength(FLines,Length(FLines)-1);
+  FCanvas.Invalidate; RefreshStatus('Última linha desfeita');
+end;
+procedure TCADMainForm.ExportDXF(Sender: TObject);
+var D: TSaveDialog; L: TStringList; I: Integer;
+  function DXFCoord(V: Integer): string;
+  begin Result := IntToStr(V); end;
+begin
+  D := TSaveDialog.Create(Self);
+  L := TStringList.Create;
+  try
+    D.Filter := 'AutoCAD DXF R12 (*.dxf)|*.dxf'; D.DefaultExt := 'dxf';
+    D.FileName := 'planta.dxf'; D.Options := D.Options + [ofOverwritePrompt];
+    if not D.Execute then Exit;
+    L.Add('0');L.Add('SECTION');L.Add('2');L.Add('ENTITIES');
+    for I := 0 to High(FLines) do begin
+      L.Add('0'); L.Add('LINE');L.Add('8');L.Add('0');
+      L.Add('10');L.Add(DXFCoord(FLines[I].A.X));
+      L.Add('20');L.Add(DXFCoord(-FLines[I].A.Y));
+      L.Add('30');L.Add('0');
+      L.Add('11');L.Add(DXFCoord(FLines[I].B.X));
+      L.Add('21');L.Add(DXFCoord(-FLines[I].B.Y));
+      L.Add('31');L.Add('0');
+    end;
+    L.Add('0');L.Add('ENDSEC');L.Add('0');L.Add('EOF');
+    L.SaveToFile(D.FileName);
+    FPath := D.FileName; RefreshStatus('DXF exportado: '+ExtractFileName(FPath));
+  finally
+    L.Free; D.Free;
+  end;
+end;
+end.
