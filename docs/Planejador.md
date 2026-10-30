@@ -11,6 +11,8 @@
 
 > Integrações com os demais componentes: [Integrações](Integracoes.md). Ordem de desenvolvimento: [Plano de desenvolvimento](Plano_Desenvolvimento.md).
 
+> **Auditoria técnica de 30/10/2026:** [Pendências do Planejador — prioridade P2, P3 e P4](Pendencias_Planejador_2026-10-30.md). Inclui proteção de arquivos, despacho/retorno, liberação de tarefas, testes e critérios de aceite. Esta auditoria não executou builds nem implementou funcionalidades.
+
 > **Origem desta seção:** consolidada a partir das definições passadas durante a concepção (28/10/2026). Itens marcados como *proposta* foram sugeridos durante a conversa e ainda dependem de confirmação.
 
 ## Descrição
