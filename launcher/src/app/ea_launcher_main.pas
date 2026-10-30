@@ -10,6 +10,7 @@ type
     FNavigation, FHeader, FContent, FFooter: TPanel;
     FTitle, FSubtitle, FStatus: TLabel;
     FSection: Integer;
+    FNavButtons: array[0..3] of TSpeedButton;
     procedure BuildInterface;
     procedure Navigate(Sender: TObject);
     procedure ShowSection(AIndex: Integer);
@@ -69,18 +70,17 @@ begin
   Base := ExtractFilePath(ExpandFileName(ParamStr(0)));
   // Instalacao: executaveis lado a lado; desenvolvimento: caminhos de build.
   if FileExists(Base + ExeName) then Exit(Base + ExeName);
+  if FileExists(Base + 'bin' + DirectorySeparator + ExeName) then
+    Exit(Base + 'bin' + DirectorySeparator + ExeName);
   Root := ExcludeTrailingPathDelimiter(Base);
   for D := 0 to 4 do begin
     if FileExists(IncludeTrailingPathDelimiter(Root) + APP_PATHS[AIndex] +
        DirectorySeparator + ExeName) then
       Exit(IncludeTrailingPathDelimiter(Root) + APP_PATHS[AIndex] +
            DirectorySeparator + ExeName);
-    {$IFDEF WINDOWS}
-    if FileExists(IncludeTrailingPathDelimiter(Root) + APP_PATHS[AIndex] +
+    if FileExists(IncludeTrailingPathDelimiter(Root) + 'bin' +
        DirectorySeparator + ExeName) then
-      Exit(IncludeTrailingPathDelimiter(Root) + APP_PATHS[AIndex] +
-           DirectorySeparator + ExeName);
-    {$ENDIF}
+      Exit(IncludeTrailingPathDelimiter(Root) + 'bin' + DirectorySeparator + ExeName);
     if ExtractFileDir(Root) = Root then Break;
     Root := ExtractFileDir(Root);
   end;
@@ -111,6 +111,7 @@ begin
   for I := 0 to 3 do begin
     B := TSpeedButton.Create(Self); B.Parent := FNavigation;
     B.SetBounds(12,48+I*48,196,38); B.Tag := I; B.Flat := True;
+    B.GroupIndex := 1; B.AllowAllUp := False;
     case I of
       0: B.Caption := 'Início';
       1: B.Caption := 'Desenho e modelagem';
@@ -118,6 +119,7 @@ begin
       3: B.Caption := 'Todos os aplicativos';
     end;
     B.OnClick := @Navigate;
+    FNavButtons[I] := B;
   end;
   B := TSpeedButton.Create(Self); B.Parent := FNavigation;
   B.SetBounds(12,267,196,38); B.Caption := 'Atualizar disponibilidade';
@@ -135,18 +137,19 @@ procedure TEALauncherForm.AddAppCard(AParent: TWinControl; AIndex, ATop: Integer
 var P: TPanel; Title, Desc, Status: TLabel; B: TButton; Exe: string;
 begin
   P := TPanel.Create(Self); P.Parent := AParent; P.Align := alTop;
-  P.Height := 104; P.BorderSpacing.Left := 18; P.BorderSpacing.Right := 18;
+  P.Height := 116; P.BorderSpacing.Left := 18; P.BorderSpacing.Right := 18;
   P.BorderSpacing.Bottom := 10; P.BevelOuter := bvNone; P.Color := clWhite;
   Title := TLabel.Create(Self); Title.Parent := P;
-  Title.SetBounds(18,13,480,27); Title.Caption := APP_NAMES[AIndex];
+  Title.SetBounds(18,13,390,27); Title.Caption := APP_NAMES[AIndex];
   Title.Font.Size := 12; Title.Font.Style := [fsBold];
   Title.Font.Color := ColorRGB(25,45,89);
   Desc := TLabel.Create(Self); Desc.Parent := P;
-  Desc.SetBounds(18,44,480,22); Desc.Caption := APP_DESCRIPTIONS[AIndex];
+  Desc.SetBounds(18,44,390,22);
+  Desc.AutoSize := False; Desc.WordWrap := True; Desc.Caption := APP_DESCRIPTIONS[AIndex];
   Desc.Font.Color := ColorRGB(95,108,125);
   Exe := ExecutableFor(AIndex);
   Status := TLabel.Create(Self); Status.Parent := P;
-  Status.SetBounds(18,74,430,20);
+  Status.SetBounds(18,83,390,20);
   if Exe <> '' then begin
     Status.Caption := 'Disponível — executável encontrado';
     Status.Font.Color := ColorRGB(22,131,71);
@@ -155,7 +158,7 @@ begin
     Status.Font.Color := ColorRGB(162,100,31);
   end;
   B := TButton.Create(Self); B.Parent := P; B.Anchors := [akTop,akRight];
-  B.SetBounds(P.Width-139,30,120,36); B.Caption := 'Abrir';
+  B.SetBounds(0,30,120,36); B.Caption := 'Abrir';
   B.Tag := AIndex; B.Enabled := Exe <> ''; B.OnClick := @OpenApp;
   P.OnResize := nil;
   // A largura inicial do cartão é atualizada por alinhamento; botão ficará à direita.
@@ -166,6 +169,14 @@ procedure TEALauncherForm.ShowSection(AIndex: Integer);
 var Scroll: TScrollBox; I, N: Integer; ShowIt: Boolean; Head: TLabel;
 begin
   FSection := AIndex;
+  for I := 0 to 3 do begin
+    FNavButtons[I].Down := I = AIndex;
+    FNavButtons[I].Font.Style := [];
+    if I = AIndex then begin
+      FNavButtons[I].Font.Style := [fsBold];
+      FNavButtons[I].Font.Color := ColorRGB(26,75,168);
+    end else FNavButtons[I].Font.Color := ColorRGB(74,85,104);
+  end;
   while FContent.ControlCount > 0 do FContent.Controls[0].Free;
   Scroll := TScrollBox.Create(Self); Scroll.Parent := FContent;
   Scroll.Align := alClient; Scroll.BorderStyle := bsNone;
@@ -186,9 +197,9 @@ begin
     ShowIt := (AIndex in [0,3]) or
       ((AIndex=1) and (I in [1,2,3])) or
       ((AIndex=2) and (I in [4,5,6]));
-    if ShowIt then begin AddAppCard(Scroll, I, N*114); Inc(N); end;
+    if ShowIt then begin AddAppCard(Scroll, I, N*126); Inc(N); end;
   end;
-  SetStatus(IntToStr(N) + ' aplicativos listados. Somente executáveis encontrados podem ser abertos.');
+  SetStatus(IntToStr(N) + ' aplicativos listados. Apenas programas instalados podem ser abertos.');
 end;
 procedure TEALauncherForm.OpenApp(Sender: TObject);
 var Id: Integer; Path: string; P: TProcess;
