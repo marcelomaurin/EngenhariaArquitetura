@@ -12,3 +12,6 @@ dist/
 *.lps
 backup/
 tests/lib/
+
+# Configuracoes locais do banco (segredos fora do Git)
+**/config/postgres.ini
