@@ -173,3 +173,8 @@ Esta entrega **não** implementa suporte DWG, PDF, IFC, cotas associativas, edi�
 ## Rotação e espelhamento (2026-10-30)
 
 O desenho permite **Girar seleção** por ângulo em graus (em torno do ponto médio do segmento) e **Espelhar X/Y** em torno dos eixos que passam pelo ponto médio. Estas operações registram estado para Desfazer/Refazer e preservam as propriedades da entidade. O protótipo ainda arredonda as coordenadas em pixels inteiros, o que limita a precisão, e opera sobre o segmento selecionado individualmente, não sobre todo o grupo geométrico.
+
+
+## Offset paralelo (2026-10-30)
+
+Ferramenta **Offset seleção** cria cópia paralela de um segmento selecionado, com distância positiva ou negativa em milímetros. A operação participa do histórico Desfazer/Refazer. A implementação usa coordenadas inteiras (50 mm por pixel no desenho inicial); pequenas distâncias podem ser arredondadas. Não realiza offset de curvas, polilinhas conectadas ou fechamento automático de cantos, e ainda requer homologação visual.
