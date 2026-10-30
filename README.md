@@ -23,6 +23,10 @@ Cada pasta tem um README com o resumo do aplicativo. A documentação completa, 
 | [Plano de desenvolvimento](docs/Plano_Desenvolvimento.md) | Fases, etapas e decisões pendentes |
 | [Decisões](docs/Decisoes.md) | Decisões tomadas e questões em aberto |
 
+## Central de Aplicativos
+
+O launcher independente em [`launcher/`](launcher/README.md) segue o catálogo do MultiSuite: relaciona sete softwares, mostra a disponibilidade dos executáveis e abre programas instalados. Os módulos ainda não compilados ficam indisponíveis. A homologação Windows/Linux está pendente.
+
 ## Instalação
 
 O instalador para Windows 64 bits e os executáveis ficam em [`bin/`](bin/), como no MultiCNC:
