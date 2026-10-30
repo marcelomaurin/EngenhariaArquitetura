@@ -129,3 +129,8 @@ Objetos do tipo parede têm espessura inicial de 150 mm; porta e janela têm lar
 Ferramenta **Selecionar** localiza o segmento mais próximo do clique (até 12 pixels), destaca-o e permite **Excluir seleção**. **Editar último** passa a usar o segmento selecionado quando existente e, na ausência de seleção, o último segmento. A edição ainda altera somente a propriedade dimensional, não os pontos geométricos. Faltam movimentação, cópia, rotação, grips, snaps geométricos reais, associação de aberturas com paredes e operações CAD mais completas.
 
 **Estado:** protótipo, não homologado como CAD de produção. O projeto não está concluído. A compilação de cada commit deve ser conferida no GitHub Actions.
+
+
+## Transformações geométricas iniciais
+
+A seleção agora oferece **Mover seleção** e **Copiar seleção** com deslocamentos X e Y informados em milímetros. O eixo Y positivo representa a direção superior da planta. Como a geometria ainda utiliza pontos inteiros da tela, deslocamentos menores que a resolução de 50 mm/pixel são arredondados; zoom e geometria vetorial em dupla precisão são pendências importantes. Esta etapa não deve ser confundida com operações CAD de precisão profissional.
