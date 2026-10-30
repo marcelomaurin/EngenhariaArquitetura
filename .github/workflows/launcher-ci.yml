@@ -1,0 +1,21 @@
+name: Launcher CI
+on:
+  push:
+    branches: [fila]
+    paths:
+      - 'launcher/**'
+      - '.github/workflows/launcher-ci.yml'
+  workflow_dispatch:
+jobs:
+  build-linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar Lazarus GTK2
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lazarus libgtk2.0-dev pkg-config xvfb xauth
+      - name: Compilar launcher
+        run: lazbuild -B --ws=gtk2 launcher/src/app/engenhariaarquitetura.lpi
+      - name: Verificar executável
+        run: test -x bin/engenhariaarquitetura
