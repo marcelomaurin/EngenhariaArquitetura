@@ -39,6 +39,8 @@ type
     procedure SelectObjectAt(const P: TPoint);
     procedure DeleteSelected(Sender: TObject);
     procedure TransformSelected(Sender: TObject);
+    procedure RotateSelected(Sender: TObject);
+    procedure MirrorSelected(Sender: TObject);
     procedure SelectionChanged(Sender: TObject);
     procedure AddSegment(const A, B: TPoint);
     procedure AddCircle(const Center, Edge: TPoint);
@@ -99,6 +101,9 @@ begin
   B.Tag := 0;
   AddButton('Copiar seleção', @TransformSelected);
   B.Tag := 1;
+  AddButton('Girar seleção', @RotateSelected);
+  AddButton('Espelhar X', @MirrorSelected); B.Tag := 0;
+  AddButton('Espelhar Y', @MirrorSelected); B.Tag := 1;
   AddButton('Zoom +', @ZoomDrawing); B.Tag := 1;
   AddButton('Zoom -', @ZoomDrawing); B.Tag := -1;
   AddButton('Pan esquerda', @PanDrawing); B.Tag := 1;
@@ -451,6 +456,55 @@ begin
   FCanvas.Invalidate;
   if IsCopy then RefreshStatus('Objeto copiado')
   else RefreshStatus('Objeto movido');
+end;
+procedure TCADMainForm.RotateSelected(Sender: TObject);
+var AngleText: string; Degrees, Radians, CX, CY: Double;
+  A, B: TPoint;
+  function RotatePoint(const P: TPoint): TPoint;
+  var RX, RY: Double;
+  begin
+    RX := P.X-CX; RY := P.Y-CY;
+    Result.X := Round(CX+RX*Cos(Radians)-RY*Sin(Radians));
+    Result.Y := Round(CY+RX*Sin(Radians)+RY*Cos(Radians));
+  end;
+begin
+  if (FSelected < 0) or (FSelected >= Length(FLines)) then begin
+    ShowMessage('Selecione um objeto antes de girar.'); Exit;
+  end;
+  AngleText := '90';
+  if not InputQuery('Girar objeto', 'Ângulo em graus (sentido horário na tela):',AngleText) then Exit;
+  if not TryStrToFloat(AngleText,Degrees) then begin
+    ShowMessage('Ângulo inválido.'); Exit;
+  end;
+  if (IsNan(Degrees)) or (IsInfinite(Degrees)) or (Abs(Degrees)>36000) then begin
+    ShowMessage('Ângulo fora do limite.'); Exit;
+  end;
+  Radians := DegToRad(Degrees);
+  A := FLines[FSelected].A; B := FLines[FSelected].B;
+  CX := (A.X+B.X)/2; CY := (A.Y+B.Y)/2;
+  RecordChange;
+  FLines[FSelected].A := RotatePoint(A);
+  FLines[FSelected].B := RotatePoint(B);
+  FCanvas.Invalidate; RefreshStatus('Objeto girado');
+end;
+procedure TCADMainForm.MirrorSelected(Sender: TObject);
+var CX, CY: Double; Id: Integer;
+begin
+  Id := FSelected;
+  if (Id < 0) or (Id >= Length(FLines)) then begin
+    ShowMessage('Selecione um objeto antes de espelhar.'); Exit;
+  end;
+  CX := (FLines[Id].A.X+FLines[Id].B.X)/2;
+  CY := (FLines[Id].A.Y+FLines[Id].B.Y)/2;
+  RecordChange;
+  if TButton(Sender).Tag=0 then begin
+    FLines[Id].A.Y := Round(2*CY-FLines[Id].A.Y);
+    FLines[Id].B.Y := Round(2*CY-FLines[Id].B.Y);
+  end else begin
+    FLines[Id].A.X := Round(2*CX-FLines[Id].A.X);
+    FLines[Id].B.X := Round(2*CX-FLines[Id].B.X);
+  end;
+  FCanvas.Invalidate; RefreshStatus('Objeto espelhado');
 end;
 procedure TCADMainForm.EditLastObject(Sender: TObject);
 var V: string; MM, N: Integer;
