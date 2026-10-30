@@ -7,6 +7,7 @@ type
   TCADLine = record
     A, B: TPoint;
     Layer: Integer;
+    Kind: Integer; // 0 linha, 1 parede, 2 porta, 3 janela
   end;
   TCADMainForm = class(TForm)
   private
@@ -27,6 +28,8 @@ type
     procedure MouseMoveDrawing(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure NewDrawing(Sender: TObject);
     procedure ExportDXF(Sender: TObject);
+    procedure SaveDrawing(Sender: TObject);
+    procedure OpenDrawing(Sender: TObject);
     procedure UndoLine(Sender: TObject);
     function Snap(P: TPoint): TPoint;
     procedure RefreshStatus(const S: string);
@@ -55,6 +58,8 @@ begin
   AddButton('Exportar DXF', @ExportDXF);
   AddButton('Desfazer linha', @UndoLine);
   AddButton('Novo desenho', @NewDrawing);
+  AddButton('Salvar projeto', @SaveDrawing);
+  AddButton('Abrir projeto', @OpenDrawing);
   FLayerSelect := TComboBox.Create(Self); FLayerSelect.Parent := TopBar;
   FLayerSelect.Align := alRight; FLayerSelect.Width := 150;
   FLayerSelect.Style := csDropDownList;
@@ -66,6 +71,8 @@ begin
   FToolSelect.Align := alRight; FToolSelect.Width := 135;
   FToolSelect.Style := csDropDownList;
   FToolSelect.Items.Add('Linha'); FToolSelect.Items.Add('Retângulo');
+  FToolSelect.Items.Add('Parede'); FToolSelect.Items.Add('Porta');
+  FToolSelect.Items.Add('Janela');
   FToolSelect.ItemIndex := 0; FToolSelect.OnChange := @SelectionChanged;
   Footer := TPanel.Create(Self); Footer.Parent := Self; Footer.Align := alBottom;
   Footer.Height := 32; Footer.BevelOuter := bvNone; Footer.Color := clWhite;
@@ -95,6 +102,8 @@ begin
   N := Length(FLines); SetLength(FLines, N+1);
   FLines[N].A := A; FLines[N].B := B;
   FLines[N].Layer := FLayerSelect.ItemIndex;
+  FLines[N].Kind := FToolSelect.ItemIndex;
+  if FLines[N].Kind = 1 then FLines[N].Layer := 0;
 end;
 procedure TCADMainForm.RefreshStatus(const S: string);
 begin
@@ -123,9 +132,16 @@ begin
       2: FCanvas.Canvas.Pen.Color := RGBToColor(25,120,90);
     else FCanvas.Canvas.Pen.Color := RGBToColor(28,70,150);
     end;
+    case FLines[I].Kind of
+      1: FCanvas.Canvas.Pen.Width := 6;
+      2: begin FCanvas.Canvas.Pen.Width := 3; FCanvas.Canvas.Pen.Color := clRed; end;
+      3: begin FCanvas.Canvas.Pen.Width := 3; FCanvas.Canvas.Pen.Color := clAqua; end;
+    else FCanvas.Canvas.Pen.Width := 2;
+    end;
     FCanvas.Canvas.MoveTo(FLines[I].A.X, FLines[I].A.Y);
     FCanvas.Canvas.LineTo(FLines[I].B.X, FLines[I].B.Y);
   end;
+  FCanvas.Canvas.Pen.Width := 1;
   if FHasStart then begin
     FCanvas.Canvas.Brush.Color := clRed;
     FCanvas.Canvas.Ellipse(FStart.X-4,FStart.Y-4,FStart.X+4,FStart.Y+4);
@@ -211,9 +227,65 @@ begin
     end;
     L.Add('0');L.Add('ENDSEC');L.Add('0');L.Add('EOF');
     L.SaveToFile(D.FileName);
-    FPath := D.FileName; RefreshStatus('DXF exportado: '+ExtractFileName(FPath));
+    RefreshStatus('DXF exportado: '+ExtractFileName(D.FileName));
   finally
     L.Free; D.Free;
   end;
 end;
+procedure TCADMainForm.SaveDrawing(Sender: TObject);
+var D: TSaveDialog; L: TStringList; I: Integer;
+begin
+  D := TSaveDialog.Create(Self);
+  L := TStringList.Create;
+  try
+    D.Filter := 'Projeto CAD 2D (*.eacad)|*.eacad';
+    D.DefaultExt := 'eacad'; D.Options := D.Options + [ofOverwritePrompt];
+    if FPath <> '' then D.FileName := FPath else D.FileName := 'planta.eacad';
+    if not D.Execute then Exit;
+    L.Add('EACAD1');
+    L.Add(IntToStr(FMillimetersPerPixel));
+    for I := 0 to High(FLines) do
+      L.Add(Format('%d;%d;%d;%d;%d;%d', [FLines[I].A.X,FLines[I].A.Y,
+        FLines[I].B.X,FLines[I].B.Y,FLines[I].Layer,FLines[I].Kind]));
+    L.SaveToFile(D.FileName);
+    FPath := D.FileName; RefreshStatus('Projeto salvo: '+ExtractFileName(FPath));
+  finally L.Free; D.Free; end;
+end;
+procedure TCADMainForm.OpenDrawing(Sender: TObject);
+var D: TOpenDialog; L, Fields: TStringList; I, N: Integer; Temp: array of TCADLine;
+  Scale: Integer;
+begin
+  D := TOpenDialog.Create(Self);
+  L := TStringList.Create; Fields := TStringList.Create;
+  try
+    D.Filter := 'Projeto CAD 2D (*.eacad)|*.eacad';
+    if not D.Execute then Exit;
+    L.LoadFromFile(D.FileName);
+    if (L.Count < 2) or (L[0] <> 'EACAD1') then
+      raise Exception.Create('Formato de projeto não reconhecido');
+    Scale := StrToInt(L[1]);
+    if (Scale < 1) or (Scale > 100000) then
+      raise Exception.Create('Escala inválida');
+    SetLength(Temp,L.Count-2);
+    Fields.StrictDelimiter := True; Fields.Delimiter := ';';
+    for I := 2 to L.Count-1 do begin
+      Fields.DelimitedText := L[I];
+      if Fields.Count <> 6 then raise Exception.CreateFmt('Linha %d inválida',[I+1]);
+      N := I-2;
+      Temp[N].A.X := StrToInt(Fields[0]); Temp[N].A.Y := StrToInt(Fields[1]);
+      Temp[N].B.X := StrToInt(Fields[2]); Temp[N].B.Y := StrToInt(Fields[3]);
+      Temp[N].Layer := StrToInt(Fields[4]); Temp[N].Kind := StrToInt(Fields[5]);
+      if (Temp[N].Layer < 0) or (Temp[N].Layer > 2) or
+         (Temp[N].Kind < 0) or (Temp[N].Kind > 4) then
+        raise Exception.CreateFmt('Objeto inválido na linha %d',[I+1]);
+    end;
+    FLines := Temp; FMillimetersPerPixel := Scale;
+    FHasStart := False; FPath := D.FileName;
+    FCanvas.Invalidate; RefreshStatus('Projeto aberto: '+ExtractFileName(FPath));
+  except on E: Exception do
+    MessageDlg('Erro ao abrir projeto', E.Message, mtError, [mbOK], 0);
+  end;
+  Fields.Free; L.Free; D.Free;
+end;
+
 end.
