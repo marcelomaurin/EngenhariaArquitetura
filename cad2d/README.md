@@ -178,3 +178,8 @@ O desenho permite **Girar seleção** por ângulo em graus (em torno do ponto m�
 ## Offset paralelo (2026-10-30)
 
 Ferramenta **Offset seleção** cria cópia paralela de um segmento selecionado, com distância positiva ou negativa em milímetros. A operação participa do histórico Desfazer/Refazer. A implementação usa coordenadas inteiras (50 mm por pixel no desenho inicial); pequenas distâncias podem ser arredondadas. Não realiza offset de curvas, polilinhas conectadas ou fechamento automático de cantos, e ainda requer homologação visual.
+
+
+## Extend — prolongamento até linha (2026-10-30)
+
+O comando **Estender até linha** prolonga o segmento selecionado até a interseção com outro segmento informado pelo número (indexação começando em 1, na ordem interna do projeto). A linha de limite precisa conter o ponto de interseção; linhas paralelas e interseções já existentes são recusadas. A operação participa do histórico Desfazer/Refazer. **Limitações:** não há seleção gráfica do segmento de limite; é um Extend de linhas retas, sem curvas, tolerâncias CAD avançadas ou geometria em dupla precisão no modelo persistido.
