@@ -461,6 +461,7 @@ begin
   ActionRow.Height := 44;
   ActionRow.BevelOuter := bvNone;
   ActionRow.Color := clPLCartao;
+  ActionRow.Tag := 26001;
   Bt := TButton.Create(Self);
   Bt.Parent := ActionRow;
   Bt.SetBounds(12, 5, 92, 32);
@@ -773,7 +774,7 @@ begin
     for I := 0 to FPainelTarefa.ControlCount - 1 do
     begin
       C := FPainelTarefa.Controls[I];
-      if not (C is TLabel) then C.Enabled := T <> nil;
+      if (not (C is TLabel)) and (C.Tag <> 26001) then C.Enabled := T <> nil;
     end;
     if T = nil then
     begin
@@ -781,6 +782,8 @@ begin
       FTarNome.Text := ''; FTarDuracao.Text := ''; FTarPred.Text := '';
       FTarResp.Text := ''; FTarNotas.Text := ''; FTarApp.ItemIndex := -1;
       FTarSituacao.ItemIndex := -1; FTarProgresso.Value := 0; FTarDatas.Caption := '';
+      FVincLista.Items.Clear;
+      FVincSucessora.Items.Clear;
       Exit;
     end;
     if T.Marco then FTarId.Caption := T.Id + '  •  marco' else FTarId.Caption := T.Id;
