@@ -324,6 +324,17 @@ begin
       FCanvas.Canvas.Pen.Color := clFuchsia;
       FCanvas.Canvas.Pen.Width := Max(3, FCanvas.Canvas.Pen.Width);
     end;
+    // Portas e janelas ganham uma faixa de abertura visual sobre a parede,
+    // mas ainda não modificam a topologia da geometria arquitetônica.
+    if FLines[I].Kind in [3,4] then begin
+      FCanvas.Canvas.Pen.Width := Max(4,Round(180*FZoom/FMillimetersPerPixel));
+      FCanvas.Canvas.Pen.Color := clWhite;
+      FCanvas.Canvas.MoveTo(Round(FLines[I].A.X*FZoom)+FPanX,Round(FLines[I].A.Y*FZoom)+FPanY);
+      FCanvas.Canvas.LineTo(Round(FLines[I].B.X*FZoom)+FPanX,Round(FLines[I].B.Y*FZoom)+FPanY);
+      if FLines[I].Kind=3 then FCanvas.Canvas.Pen.Color := clRed
+      else FCanvas.Canvas.Pen.Color := clAqua;
+      FCanvas.Canvas.Pen.Width := 2;
+    end;
     FCanvas.Canvas.MoveTo(Round(FLines[I].A.X*FZoom)+FPanX, Round(FLines[I].A.Y*FZoom)+FPanY);
     FCanvas.Canvas.LineTo(Round(FLines[I].B.X*FZoom)+FPanX, Round(FLines[I].B.Y*FZoom)+FPanY);
     if FShowDimensions then begin
