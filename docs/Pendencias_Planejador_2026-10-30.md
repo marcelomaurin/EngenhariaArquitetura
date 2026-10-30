@@ -146,4 +146,21 @@ A segunda leitura do código mostrou três lacunas adicionais, sem execução do
 - [Auditoria geral](Auditoria_Lacunas_2026-10-30.md)
 - [README do aplicativo](../planejador/README.md)
 
-**Resumo:** priorizar **segurança de arquivos (PL-001 a PL-003)** e **P2 — despacho, retorno, liberação e revisão de tarefas (PL-004 a PL-012)**. Depois completar P3; P4 entra quando houver contratos de objetos/skins. Nenhum código foi alterado nesta revisão.
+**Resumo:** priorizar **segurança de arquivos (PL-001 a PL-003)** e **P2 — despacho, retorno, liberação e revisão de tarefas (PL-004 a PL-012)**. Depois completar P3; P4 entra quando houver contratos de objetos/skins.
+
+## 9. Registro da implementação parcial — 30/10/2026
+
+**Escopo interrompido por solicitação do usuário:** registrar o andamento e aguardar a próxima mudança, **sem iniciar integração com outros aplicativos**.
+
+| Item | Estado no código da branch `fila` | Evidência e próximo passo |
+|---|---|---|
+| PL-001 — abertura segura | **Parcial** | `plan_principal.pas` deixou de apagar o projeto no bloco `except` de `AbrirArquivo`, commit `855fc9a`. Entretanto, `plan_json.pas/PLProjetoDeJSON` ainda executa `Doc.Novo` e escreve no projeto de destino antes de terminar validação. **Abrir JSON inválido ainda pode perder dados.** Implementar carga isolada + troca atômica usando `TPLProjeto.TrocarCom`. |
+| PL-002 — edição da tarefa | **Implementação inicial, não homologada** | `plan_documento.pas` criou `AplicarEdicaoTarefa` para validar nome, duração, predecessoras e progresso antes de alterar; `plan_principal.pas` usa o método no painel. Commits `8e28f20` e `855fc9a`. Validar compilação e adicionar testes que garantam ausência de edição parcial. |
+| PL-003 — salvamento protegido | **Pendente** | `plan_json.pas/PLSalvarProjeto` ainda grava com `TStringList.SaveToFile(AArquivo)` diretamente no arquivo final. Implementar arquivo temporário no mesmo diretório, substituição segura, backup/recuperação, e simular erro de escrita. |
+| PL-023 a PL-025 — validações da importação | **Pendentes** | Testar grafo completo, limites dos campos e compatibilidade de versão antes de aceitar projeto externo. |
+| Testes de regressão | **Pendentes** | Não foi executada compilação nem suíte automatizada para esses commits; não marcar as correções como concluídas. |
+
+**Comportamento esperado ao retomar:** concluir PL-001 a PL-003 e os testes; preservar `.plan.json` antigos; conferir build Lazarus/FPC em Windows e Linux. **P2 (integração com CAD/Maquete e outros programas) permanece fora do escopo desta alteração.**
+
+**Estado das alterações:** código parcial publicado na `fila`, documentação atualizada; sem homologação, sem alteração do MultiCNC.
+
