@@ -42,6 +42,7 @@ type
     procedure RotateSelected(Sender: TObject);
     procedure MirrorSelected(Sender: TObject);
     procedure OffsetSelected(Sender: TObject);
+    procedure ExtendSelected(Sender: TObject);
     procedure SelectionChanged(Sender: TObject);
     procedure AddSegment(const A, B: TPoint);
     procedure AddCircle(const Center, Edge: TPoint);
@@ -106,6 +107,7 @@ begin
   AddButton('Espelhar X', @MirrorSelected); B.Tag := 0;
   AddButton('Espelhar Y', @MirrorSelected); B.Tag := 1;
   AddButton('Offset seleção', @OffsetSelected);
+  AddButton('Estender até linha', @ExtendSelected);
   AddButton('Zoom +', @ZoomDrawing); B.Tag := 1;
   AddButton('Zoom -', @ZoomDrawing); B.Tag := -1;
   AddButton('Pan esquerda', @PanDrawing); B.Tag := 1;
@@ -543,6 +545,49 @@ begin
   FSelected := N;
   FCanvas.Invalidate;
   RefreshStatus('Offset paralelo criado');
+end;
+procedure TCADMainForm.ExtendSelected(Sender: TObject);
+var TargetText: string; Id, Other: Integer;
+  AX, AY, BX, BY, CX, CY, DX, DY, Den, T, U, PX, PY: Double;
+  A, B: TPoint;
+begin
+  Id := FSelected;
+  if (Id < 0) or (Id >= Length(FLines)) then begin
+    ShowMessage('Selecione o segmento que deseja estender.'); Exit;
+  end;
+  TargetText := IntToStr(Id+1);
+  if not InputQuery('Estender até linha', 'Número do segmento de limite (1 a '+
+    IntToStr(Length(FLines))+'):', TargetText) then Exit;
+  if (not TryStrToInt(TargetText,Other)) or (Other<1) or
+    (Other>Length(FLines)) or (Other=Id+1) then begin
+    ShowMessage('Segmento de limite inválido.'); Exit;
+  end;
+  Dec(Other);
+  A := FLines[Id].A; B := FLines[Id].B;
+  AX := A.X; AY := A.Y; BX := B.X; BY := B.Y;
+  CX := FLines[Other].A.X; CY := FLines[Other].A.Y;
+  DX := FLines[Other].B.X; DY := FLines[Other].B.Y;
+  Den := (BX-AX)*(DY-CY)-(BY-AY)*(DX-CX);
+  if Abs(Den)<0.000001 then begin
+    ShowMessage('Linhas paralelas ou coincidentes.'); Exit;
+  end;
+  T := ((CX-AX)*(DY-CY)-(CY-AY)*(DX-CX))/Den;
+  U := ((CX-AX)*(BY-AY)-(CY-AY)*(BX-AX))/Den;
+  if (U<0) or (U>1) then begin
+    ShowMessage('A interseção está fora do segmento de limite.'); Exit;
+  end;
+  if (T>=0) and (T<=1) then begin
+    ShowMessage('A interseção já está no segmento selecionado.'); Exit;
+  end;
+  if (Abs(T)>10000) then begin
+    ShowMessage('Prolongamento excede o limite.'); Exit;
+  end;
+  PX := AX+T*(BX-AX); PY := AY+T*(BY-AY);
+  RecordChange;
+  if T<0 then FLines[Id].A := Point(Round(PX),Round(PY))
+  else FLines[Id].B := Point(Round(PX),Round(PY));
+  FCanvas.Invalidate;
+  RefreshStatus('Segmento estendido até a interseção');
 end;
 procedure TCADMainForm.EditLastObject(Sender: TObject);
 var V: string; MM, N: Integer;
