@@ -48,6 +48,8 @@ type
     procedure MouseMoveDrawing(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure NewDrawing(Sender: TObject);
     procedure ExportDXF(Sender: TObject);
+    procedure ExportSVG(Sender: TObject);
+    procedure MeasureSelected(Sender: TObject);
     procedure SaveDrawing(Sender: TObject);
     procedure OpenDrawing(Sender: TObject);
     procedure UndoLine(Sender: TObject);
@@ -84,6 +86,8 @@ begin
   TopBar := TPanel.Create(Self); TopBar.Parent := Self; TopBar.Align := alTop;
   TopBar.Height := 48; TopBar.BevelOuter := bvNone;
   AddButton('Exportar DXF', @ExportDXF);
+  AddButton('Exportar SVG', @ExportSVG);
+  AddButton('Medir seleção', @MeasureSelected);
   AddButton('Desfazer', @UndoHistory);
   AddButton('Refazer', @RedoHistory);
   AddButton('Novo desenho', @NewDrawing);
@@ -232,6 +236,7 @@ begin
   FLines[N].Layer := FLayerSelect.ItemIndex;
   FLines[N].GroupID := FNextGroup;
   FLines[N].Kind := FToolSelect.ItemIndex;
+  if FLines[N].Kind = 1 then FLines[N].Kind := 0;
   case FLines[N].Kind of
     2: FLines[N].WidthMM := 150;
     3: FLines[N].WidthMM := 900;
@@ -466,6 +471,64 @@ begin
   FLines[N].WidthMM := MM;
   FCanvas.Invalidate;
   RefreshStatus('Dimensão atualizada');
+end;
+procedure TCADMainForm.MeasureSelected(Sender: TObject);
+var A, B: TPoint; MM: Double; V: string;
+begin
+  if (FSelected < 0) or (FSelected >= Length(FLines)) then begin
+    ShowMessage('Selecione um segmento antes de medir.'); Exit;
+  end;
+  A := FLines[FSelected].A; B := FLines[FSelected].B;
+  MM := Hypot(B.X-A.X,B.Y-A.Y)*FMillimetersPerPixel;
+  V := FormatFloat('0.00',MM/1000);
+  ShowMessage('Comprimento: ' + V + ' m (' +
+    IntToStr(Round(MM)) + ' mm)');
+end;
+procedure TCADMainForm.ExportSVG(Sender: TObject);
+var D: TSaveDialog; L: TStringList; I, MinX, MaxX, MinY, MaxY: Integer;
+  function Num(V: Integer): string;
+  begin Result := IntToStr(V*FMillimetersPerPixel); end;
+  function Stroke(K: Integer): string;
+  begin
+    case K of
+      2: Result := '#304c83';
+      3: Result := '#c44331';
+      4: Result := '#158f91';
+    else Result := '#204878';
+    end;
+  end;
+begin
+  D := TSaveDialog.Create(Self); L := TStringList.Create;
+  try
+    D.Filter := 'Scalable Vector Graphics (*.svg)|*.svg';
+    D.DefaultExt := 'svg'; D.FileName := 'planta.svg';
+    D.Options := D.Options + [ofOverwritePrompt];
+    if not D.Execute then Exit;
+    MinX := 0; MinY := 0; MaxX := 1000; MaxY := 1000;
+    if Length(FLines)>0 then begin
+      MinX := FLines[0].A.X; MaxX := MinX;
+      MinY := FLines[0].A.Y; MaxY := MinY;
+      for I := 0 to High(FLines) do begin
+        MinX := Min(MinX,Min(FLines[I].A.X,FLines[I].B.X));
+        MinY := Min(MinY,Min(FLines[I].A.Y,FLines[I].B.Y));
+        MaxX := Max(MaxX,Max(FLines[I].A.X,FLines[I].B.X));
+        MaxY := Max(MaxY,Max(FLines[I].A.Y,FLines[I].B.Y));
+      end;
+    end;
+    L.Add('<?xml version="1.0" encoding="UTF-8"?>');
+    L.Add('<svg xmlns="http://www.w3.org/2000/svg" viewBox="' +
+      Num(MinX-10) + ' ' + Num(MinY-10) + ' ' +
+      Num(Max(20,MaxX-MinX+20)) + ' ' + Num(Max(20,MaxY-MinY+20)) + '">');
+    for I := 0 to High(FLines) do
+      L.Add('<line x1="' + Num(FLines[I].A.X) + '" y1="' +
+        Num(FLines[I].A.Y) + '" x2="' + Num(FLines[I].B.X) +
+        '" y2="' + Num(FLines[I].B.Y) + '" stroke="' +
+        Stroke(FLines[I].Kind) + '" stroke-width="' +
+        IntToStr(Max(10,FLines[I].WidthMM)) + '"/>');
+    L.Add('</svg>');
+    L.SaveToFile(D.FileName);
+    RefreshStatus('SVG exportado: ' + ExtractFileName(D.FileName));
+  finally L.Free; D.Free; end;
 end;
 procedure TCADMainForm.ExportDXF(Sender: TObject);
 var D: TSaveDialog; L: TStringList; I: Integer;
