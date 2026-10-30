@@ -18,9 +18,9 @@ type
     FStart: TPoint;
     FGrid: Integer;
     FMillimetersPerPixel: Integer;
+    FPath: string;
     procedure SelectionChanged(Sender: TObject);
     procedure AddSegment(const A, B: TPoint);
-    FPath: string;
     procedure PaintDrawing(Sender: TObject);
     procedure CanvasClick(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
