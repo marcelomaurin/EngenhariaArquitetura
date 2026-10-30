@@ -658,15 +658,16 @@ end;
 procedure TPLJanelaPrincipal.AbrirArquivo(const AArquivo: string);
 begin
   try
+    { PLCarregarProjeto valida em documento temporario e somente entao
+      troca o projeto ativo; uma falha nao altera nome, caminho ou tarefas. }
     PLCarregarProjeto(FDoc, AArquivo);
     FArquivo := AArquivo;
     Mensagem('Projeto aberto: ' + ExtractFileName(AArquivo));
   except
     on E: Exception do
     begin
-      FDoc.Novo('Novo projeto', Date);
-      FArquivo := '';
       Mensagem('Não foi possível abrir o arquivo: ' + E.Message, True);
+      Exit;
     end;
   end;
   MostrarProjeto;
@@ -871,27 +872,29 @@ begin
 end;
 
 procedure TPLJanelaPrincipal.AoAplicarTarefa(Sender: TObject);
-var T: TPLTarefa; Err: string;
+var
+  T: TPLTarefa;
+  Err: string;
+  App: TPLAplicativo;
+  Sit: TPLSituacao;
 begin
   if FAtualizando then Exit;
   T := Selecionada;
   if T = nil then Exit;
-  Err := '';
-  if (Sender = FTarNome) or (Sender is TButton) then
-    if Trim(FTarNome.Text) <> '' then T.Nome := Trim(FTarNome.Text);
-  if ((Sender = FTarDuracao) or (Sender is TButton)) and (FTarDuracao.Text <> FDoc.TextoDuracao(T)) then
-    if not FDoc.DefinirDuracao(T, FTarDuracao.Text, Err) then Err := 'duração inválida: ' + Err;
-  if (Err = '') and ((Sender = FTarPred) or (Sender is TButton)) and
-    (FTarPred.Text <> FDoc.TextoPredecessoras(T)) then
-    if not FDoc.DefinirPredecessoras(T, FTarPred.Text, Err) then Err := 'predecessoras: ' + Err;
-  if FTarApp.ItemIndex >= 0 then T.Aplicativo := TPLAplicativo(FTarApp.ItemIndex);
-  if FTarSituacao.ItemIndex >= 0 then T.Situacao := TPLSituacao(FTarSituacao.ItemIndex);
-  T.Responsavel := FTarResp.Text;
-  T.Notas := FTarNotas.Text;
-  T.Progresso := FTarProgresso.Value;
-  if (T.Situacao = plsConcluida) and (T.Progresso < 100) then T.Progresso := 100;
-  FDoc.MarcarModificado;
-  if Err <> '' then Mensagem(T.Id + ' — ' + Err, True) else Mensagem('');
+  App := T.Aplicativo;
+  Sit := T.Situacao;
+  if FTarApp.ItemIndex >= 0 then App := TPLAplicativo(FTarApp.ItemIndex);
+  if FTarSituacao.ItemIndex >= 0 then Sit := TPLSituacao(FTarSituacao.ItemIndex);
+  { Validar nome, duracao, dependencias e progresso antes de aplicar qualquer
+    alteracao. Campos validos nao podem sobreviver a uma edicao invalida. }
+  if not FDoc.AplicarEdicaoTarefa(T, FTarNome.Text, FTarDuracao.Text,
+    FTarPred.Text, FTarResp.Text, FTarNotas.Text, App, Sit,
+    FTarProgresso.Value, Err) then
+  begin
+    Mensagem(T.Id + ' — ' + Err, True);
+    Exit;
+  end;
+  Mensagem('');
   Recalcular(T.Id);
 end;
 
