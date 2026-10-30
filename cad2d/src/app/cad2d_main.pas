@@ -21,6 +21,9 @@ type
     FGrid: Integer;
     FMillimetersPerPixel: Integer;
     FPath: string;
+    FSelected: Integer;
+    procedure SelectObjectAt(const P: TPoint);
+    procedure DeleteSelected(Sender: TObject);
     procedure SelectionChanged(Sender: TObject);
     procedure AddSegment(const A, B: TPoint);
     procedure PaintDrawing(Sender: TObject);
@@ -54,6 +57,7 @@ begin
   Constraints.MinWidth := 700; Constraints.MinHeight := 480;
   Color := RGBToColor(244,246,250); Font.Size := 10;
   FGrid := 20;
+  FSelected := -1;
   FMillimetersPerPixel := 50; // grade de 20 pixels equivale a 1 metro
   TopBar := TPanel.Create(Self); TopBar.Parent := Self; TopBar.Align := alTop;
   TopBar.Height := 48; TopBar.BevelOuter := bvNone;
@@ -63,6 +67,7 @@ begin
   AddButton('Salvar projeto', @SaveDrawing);
   AddButton('Abrir projeto', @OpenDrawing);
   AddButton('Editar último', @EditLastObject);
+  AddButton('Excluir seleção', @DeleteSelected);
   FLayerSelect := TComboBox.Create(Self); FLayerSelect.Parent := TopBar;
   FLayerSelect.Align := alRight; FLayerSelect.Width := 150;
   FLayerSelect.Style := csDropDownList;
@@ -76,6 +81,7 @@ begin
   FToolSelect.Items.Add('Linha'); FToolSelect.Items.Add('Retângulo');
   FToolSelect.Items.Add('Parede'); FToolSelect.Items.Add('Porta');
   FToolSelect.Items.Add('Janela');
+  FToolSelect.Items.Add('Selecionar');
   FToolSelect.ItemIndex := 0; FToolSelect.OnChange := @SelectionChanged;
   Footer := TPanel.Create(Self); Footer.Parent := Self; Footer.Align := alBottom;
   Footer.Height := 32; Footer.BevelOuter := bvNone; Footer.Color := clWhite;
@@ -147,6 +153,10 @@ begin
       4: begin FCanvas.Canvas.Pen.Width := 3; FCanvas.Canvas.Pen.Color := clAqua; end;
     else FCanvas.Canvas.Pen.Width := 2;
     end;
+    if I = FSelected then begin
+      FCanvas.Canvas.Pen.Color := clFuchsia;
+      FCanvas.Canvas.Pen.Width := Max(3, FCanvas.Canvas.Pen.Width);
+    end;
     FCanvas.Canvas.MoveTo(FLines[I].A.X, FLines[I].A.Y);
     FCanvas.Canvas.LineTo(FLines[I].B.X, FLines[I].B.Y);
   end;
@@ -165,6 +175,9 @@ begin
   end;
   if Button <> mbLeft then Exit;
   P := Snap(Point(X,Y));
+  if FToolSelect.ItemIndex = 5 then begin
+    SelectObjectAt(Point(X,Y)); Exit;
+  end;
   if not FHasStart then begin
     FStart := P; FHasStart := True;
     RefreshStatus('Selecione o segundo ponto');
@@ -193,19 +206,47 @@ begin
   if (Length(FLines) > 0) and
     (MessageDlg('Novo desenho','Descartar o desenho atual?',
      mtConfirmation,[mbYes,mbNo],0) <> mrYes) then Exit;
-  SetLength(FLines,0); FHasStart := False; FPath := '';
+  SetLength(FLines,0); FHasStart := False; FSelected := -1; FPath := '';
   FCanvas.Invalidate; RefreshStatus('Novo desenho');
 end;
 procedure TCADMainForm.UndoLine(Sender: TObject);
 begin
   if Length(FLines) = 0 then Exit;
   SetLength(FLines,Length(FLines)-1);
+  FSelected := -1;
   FCanvas.Invalidate; RefreshStatus('Última linha desfeita');
+end;
+procedure TCADMainForm.SelectObjectAt(const P: TPoint);
+var I: Integer; DX, DY, T, Dist, Best: Double; Nearest: Integer;
+begin
+  Best := 100.0; Nearest := -1;
+  for I := 0 to High(FLines) do begin
+    DX := FLines[I].B.X - FLines[I].A.X;
+    DY := FLines[I].B.Y - FLines[I].A.Y;
+    if DX*DX + DY*DY <= 0 then Continue;
+    T := ((P.X-FLines[I].A.X)*DX+(P.Y-FLines[I].A.Y)*DY)/(DX*DX+DY*DY);
+    T := Max(0.0,Min(1.0,T));
+    Dist := Sqrt(Sqr(P.X-FLines[I].A.X-T*DX)+Sqr(P.Y-FLines[I].A.Y-T*DY));
+    if (Dist <= 12) and (Dist < Best) then begin Best := Dist; Nearest := I; end;
+  end;
+  FSelected := Nearest; FCanvas.Invalidate;
+  if FSelected >= 0 then RefreshStatus('Objeto selecionado')
+  else RefreshStatus('Nenhum objeto próximo');
+end;
+procedure TCADMainForm.DeleteSelected(Sender: TObject);
+var I: Integer;
+begin
+  if FSelected < 0 then begin ShowMessage('Selecione um objeto antes de excluir.'); Exit; end;
+  for I := FSelected to High(FLines)-1 do FLines[I] := FLines[I+1];
+  SetLength(FLines,Length(FLines)-1);
+  FSelected := -1; FCanvas.Invalidate;
+  RefreshStatus('Objeto excluído');
 end;
 procedure TCADMainForm.EditLastObject(Sender: TObject);
 var V: string; MM, N: Integer;
 begin
-  N := High(FLines);
+  N := FSelected;
+  if N < 0 then N := High(FLines);
   if N < 0 then Exit;
   if FLines[N].Kind < 2 then begin
     ShowMessage('A última entidade não é parede, porta ou janela.'); Exit;
@@ -318,7 +359,7 @@ begin
          (Temp[N].Kind < 0) or (Temp[N].Kind > 4) then
         raise Exception.CreateFmt('Objeto inválido na linha %d',[I+1]);
     end;
-    FLines := Temp; FMillimetersPerPixel := Scale;
+    FLines := Temp; FSelected := -1; FMillimetersPerPixel := Scale;
     FHasStart := False; FPath := D.FileName;
     FCanvas.Invalidate; RefreshStatus('Projeto aberto: '+ExtractFileName(FPath));
   except on E: Exception do
