@@ -208,3 +208,8 @@ O comando **Exibir cotas** alterna rótulos com os comprimentos dos segmentos em
 ## Espessura de paredes no zoom
 
 A largura gráfica dos segmentos do tipo **Parede** acompanha a ampliação do viewport: a espessura nominal em milímetros é convertida em pixels considerando a escala de modelo e o zoom. **Importante:** isto é apenas representação com traço espesso; ainda não cria faces vetoriais de paredes, junções de canto ou vãos reais para portas e janelas.
+
+
+## Indicação visual de vãos de portas e janelas
+
+Os objetos lineares Porta e Janela desenham uma faixa branca sob o traço colorido, sugerindo uma abertura quando sobrepostos a uma parede previamente desenhada. **É apenas uma indicação gráfica**: ainda não corta o objeto parede, não calcula união/interseção arquitetônica e depende da ordem de renderização (paredes posteriores podem cobrir a faixa). O modelo precisa evoluir para paredes com faces e aberturas vinculadas antes de exportar informação confiável à Maquete 3D.
