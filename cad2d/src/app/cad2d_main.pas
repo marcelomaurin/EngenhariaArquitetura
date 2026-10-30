@@ -44,6 +44,7 @@ type
     procedure OffsetSelected(Sender: TObject);
     procedure ExtendSelected(Sender: TObject);
     procedure TrimSelected(Sender: TObject);
+    procedure ChamferSelected(Sender: TObject);
     procedure SelectionChanged(Sender: TObject);
     procedure AddSegment(const A, B: TPoint);
     procedure AddCircle(const Center, Edge: TPoint);
@@ -110,6 +111,7 @@ begin
   AddButton('Offset seleção', @OffsetSelected);
   AddButton('Estender até linha', @ExtendSelected);
   AddButton('Aparar (Trim)', @TrimSelected);
+  AddButton('Chanfro', @ChamferSelected);
   AddButton('Zoom +', @ZoomDrawing); B.Tag := 1;
   AddButton('Zoom -', @ZoomDrawing); B.Tag := -1;
   AddButton('Pan esquerda', @PanDrawing); B.Tag := 1;
@@ -633,6 +635,90 @@ begin
   else FLines[Id].B := CutPoint;
   FCanvas.Invalidate;
   RefreshStatus('Segmento aparado');
+end;
+procedure TCADMainForm.ChamferSelected(Sender: TObject);
+var OtherText, DistanceText: string; Id, Other, N: Integer;
+    AX, AY, BX, BY, CX, CY, DX, DY, Den, T, U,
+    PX, PY, Len1, Len2, Offset1, Offset2: Double;
+    P1, P2: TPoint; ChangeA1, ChangeA2: Boolean;
+begin
+  Id := FSelected;
+  if (Id < 0) or (Id >= Length(FLines)) then begin
+    ShowMessage('Selecione a primeira linha para criar o chanfro.'); Exit;
+  end;
+  OtherText := '';
+  if not InputQuery('Chanfro', 'Número da segunda linha:', OtherText) then Exit;
+  if (not TryStrToInt(OtherText,Other)) or (Other < 1) or
+    (Other > Length(FLines)) or (Other = Id+1) then begin
+    ShowMessage('Segunda linha inválida.'); Exit;
+  end;
+  Dec(Other);
+  DistanceText := '200';
+  if not InputQuery('Chanfro', 'Distância em milímetros:', DistanceText) then Exit;
+  if not TryStrToFloat(DistanceText,Offset1) then begin
+    ShowMessage('Distância inválida.'); Exit;
+  end;
+  if IsNan(Offset1) or IsInfinite(Offset1) or
+    (Offset1 <= 0) or (Offset1 > 1000000) then begin
+    ShowMessage('Distância fora do limite.'); Exit;
+  end;
+  AX := FLines[Id].A.X; AY := FLines[Id].A.Y;
+  BX := FLines[Id].B.X; BY := FLines[Id].B.Y;
+  CX := FLines[Other].A.X; CY := FLines[Other].A.Y;
+  DX := FLines[Other].B.X; DY := FLines[Other].B.Y;
+  Den := (BX-AX)*(DY-CY)-(BY-AY)*(DX-CX);
+  if Abs(Den) < 0.000001 then begin
+    ShowMessage('As linhas são paralelas ou coincidentes.'); Exit;
+  end;
+  T := ((CX-AX)*(DY-CY)-(CY-AY)*(DX-CX))/Den;
+  U := ((CX-AX)*(BY-AY)-(CY-AY)*(BX-AX))/Den;
+  PX := AX+T*(BX-AX); PY := AY+T*(BY-AY);
+  Len1 := Hypot(BX-AX,BY-AY);
+  Len2 := Hypot(DX-CX,DY-CY);
+  if (Len1 < 1) or (Len2 < 1) then Exit;
+  Offset2 := Offset1 / FMillimetersPerPixel;
+  ChangeA1 := T < 0.5;
+  ChangeA2 := U < 0.5;
+  if ChangeA1 then begin
+    if (Hypot(AX-PX,AY-PY) < Offset2) then begin
+      ShowMessage('Primeira linha curta para este chanfro.'); Exit;
+    end;
+    P1 := Point(Round(PX+(AX-PX)/Hypot(AX-PX,AY-PY)*Offset2),
+                Round(PY+(AY-PY)/Hypot(AX-PX,AY-PY)*Offset2));
+  end else begin
+    if Hypot(BX-PX,BY-PY) < Offset2 then begin
+      ShowMessage('Primeira linha curta para este chanfro.'); Exit;
+    end;
+    P1 := Point(Round(PX+(BX-PX)/Hypot(BX-PX,BY-PY)*Offset2),
+                Round(PY+(BY-PY)/Hypot(BX-PX,BY-PY)*Offset2));
+  end;
+  if ChangeA2 then begin
+    if Hypot(CX-PX,CY-PY) < Offset2 then begin
+      ShowMessage('Segunda linha curta para este chanfro.'); Exit;
+    end;
+    P2 := Point(Round(PX+(CX-PX)/Hypot(CX-PX,CY-PY)*Offset2),
+                Round(PY+(CY-PY)/Hypot(CX-PX,CY-PY)*Offset2));
+  end else begin
+    if Hypot(DX-PX,DY-PY) < Offset2 then begin
+      ShowMessage('Segunda linha curta para este chanfro.'); Exit;
+    end;
+    P2 := Point(Round(PX+(DX-PX)/Hypot(DX-PX,DY-PY)*Offset2),
+                Round(PY+(DY-PY)/Hypot(DX-PX,DY-PY)*Offset2));
+  end;
+  if (P1.X=P2.X) and (P1.Y=P2.Y) then begin
+    ShowMessage('Chanfro abaixo da resolução do desenho.'); Exit;
+  end;
+  RecordChange;
+  if ChangeA1 then FLines[Id].A := P1 else FLines[Id].B := P1;
+  if ChangeA2 then FLines[Other].A := P2 else FLines[Other].B := P2;
+  N := Length(FLines); SetLength(FLines,N+1);
+  FLines[N].A := P1; FLines[N].B := P2;
+  FLines[N].Layer := FLines[Id].Layer;
+  FLines[N].Kind := 0; FLines[N].WidthMM := 0;
+  FLines[N].GroupID := FNextGroup; Inc(FNextGroup);
+  FSelected := N;
+  FCanvas.Invalidate;
+  RefreshStatus('Chanfro criado');
 end;
 procedure TCADMainForm.EditLastObject(Sender: TObject);
 var V: string; MM, N: Integer;
