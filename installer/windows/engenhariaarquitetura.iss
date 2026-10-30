@@ -37,7 +37,7 @@ WizardStyle=modern
 WizardImageFile=..\..\dist\installer-images\welcome.bmp
 WizardSmallImageFile=..\..\dist\installer-images\small.bmp
 WizardSizePercent=120
-UninstallDisplayIcon={app}\planejador.exe
+UninstallDisplayIcon={app}\engenhariaarquitetura.exe
 CloseApplications=yes
 
 [Languages]
@@ -59,6 +59,7 @@ Name: "extra\docs"; Description: "Documentação da plataforma"; Types: full cus
 Name: "{userdocs}\EngenhariaArquitetura Projetos"
 
 [Files]
+Source: "..\..\dist\app\engenhariaarquitetura.exe"; DestDir: "{app}"; Components: apps; Flags: ignoreversion
 Source: "..\..\dist\app\planejador.exe"; DestDir: "{app}"; Components: apps\planejador; Flags: ignoreversion
 Source: "..\..\dist\app\exemplos\*"; DestDir: "{app}\exemplos"; Components: extra\exemplos; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\..\dist\app\exemplos\*"; DestDir: "{userdocs}\EngenhariaArquitetura Projetos\Exemplos"; Components: extra\exemplos; Flags: ignoreversion onlyifdoesntexist recursesubdirs createallsubdirs
@@ -68,12 +69,15 @@ Source: "..\..\dist\app\build-manifest.json"; DestDir: "{app}"; Flags: ignorever
 Source: "..\..\dist\installer-images\slide*.bmp"; Flags: dontcopy
 
 [Tasks]
+Name: "desktopicon_launcher"; Description: "Criar atalho da Central de Aplicativos na área de trabalho"; GroupDescription: "Atalhos da área de trabalho:"; Components: apps; Flags: unchecked
 Name: "desktopicon_planejador"; Description: "Criar atalho do Planejador na área de trabalho"; GroupDescription: "Atalhos da área de trabalho:"; Components: apps\planejador; Flags: unchecked
 
 [Icons]
+Name: "{autoprograms}\EngenhariaArquitetura\Central de Aplicativos"; Filename: "{app}\engenhariaarquitetura.exe"; Components: apps
 Name: "{autoprograms}\EngenhariaArquitetura\Planejador"; Filename: "{app}\planejador.exe"; Components: apps\planejador
 Name: "{autoprograms}\EngenhariaArquitetura\Planejador - exemplo da residência"; Filename: "{app}\planejador.exe"; Parameters: """{app}\exemplos\residencia.plan.json"""; Components: apps\planejador and extra\exemplos
 Name: "{autoprograms}\EngenhariaArquitetura\Documentação"; Filename: "{app}\documentation"; Components: extra\docs
+Name: "{autodesktop}\EngenhariaArquitetura"; Filename: "{app}\engenhariaarquitetura.exe"; Tasks: desktopicon_launcher; Components: apps
 Name: "{autodesktop}\Planejador"; Filename: "{app}\planejador.exe"; Tasks: desktopicon_planejador; Components: apps\planejador
 
 [Run]
