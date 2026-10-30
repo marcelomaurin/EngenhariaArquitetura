@@ -183,3 +183,8 @@ Ferramenta **Offset seleção** cria cópia paralela de um segmento selecionado,
 ## Extend — prolongamento até linha (2026-10-30)
 
 O comando **Estender até linha** prolonga o segmento selecionado até a interseção com outro segmento informado pelo número (indexação começando em 1, na ordem interna do projeto). A linha de limite precisa conter o ponto de interseção; linhas paralelas e interseções já existentes são recusadas. A operação participa do histórico Desfazer/Refazer. **Limitações:** não há seleção gráfica do segmento de limite; é um Extend de linhas retas, sem curvas, tolerâncias CAD avançadas ou geometria em dupla precisão no modelo persistido.
+
+
+## Trim — aparar segmento (2026-10-30)
+
+O comando **Aparar (Trim)** trabalha sobre o segmento selecionado e solicita o índice do segmento de limite, seguido da extremidade A ou B que será removida. Exige que a interseção esteja dentro de ambos os segmentos e registra a alteração no Desfazer/Refazer. Limitações: operação somente sobre linhas retas, sem seleção gráfica do limite, múltiplos cortes, curvas ou tolerâncias geométricas avançadas; coordenadas são arredondadas para pontos inteiros.
