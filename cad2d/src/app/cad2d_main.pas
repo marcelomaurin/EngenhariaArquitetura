@@ -32,6 +32,7 @@ type
     procedure SaveDrawing(Sender: TObject);
     procedure OpenDrawing(Sender: TObject);
     procedure UndoLine(Sender: TObject);
+    procedure EditLastObject(Sender: TObject);
     function Snap(P: TPoint): TPoint;
     procedure RefreshStatus(const S: string);
   public
@@ -61,6 +62,7 @@ begin
   AddButton('Novo desenho', @NewDrawing);
   AddButton('Salvar projeto', @SaveDrawing);
   AddButton('Abrir projeto', @OpenDrawing);
+  AddButton('Editar último', @EditLastObject);
   FLayerSelect := TComboBox.Create(Self); FLayerSelect.Parent := TopBar;
   FLayerSelect.Align := alRight; FLayerSelect.Width := 150;
   FLayerSelect.Style := csDropDownList;
@@ -200,6 +202,24 @@ begin
   SetLength(FLines,Length(FLines)-1);
   FCanvas.Invalidate; RefreshStatus('Última linha desfeita');
 end;
+procedure TCADMainForm.EditLastObject(Sender: TObject);
+var V: string; MM, N: Integer;
+begin
+  N := High(FLines);
+  if N < 0 then Exit;
+  if FLines[N].Kind < 2 then begin
+    ShowMessage('A última entidade não é parede, porta ou janela.'); Exit;
+  end;
+  V := IntToStr(FLines[N].WidthMM);
+  if not InputQuery('Propriedade dimensional',
+     'Espessura ou largura nominal (mm):', V) then Exit;
+  if (not TryStrToInt(V, MM)) or (MM < 50) or (MM > 10000) then begin
+    ShowMessage('Informe de 50 a 10000 mm.'); Exit;
+  end;
+  FLines[N].WidthMM := MM;
+  FCanvas.Invalidate;
+  RefreshStatus('Dimensão atualizada');
+end;
 procedure TCADMainForm.ExportDXF(Sender: TObject);
 var D: TSaveDialog; L: TStringList; I: Integer;
   function DXFCoord(V: Integer): string;
@@ -249,18 +269,19 @@ begin
     D.DefaultExt := 'eacad'; D.Options := D.Options + [ofOverwritePrompt];
     if FPath <> '' then D.FileName := FPath else D.FileName := 'planta.eacad';
     if not D.Execute then Exit;
-    L.Add('EACAD1');
+    L.Add('EACAD2');
     L.Add(IntToStr(FMillimetersPerPixel));
     for I := 0 to High(FLines) do
-      L.Add(Format('%d;%d;%d;%d;%d;%d', [FLines[I].A.X,FLines[I].A.Y,
-        FLines[I].B.X,FLines[I].B.Y,FLines[I].Layer,FLines[I].Kind]));
+      L.Add(Format('%d;%d;%d;%d;%d;%d;%d', [FLines[I].A.X,FLines[I].A.Y,
+        FLines[I].B.X,FLines[I].B.Y,FLines[I].Layer,FLines[I].Kind,
+        FLines[I].WidthMM]));
     L.SaveToFile(D.FileName);
     FPath := D.FileName; RefreshStatus('Projeto salvo: '+ExtractFileName(FPath));
   finally L.Free; D.Free; end;
 end;
 procedure TCADMainForm.OpenDrawing(Sender: TObject);
 var D: TOpenDialog; L, Fields: TStringList; I, N: Integer; Temp: array of TCADLine;
-  Scale: Integer;
+  Scale: Integer; Legacy: Boolean;
 begin
   D := TOpenDialog.Create(Self);
   L := TStringList.Create; Fields := TStringList.Create;
@@ -268,8 +289,9 @@ begin
     D.Filter := 'Projeto CAD 2D (*.eacad)|*.eacad';
     if not D.Execute then Exit;
     L.LoadFromFile(D.FileName);
-    if (L.Count < 2) or (L[0] <> 'EACAD1') then
+    if (L.Count < 2) or ((L[0] <> 'EACAD1') and (L[0] <> 'EACAD2')) then
       raise Exception.Create('Formato de projeto não reconhecido');
+    Legacy := L[0] = 'EACAD1';
     Scale := StrToInt(L[1]);
     if (Scale < 1) or (Scale > 100000) then
       raise Exception.Create('Escala inválida');
@@ -277,11 +299,21 @@ begin
     Fields.StrictDelimiter := True; Fields.Delimiter := ';';
     for I := 2 to L.Count-1 do begin
       Fields.DelimitedText := L[I];
-      if Fields.Count <> 6 then raise Exception.CreateFmt('Linha %d inválida',[I+1]);
+      if (Legacy and (Fields.Count <> 6)) or
+        ((not Legacy) and (Fields.Count <> 7)) then
+        raise Exception.CreateFmt('Linha %d inválida',[I+1]);
       N := I-2;
       Temp[N].A.X := StrToInt(Fields[0]); Temp[N].A.Y := StrToInt(Fields[1]);
       Temp[N].B.X := StrToInt(Fields[2]); Temp[N].B.Y := StrToInt(Fields[3]);
       Temp[N].Layer := StrToInt(Fields[4]); Temp[N].Kind := StrToInt(Fields[5]);
+      if Legacy then begin
+        case Temp[N].Kind of
+          2: Temp[N].WidthMM := 150;
+          3: Temp[N].WidthMM := 900;
+          4: Temp[N].WidthMM := 1200;
+        else Temp[N].WidthMM := 0;
+        end;
+      end else Temp[N].WidthMM := StrToInt(Fields[6]);
       if (Temp[N].Layer < 0) or (Temp[N].Layer > 2) or
          (Temp[N].Kind < 0) or (Temp[N].Kind > 4) then
         raise Exception.CreateFmt('Objeto inválido na linha %d',[I+1]);
