@@ -1,6 +1,7 @@
 program cad2d;
 {$mode objfpc}{$H+}
 uses Interfaces, Forms, cad2d_main;
+{$R *.res}
 begin
  Application.Initialize;
  Application.Title := 'CAD Arquitetônico 2D';

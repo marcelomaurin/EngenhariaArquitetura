@@ -50,4 +50,8 @@ Os próximos aplicativos da plataforma entram como novos componentes em `engenha
 
 ## Validação
 
-Não distribuir um instalador se a compilação ou os testes falharem. A versão 0.01 (sequência 001) e a 0.02 (002) foram geradas no Linux pelo `build_release_wine.sh` e testadas no Wine: assistente em português, instalação completa, atalhos, abertura do Planejador instalado com o exemplo e desinstalação. O `build_release.ps1` segue os mesmos passos, mas ainda não foi executado no Windows.
+Não distribuir um instalador se a compilação ou os testes falharem. A versão 0.01 (sequência 001) e a 0.02 (002) foram geradas no Linux pelo `build_release_wine.sh` e testadas no Wine: assistente em português, instalação completa, atalhos, abertura do Planejador instalado com o exemplo e desinstalação. O `build_release.ps1` também foi executado no Windows: os três aplicativos e o instalador compilaram, com 52 verificações de console e nenhuma falha. A instalação e a desinstalação desta compilação ainda exigem homologação visual.
+
+## Acesso principal e ícones
+
+A Central de Aplicativos (engenhariaarquitetura.exe) é instalada com os aplicativos e abre ao concluir a instalação. Seu atalho EngenhariaArquitetura na área de trabalho vem selecionado por padrão. Central, Planejador e CAD 2D incorporam o ícone da plataforma nos executáveis, usado também pelos atalhos e pelas janelas do Windows.

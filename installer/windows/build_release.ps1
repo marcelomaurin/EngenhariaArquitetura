@@ -35,7 +35,7 @@ $Lazbuild = Find-Tool "LAZBUILD" @("lazbuild.exe", "C:\lazarus\lazbuild.exe")
 $FpcCandidates = @("fpc.exe") + @(Get-ChildItem "C:\lazarus\fpc\*\bin\x86_64-win64\fpc.exe" -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
 $Fpc = Find-Tool "FPC" $FpcCandidates
 $Python = Find-Tool "PYTHON" @("python.exe", "py.exe")
-$Iscc = Find-Tool "ISCC" @("ISCC.exe", "C:\Program Files (x86)\Inno Setup 6\ISCC.exe", "C:\Program Files\Inno Setup 6\ISCC.exe", "C:\Program Files (x86)\Inno Setup 7\ISCC.exe")
+$Iscc = Find-Tool "ISCC" @("ISCC.exe", "C:\Program Files (x86)\Inno Setup 6\ISCC.exe", "C:\Program Files\Inno Setup 6\ISCC.exe", "C:\Program Files (x86)\Inno Setup 7\ISCC.exe", "C:\Program Files\Inno Setup 7\ISCC.exe")
 $Chatgpt = if ($env:EA_CHATGPT_DIR) { $env:EA_CHATGPT_DIR } else { Join-Path (Split-Path $Root -Parent) "CHATGPT" }
 $Core = Join-Path $Root "third_party\chatgpt\AIProjectCore"
 if (Test-Path (Join-Path $Chatgpt "pacote\AI Project Core")) { $Core = Join-Path $Chatgpt "pacote\AI Project Core" }
@@ -44,7 +44,11 @@ $Dist = Join-Path $Root "dist"; $App = Join-Path $Dist "app"; $Bin = Join-Path $
 if (Test-Path $App) { Remove-Item -Recurse -Force $App }
 New-Item -ItemType Directory -Force $App, $Bin, (Join-Path $Dist "build-logs"), (Join-Path $Dist "tests"), "setup" | Out-Null
 
-$Targets = @(@{ Project = "planejador\src\app\planejador"; Name = "planejador" }, @{ Project = "launcher\src\app\engenhariaarquitetura"; Name = "engenhariaarquitetura" })
+$Targets = @(
+  @{ Project = "planejador\src\app\planejador"; Name = "planejador" },
+  @{ Project = "launcher\src\app\engenhariaarquitetura"; Name = "engenhariaarquitetura" },
+  @{ Project = "cad2d\src\app\cad2d"; Name = "cad2d" }
+)
 foreach ($t in $Targets) {
   Write-Host "Compilando $($t.Name)..."
   $log = Join-Path $Dist "build-logs\$($t.Name).log"
@@ -70,12 +74,13 @@ foreach ($t in $Tests) {
   $qa += [ordered]@{ test = $name; passed = $ok; summary = "$summary" }
   if (-not $ok) { $run; throw "Testes falharam: $name" }
 }
-ConvertTo-Json -InputObject @($qa) | Set-Content -Encoding UTF8 (Join-Path $App "qa-tests.json")
+[System.IO.File]::WriteAllText((Join-Path $App "qa-tests.json"), (ConvertTo-Json -InputObject @($qa)), [System.Text.UTF8Encoding]::new($false))
 
 New-Item -ItemType Directory -Force (Join-Path $App "documentation\docs"), (Join-Path $App "exemplos"), (Join-Path $App "licencas") | Out-Null
 Copy-Item README.md (Join-Path $App "documentation")
 Copy-Item docs\*.md (Join-Path $App "documentation\docs")
 Copy-Item planejador\README.md (Join-Path $App "documentation\Planejador_README.md")
+Copy-Item cad2d\README.md (Join-Path $App "documentation\CAD2D_README.md")
 Copy-Item planejador\examples\*.plan.json (Join-Path $App "exemplos")
 Copy-Item third_party\chatgpt\LICENSE (Join-Path $App "licencas\CHATGPT_LICENSE.txt")
 
@@ -91,7 +96,7 @@ if ($LASTEXITCODE -ne 0) { throw "Falha no Inno Setup" }
 Copy-Item (Join-Path $Dist "$Name.exe") $Bin -Force
 Copy-Item (Join-Path $Dist "$Name.exe") "setup" -Force
 $hash = (Get-FileHash (Join-Path $Dist "$Name.exe") -Algorithm SHA256).Hash.ToLower()
-$sums = @(); if (Test-Path "setup\SHA256SUMS") { $sums = Get-Content "setup\SHA256SUMS" | Where-Object { $_ -and ($_ -notlike "*  $Name.exe") } }
+$sums = @(); if (Test-Path "setup\SHA256SUMS") { $sums = @(Get-Content "setup\SHA256SUMS" | Where-Object { $_ -and ($_ -notlike "*  $Name.exe") }) }
 $sums += "$hash  $Name.exe"
 $sums | Set-Content -Encoding ASCII "setup\SHA256SUMS"
 Copy-Item (Join-Path $App "build-manifest.json") "setup\build-manifest-$SetupSeq.json" -Force

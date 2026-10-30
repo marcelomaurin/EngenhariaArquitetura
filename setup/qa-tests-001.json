@@ -1,2 +1,7 @@
 [
-  {"test": "test_planejador_core", "passed": true, "summary": "38 verificações, 0 falhas"}]
+    {
+        "test":  "test_planejador_core",
+        "passed":  true,
+        "summary":  "52 verificações, 0 falhas"
+    }
+]

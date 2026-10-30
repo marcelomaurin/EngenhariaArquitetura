@@ -40,6 +40,7 @@ CORE="$ROOT/third_party/chatgpt/AIProjectCore"
 TARGETS=(
   "planejador/src/app/planejador|planejador"
   "launcher/src/app/engenhariaarquitetura|engenhariaarquitetura"
+  "cad2d/src/app/cad2d|cad2d"
 )
 for t in "${TARGETS[@]}"; do
   project=${t%%|*}; name=${t##*|}
@@ -81,6 +82,7 @@ mkdir -p "$APP/documentation/docs" "$APP/exemplos" "$APP/licencas"
 cp README.md "$APP/documentation/"
 cp docs/*.md "$APP/documentation/docs/"
 cp planejador/README.md "$APP/documentation/Planejador_README.md"
+cp cad2d/README.md "$APP/documentation/CAD2D_README.md"
 cp planejador/examples/*.plan.json "$APP/exemplos/"
 cp third_party/chatgpt/LICENSE "$APP/licencas/CHATGPT_LICENSE.txt"
 

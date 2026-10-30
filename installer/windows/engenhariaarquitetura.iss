@@ -1,4 +1,4 @@
-﻿; Instalador Windows x64 da plataforma EngenhariaArquitetura.
+; Instalador Windows x64 da plataforma EngenhariaArquitetura.
 ; Gerado por build_release_wine.sh (Linux) ou build_release.bat (Windows),
 ; que criam dist\version.iss, dist\app e dist\installer-images.
 #ifndef MyAppName
@@ -27,7 +27,7 @@ DefaultGroupName=EngenhariaArquitetura
 DisableProgramGroupPage=yes
 OutputDir=..\..\dist
 OutputBaseFilename={#OutputExeName}
-SetupIconFile=..\..\planejador\src\app\planejador.ico
+SetupIconFile=..\..\launcher\src\app\engenhariaarquitetura.ico
 Compression=lzma2
 SolidCompression=yes
 ArchitecturesAllowed=x64compatible
@@ -51,6 +51,7 @@ Name: "custom"; Description: "Instalação personalizada (escolher os itens)"; F
 [Components]
 Name: "apps"; Description: "Aplicativos da plataforma"; Types: full compact custom; Flags: fixed
 Name: "apps\planejador"; Description: "Planejador - tarefas, dependências, caminho crítico e Gantt"; Types: full compact custom; Flags: fixed
+Name: "apps\cad2d"; Description: "CAD Arquitetônico 2D - plantas baixas, paredes, esquadrias e cotas"; Types: full compact custom; Flags: fixed
 Name: "extra"; Description: "Recursos complementares"; Types: full custom
 Name: "extra\exemplos"; Description: "Projetos de exemplo"; Types: full custom
 Name: "extra\docs"; Description: "Documentação da plataforma"; Types: full custom
@@ -61,6 +62,7 @@ Name: "{userdocs}\EngenhariaArquitetura Projetos"
 [Files]
 Source: "..\..\dist\app\engenhariaarquitetura.exe"; DestDir: "{app}"; Components: apps; Flags: ignoreversion
 Source: "..\..\dist\app\planejador.exe"; DestDir: "{app}"; Components: apps\planejador; Flags: ignoreversion
+Source: "..\..\dist\app\cad2d.exe"; DestDir: "{app}"; Components: apps\cad2d; Flags: ignoreversion
 Source: "..\..\dist\app\exemplos\*"; DestDir: "{app}\exemplos"; Components: extra\exemplos; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\..\dist\app\exemplos\*"; DestDir: "{userdocs}\EngenhariaArquitetura Projetos\Exemplos"; Components: extra\exemplos; Flags: ignoreversion onlyifdoesntexist recursesubdirs createallsubdirs
 Source: "..\..\dist\app\documentation\*"; DestDir: "{app}\documentation"; Components: extra\docs; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -69,19 +71,22 @@ Source: "..\..\dist\app\build-manifest.json"; DestDir: "{app}"; Flags: ignorever
 Source: "..\..\dist\installer-images\slide*.bmp"; Flags: dontcopy
 
 [Tasks]
-Name: "desktopicon_launcher"; Description: "Criar atalho da Central de Aplicativos na área de trabalho"; GroupDescription: "Atalhos da área de trabalho:"; Components: apps; Flags: unchecked
+Name: "desktopicon_launcher"; Description: "Criar atalho da Central de Aplicativos na área de trabalho"; GroupDescription: "Atalhos da área de trabalho:"; Components: apps
 Name: "desktopicon_planejador"; Description: "Criar atalho do Planejador na área de trabalho"; GroupDescription: "Atalhos da área de trabalho:"; Components: apps\planejador; Flags: unchecked
+Name: "desktopicon_cad2d"; Description: "Criar atalho do CAD Arquitetônico 2D na área de trabalho"; GroupDescription: "Atalhos da área de trabalho:"; Components: apps\cad2d; Flags: unchecked
 
 [Icons]
 Name: "{autoprograms}\EngenhariaArquitetura\Central de Aplicativos"; Filename: "{app}\engenhariaarquitetura.exe"; Components: apps
 Name: "{autoprograms}\EngenhariaArquitetura\Planejador"; Filename: "{app}\planejador.exe"; Components: apps\planejador
 Name: "{autoprograms}\EngenhariaArquitetura\Planejador - exemplo da residência"; Filename: "{app}\planejador.exe"; Parameters: """{app}\exemplos\residencia.plan.json"""; Components: apps\planejador and extra\exemplos
+Name: "{autoprograms}\EngenhariaArquitetura\CAD Arquitetônico 2D"; Filename: "{app}\cad2d.exe"; Components: apps\cad2d
 Name: "{autoprograms}\EngenhariaArquitetura\Documentação"; Filename: "{app}\documentation"; Components: extra\docs
 Name: "{autodesktop}\EngenhariaArquitetura"; Filename: "{app}\engenhariaarquitetura.exe"; Tasks: desktopicon_launcher; Components: apps
 Name: "{autodesktop}\Planejador"; Filename: "{app}\planejador.exe"; Tasks: desktopicon_planejador; Components: apps\planejador
+Name: "{autodesktop}\CAD Arquitetônico 2D"; Filename: "{app}\cad2d.exe"; Tasks: desktopicon_cad2d; Components: apps\cad2d
 
 [Run]
-Filename: "{app}\planejador.exe"; Parameters: """{app}\exemplos\residencia.plan.json"""; Description: "Abrir o Planejador com o exemplo da residência"; Flags: nowait postinstall skipifsilent; Components: apps\planejador and extra\exemplos
+Filename: "{app}\engenhariaarquitetura.exe"; Description: "Abrir a Central de Aplicativos EngenhariaArquitetura"; Flags: nowait postinstall skipifsilent; Components: apps
 
 [Code]
 var
@@ -104,5 +109,5 @@ begin
   ProjectCaption.Parent := WizardForm.InstallingPage;
   ProjectCaption.SetBounds(0, ProjectImage.Top + ProjectImage.Height + ScaleY(4),
     WizardForm.InstallingPage.ClientWidth, ScaleY(20));
-  ProjectCaption.Caption := 'Planejador - tarefas, dependências, caminho crítico e Gráfico de Gantt';
+  ProjectCaption.Caption := 'EngenhariaArquitetura - Planejador e CAD Arquitetônico 2D';
 end;

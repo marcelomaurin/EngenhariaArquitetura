@@ -6,7 +6,7 @@
    <Title Value="EngenhariaArquitetura"/>
    <UseAppBundle Value="False"/>
    <ResourceType Value="res"/>
-   <UseXPManifest Value="True"/>
+   <UseXPManifest Value="True"/><Icon Value="0"/>
   </General>
   <Units Count="2">
    <Unit0><Filename Value="engenhariaarquitetura.lpr"/><IsPartOfProject Value="True"/></Unit0>
@@ -19,6 +19,10 @@
   <Target><Filename Value="../../../bin/engenhariaarquitetura"/></Target>
   <SearchPaths><UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/></SearchPaths>
   <Parsing><SyntaxOptions><SyntaxMode Value="ObjFPC"/></SyntaxOptions></Parsing>
-  <Linking><Options><Win32><GraphicApplication Value="True"/></Win32></Options></Linking>
+  <CodeGeneration><Optimizations><OptimizationLevel Value="2"/></Optimizations></CodeGeneration>
+  <Linking>
+   <Debugging><GenerateDebugInfo Value="False"/><StripSymbols Value="True"/></Debugging>
+   <Options><Win32><GraphicApplication Value="True"/></Win32></Options>
+  </Linking>
  </CompilerOptions>
 </CONFIG>
