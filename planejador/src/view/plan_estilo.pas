@@ -41,7 +41,7 @@ implementation
 constructor TPLCabecalho.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  Height := 64;
+  Height := 72;
   Align := alTop;
 end;
 
@@ -59,14 +59,14 @@ begin
   Canvas.GradientFill(R, clPLMarinho, clPLMarinho2, gdHorizontal);
   Canvas.Brush.Style := bsClear;
   Canvas.Font.Name := PL_FONTE;
-  Canvas.Font.Size := 15;
+  Canvas.Font.Size := 16;
   Canvas.Font.Style := [fsBold];
   Canvas.Font.Color := clWhite;
-  Canvas.TextOut(20, 10, FTitulo);
+  Canvas.TextOut(20, 12, FTitulo);
   Canvas.Font.Size := 9;
   Canvas.Font.Style := [];
   Canvas.Font.Color := RGBToColor(191, 219, 254);
-  Canvas.TextOut(21, 38, FSubtitulo);
+  Canvas.TextOut(21, 43, FSubtitulo);
 end;
 
 function PLRotulo(AParent: TWinControl; const ATexto: string; ANegrito: Boolean): TLabel;
