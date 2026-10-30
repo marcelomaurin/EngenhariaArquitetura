@@ -149,3 +149,8 @@ A ferramenta **Círculo** recebe centro e um ponto do raio e cria aproximação 
 ## Histórico de operações e EACAD3
 
 Desfazer e Refazer agrupam linhas geradas na mesma operação, como retângulos e círculos. O formato textual **EACAD3** persiste o identificador do grupo, permitindo reabrir o projeto sem perder o agrupamento dos desenhos. Há leitura retrocompatível de EACAD1 e EACAD2, cujos segmentos recebem grupos individuais. O histórico de desfazer/refazer continua apenas em memória; exclusões, movimentações e mudanças de propriedades ainda não participam do histórico. Não confundir com undo/redo completo de um CAD profissional.
+
+
+## Pan da vista
+
+Comandos Pan esquerda/direita/cima/baixo deslocam a visualização em passos de 40 pixels. Grade, objetos, ponto inicial e seleção usam a mesma transformação de coordenadas, sem alterar a geometria persistida. A grade atual mantém origem (0,0) e ainda precisa de repetição para offsets negativos, arraste pelo mouse e ajuste automático à tela. Histórico completo para operações de mover, copiar, excluir e editar continua pendente.
