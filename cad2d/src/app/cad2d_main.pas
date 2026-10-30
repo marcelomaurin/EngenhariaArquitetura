@@ -6,15 +6,20 @@ uses Classes, SysUtils, Forms, Controls, ExtCtrls, StdCtrls, Menus,
 type
   TCADLine = record
     A, B: TPoint;
+    Layer: Integer;
   end;
   TCADMainForm = class(TForm)
   private
     FCanvas: TPaintBox;
     FStatus: TLabel;
+    FLayerSelect, FToolSelect: TComboBox;
     FLines: array of TCADLine;
     FHasStart: Boolean;
     FStart: TPoint;
     FGrid: Integer;
+    FMillimetersPerPixel: Integer;
+    procedure SelectionChanged(Sender: TObject);
+    procedure AddSegment(const A, B: TPoint);
     FPath: string;
     procedure PaintDrawing(Sender: TObject);
     procedure CanvasClick(Sender: TObject; Button: TMouseButton;
@@ -44,11 +49,24 @@ begin
   Constraints.MinWidth := 700; Constraints.MinHeight := 480;
   Color := RGBToColor(244,246,250); Font.Size := 10;
   FGrid := 20;
+  FMillimetersPerPixel := 50; // grade de 20 pixels equivale a 1 metro
   TopBar := TPanel.Create(Self); TopBar.Parent := Self; TopBar.Align := alTop;
   TopBar.Height := 48; TopBar.BevelOuter := bvNone;
   AddButton('Exportar DXF', @ExportDXF);
   AddButton('Desfazer linha', @UndoLine);
   AddButton('Novo desenho', @NewDrawing);
+  FLayerSelect := TComboBox.Create(Self); FLayerSelect.Parent := TopBar;
+  FLayerSelect.Align := alRight; FLayerSelect.Width := 150;
+  FLayerSelect.Style := csDropDownList;
+  FLayerSelect.Items.Add('Arquitetura');
+  FLayerSelect.Items.Add('Estrutura');
+  FLayerSelect.Items.Add('Instalações');
+  FLayerSelect.ItemIndex := 0; FLayerSelect.OnChange := @SelectionChanged;
+  FToolSelect := TComboBox.Create(Self); FToolSelect.Parent := TopBar;
+  FToolSelect.Align := alRight; FToolSelect.Width := 135;
+  FToolSelect.Style := csDropDownList;
+  FToolSelect.Items.Add('Linha'); FToolSelect.Items.Add('Retângulo');
+  FToolSelect.ItemIndex := 0; FToolSelect.OnChange := @SelectionChanged;
   Footer := TPanel.Create(Self); Footer.Parent := Self; Footer.Align := alBottom;
   Footer.Height := 32; Footer.BevelOuter := bvNone; Footer.Color := clWhite;
   FStatus := TLabel.Create(Self); FStatus.Parent := Footer; FStatus.Align := alClient;
@@ -64,10 +82,24 @@ begin
   Result.X := Round(P.X / FGrid) * FGrid;
   Result.Y := Round(P.Y / FGrid) * FGrid;
 end;
+procedure TCADMainForm.SelectionChanged(Sender: TObject);
+begin
+  FHasStart := False;
+  FCanvas.Invalidate;
+  RefreshStatus('Ferramenta ou camada alterada');
+end;
+procedure TCADMainForm.AddSegment(const A, B: TPoint);
+var N: Integer;
+begin
+  if (A.X = B.X) and (A.Y = B.Y) then Exit;
+  N := Length(FLines); SetLength(FLines, N+1);
+  FLines[N].A := A; FLines[N].B := B;
+  FLines[N].Layer := FLayerSelect.ItemIndex;
+end;
 procedure TCADMainForm.RefreshStatus(const S: string);
 begin
-  FStatus.Caption := Format('%s   |   %d linha(s)   |   grade %d px',
-    [S, Length(FLines), FGrid]);
+  FStatus.Caption := Format('%s   |   %d segmentos   |   grade %d mm   |   camada: %s',
+    [S, Length(FLines), FGrid * FMillimetersPerPixel, FLayerSelect.Text]);
 end;
 procedure TCADMainForm.PaintDrawing(Sender: TObject);
 var X, Y, I: Integer; R: TRect;
@@ -86,6 +118,11 @@ begin
   FCanvas.Canvas.Pen.Color := RGBToColor(28,70,150);
   FCanvas.Canvas.Pen.Width := 2;
   for I := 0 to High(FLines) do begin
+    case FLines[I].Layer of
+      1: FCanvas.Canvas.Pen.Color := RGBToColor(180,80,40);
+      2: FCanvas.Canvas.Pen.Color := RGBToColor(25,120,90);
+    else FCanvas.Canvas.Pen.Color := RGBToColor(28,70,150);
+    end;
     FCanvas.Canvas.MoveTo(FLines[I].A.X, FLines[I].A.Y);
     FCanvas.Canvas.LineTo(FLines[I].B.X, FLines[I].B.Y);
   end;
@@ -96,7 +133,7 @@ begin
 end;
 procedure TCADMainForm.CanvasClick(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
-var P: TPoint; N: Integer;
+var P: TPoint;
 begin
   if Button = mbRight then begin
     FHasStart := False; FCanvas.Invalidate; RefreshStatus('Linha cancelada'); Exit;
@@ -107,10 +144,12 @@ begin
     FStart := P; FHasStart := True;
     RefreshStatus('Selecione o segundo ponto');
   end else begin
-    if (P.X <> FStart.X) or (P.Y <> FStart.Y) then begin
-      N := Length(FLines); SetLength(FLines,N+1);
-      FLines[N].A := FStart; FLines[N].B := P;
-    end;
+    if FToolSelect.ItemIndex = 1 then begin
+      AddSegment(FStart, Point(P.X,FStart.Y));
+      AddSegment(Point(P.X,FStart.Y), P);
+      AddSegment(P, Point(FStart.X,P.Y));
+      AddSegment(Point(FStart.X,P.Y),FStart);
+    end else AddSegment(FStart,P);
     FHasStart := False;
     RefreshStatus('Linha criada');
   end;
@@ -141,7 +180,15 @@ end;
 procedure TCADMainForm.ExportDXF(Sender: TObject);
 var D: TSaveDialog; L: TStringList; I: Integer;
   function DXFCoord(V: Integer): string;
-  begin Result := IntToStr(V); end;
+  begin Result := IntToStr(V * FMillimetersPerPixel); end;
+  function LayerName(Index: Integer): string;
+  begin
+    case Index of
+      1: Result := 'ESTRUTURA';
+      2: Result := 'INSTALACOES';
+    else Result := 'ARQUITETURA';
+    end;
+  end;
 begin
   D := TSaveDialog.Create(Self);
   L := TStringList.Create;
@@ -149,9 +196,12 @@ begin
     D.Filter := 'AutoCAD DXF R12 (*.dxf)|*.dxf'; D.DefaultExt := 'dxf';
     D.FileName := 'planta.dxf'; D.Options := D.Options + [ofOverwritePrompt];
     if not D.Execute then Exit;
+    L.Add('0');L.Add('SECTION');L.Add('2');L.Add('HEADER');
+    L.Add('9');L.Add('$INSUNITS');L.Add('70');L.Add('4');
+    L.Add('0');L.Add('ENDSEC');
     L.Add('0');L.Add('SECTION');L.Add('2');L.Add('ENTITIES');
     for I := 0 to High(FLines) do begin
-      L.Add('0'); L.Add('LINE');L.Add('8');L.Add('0');
+      L.Add('0'); L.Add('LINE');L.Add('8');L.Add(LayerName(FLines[I].Layer));
       L.Add('10');L.Add(DXFCoord(FLines[I].A.X));
       L.Add('20');L.Add(DXFCoord(-FLines[I].A.Y));
       L.Add('30');L.Add('0');
