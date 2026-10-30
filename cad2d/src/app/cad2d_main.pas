@@ -24,6 +24,7 @@ type
     FSelected: Integer;
     procedure SelectObjectAt(const P: TPoint);
     procedure DeleteSelected(Sender: TObject);
+    procedure TransformSelected(Sender: TObject);
     procedure SelectionChanged(Sender: TObject);
     procedure AddSegment(const A, B: TPoint);
     procedure PaintDrawing(Sender: TObject);
@@ -68,6 +69,10 @@ begin
   AddButton('Abrir projeto', @OpenDrawing);
   AddButton('Editar último', @EditLastObject);
   AddButton('Excluir seleção', @DeleteSelected);
+  AddButton('Mover seleção', @TransformSelected);
+  B.Tag := 0;
+  AddButton('Copiar seleção', @TransformSelected);
+  B.Tag := 1;
   FLayerSelect := TComboBox.Create(Self); FLayerSelect.Parent := TopBar;
   FLayerSelect.Align := alRight; FLayerSelect.Width := 150;
   FLayerSelect.Style := csDropDownList;
@@ -241,6 +246,40 @@ begin
   SetLength(FLines,Length(FLines)-1);
   FSelected := -1; FCanvas.Invalidate;
   RefreshStatus('Objeto excluído');
+end;
+procedure TCADMainForm.TransformSelected(Sender: TObject);
+var SX, SY: string; DX, DY, Id, N: Integer; IsCopy: Boolean;
+begin
+  if (FSelected < 0) or (FSelected >= Length(FLines)) then begin
+    ShowMessage('Primeiro selecione um objeto.'); Exit;
+  end;
+  IsCopy := TButton(Sender).Tag = 1;
+  SX := '1000'; SY := '0';
+  if not InputQuery('Deslocamento em milímetros',
+    'Deslocamento horizontal (mm):', SX) then Exit;
+  if not InputQuery('Deslocamento em milímetros',
+    'Deslocamento vertical (mm):', SY) then Exit;
+  if (not TryStrToInt(SX, DX)) or (not TryStrToInt(SY, DY)) then begin
+    ShowMessage('Informe coordenadas inteiras em milímetros.'); Exit;
+  end;
+  if (Abs(Int64(DX)) > 10000000) or (Abs(Int64(DY)) > 10000000) then begin
+    ShowMessage('Deslocamento fora do limite.'); Exit;
+  end;
+  Id := FSelected;
+  if IsCopy then begin
+    N := Length(FLines);
+    SetLength(FLines, N+1);
+    FLines[N] := FLines[Id];
+    Id := N;
+    FSelected := N;
+  end;
+  Inc(FLines[Id].A.X, Round(DX / FMillimetersPerPixel));
+  Inc(FLines[Id].B.X, Round(DX / FMillimetersPerPixel));
+  Dec(FLines[Id].A.Y, Round(DY / FMillimetersPerPixel));
+  Dec(FLines[Id].B.Y, Round(DY / FMillimetersPerPixel));
+  FCanvas.Invalidate;
+  if IsCopy then RefreshStatus('Objeto copiado')
+  else RefreshStatus('Objeto movido');
 end;
 procedure TCADMainForm.EditLastObject(Sender: TObject);
 var V: string; MM, N: Integer;
