@@ -144,3 +144,8 @@ Controles Zoom + e Zoom - (50% a 400%) foram adicionados ao protótipo. A transf
 ## Círculos e ortogonal (protótipo)
 
 A ferramenta **Círculo** recebe centro e um ponto do raio e cria aproximação poligonal de 48 segmentos. Não representa entidade CIRCLE nativa em DXF e o comando Desfazer remove somente o último segmento, não o círculo inteiro. Segurar **Shift** ao definir o segundo ponto restringe linhas e objetos lineares aos eixos horizontal ou vertical. Estas funções exigem validação visual e evolução para geometria vetorial paramétrica.
+
+
+## Histórico de operações e EACAD3
+
+Desfazer e Refazer agrupam linhas geradas na mesma operação, como retângulos e círculos. O formato textual **EACAD3** persiste o identificador do grupo, permitindo reabrir o projeto sem perder o agrupamento dos desenhos. Há leitura retrocompatível de EACAD1 e EACAD2, cujos segmentos recebem grupos individuais. O histórico de desfazer/refazer continua apenas em memória; exclusões, movimentações e mudanças de propriedades ainda não participam do histórico. Não confundir com undo/redo completo de um CAD profissional.
