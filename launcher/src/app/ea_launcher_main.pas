@@ -60,26 +60,26 @@ end;
 procedure TEALauncherForm.SetStatus(const S: string);
 begin FStatus.Caption := S; end;
 function TEALauncherForm.ExecutableFor(AIndex: Integer): string;
-var Name, Base, Root: string; D: Integer;
+var ExeName, Base, Root: string; D: Integer;
 begin
   Result := '';
   if (AIndex < 0) or (AIndex >= APP_COUNT) then Exit;
-  Name := APP_EXECUTABLES[AIndex];
-  {$IFDEF WINDOWS} Name := Name + '.exe'; {$ENDIF}
+  ExeName := APP_EXECUTABLES[AIndex];
+  {$IFDEF WINDOWS} ExeName := ExeName + '.exe'; {$ENDIF}
   Base := ExtractFilePath(ExpandFileName(ParamStr(0)));
   // Instalacao: executaveis lado a lado; desenvolvimento: caminhos de build.
-  if FileExists(Base + Name) then Exit(Base + Name);
+  if FileExists(Base + ExeName) then Exit(Base + ExeName);
   Root := ExcludeTrailingPathDelimiter(Base);
   for D := 0 to 4 do begin
     if FileExists(IncludeTrailingPathDelimiter(Root) + APP_PATHS[AIndex] +
-       DirectorySeparator + Name) then
+       DirectorySeparator + ExeName) then
       Exit(IncludeTrailingPathDelimiter(Root) + APP_PATHS[AIndex] +
-           DirectorySeparator + Name);
+           DirectorySeparator + ExeName);
     {$IFDEF WINDOWS}
     if FileExists(IncludeTrailingPathDelimiter(Root) + APP_PATHS[AIndex] +
-       DirectorySeparator + Name) then
+       DirectorySeparator + ExeName) then
       Exit(IncludeTrailingPathDelimiter(Root) + APP_PATHS[AIndex] +
-           DirectorySeparator + Name);
+           DirectorySeparator + ExeName);
     {$ENDIF}
     if ExtractFileDir(Root) = Root then Break;
     Root := ExtractFileDir(Root);
