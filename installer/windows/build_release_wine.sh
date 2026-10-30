@@ -39,6 +39,7 @@ CORE="$ROOT/third_party/chatgpt/AIProjectCore"
 
 TARGETS=(
   "planejador/src/app/planejador|planejador"
+  "launcher/src/app/engenhariaarquitetura|engenhariaarquitetura"
 )
 for t in "${TARGETS[@]}"; do
   project=${t%%|*}; name=${t##*|}
