@@ -110,3 +110,10 @@ A compilação Windows/Linux, o teste de interface e a validação do DXF export
 - Escala inicial fixa de 50 mm/pixel (grade 20 px = 1.000 mm). Ainda sem calibração, zoom ou pan.
 - Exportação DXF LINE com coordenadas em milímetros e camada de cada segmento. A importação e o projeto nativo permanecem pendentes.
 - Esta é uma evolução de protótipo, **não** um editor CAD pronto para projeto executivo. Necessita compilação e homologação visual.
+
+
+## Objetos iniciais e arquivo nativo (.eacad)
+
+O CAD 2D agora tem ferramentas iniciais para representar **parede**, **porta** e **janela** como segmentos tipados, além de **Salvar projeto** e **Abrir projeto**. O arquivo `.eacad` é textual e versionado com cabeçalho `EACAD1`, escala e segmentos com camada e tipo, para continuar a edição posteriormente.
+
+**Limitação importante:** paredes ainda são segmentos de espessura visual; portas e janelas não abrem vãos na parede nem têm atributos BIM, ferragens, folhas ou dimensões editáveis. O desenho não possui cotas, zoom, deslocamento de tela, seleção e edição geométrica. É um protótipo de armazenamento e visualização; não atende à elaboração de plantas executivas. Exportação DXF ainda usa entidades LINE.
