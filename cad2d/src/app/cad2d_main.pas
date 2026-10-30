@@ -7,7 +7,8 @@ type
   TCADLine = record
     A, B: TPoint;
     Layer: Integer;
-    Kind: Integer; // 0 linha, 1 parede, 2 porta, 3 janela
+    Kind: Integer; // 0 linha, 1 retangulo, 2 parede, 3 porta, 4 janela
+    WidthMM: Integer;
   end;
   TCADMainForm = class(TForm)
   private
@@ -103,7 +104,13 @@ begin
   FLines[N].A := A; FLines[N].B := B;
   FLines[N].Layer := FLayerSelect.ItemIndex;
   FLines[N].Kind := FToolSelect.ItemIndex;
-  if FLines[N].Kind = 1 then FLines[N].Layer := 0;
+  case FLines[N].Kind of
+    2: FLines[N].WidthMM := 150;
+    3: FLines[N].WidthMM := 900;
+    4: FLines[N].WidthMM := 1200;
+  else FLines[N].WidthMM := 0;
+  end;
+  if FLines[N].Kind = 2 then FLines[N].Layer := 0;
 end;
 procedure TCADMainForm.RefreshStatus(const S: string);
 begin
@@ -133,9 +140,9 @@ begin
     else FCanvas.Canvas.Pen.Color := RGBToColor(28,70,150);
     end;
     case FLines[I].Kind of
-      1: FCanvas.Canvas.Pen.Width := 6;
-      2: begin FCanvas.Canvas.Pen.Width := 3; FCanvas.Canvas.Pen.Color := clRed; end;
-      3: begin FCanvas.Canvas.Pen.Width := 3; FCanvas.Canvas.Pen.Color := clAqua; end;
+      2: FCanvas.Canvas.Pen.Width := Max(1, Round(FLines[I].WidthMM / FMillimetersPerPixel));
+      3: begin FCanvas.Canvas.Pen.Width := 3; FCanvas.Canvas.Pen.Color := clRed; end;
+      4: begin FCanvas.Canvas.Pen.Width := 3; FCanvas.Canvas.Pen.Color := clAqua; end;
     else FCanvas.Canvas.Pen.Width := 2;
     end;
     FCanvas.Canvas.MoveTo(FLines[I].A.X, FLines[I].A.Y);
