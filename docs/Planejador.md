@@ -102,3 +102,14 @@ Exemplo de tarefa de objeto com vínculo de textura:
 **Situação:** P1 concluída em 29/10/2026 (código em `planejador/`), usando o grafo, o calendário, o caminho crítico e o Gantt da suíte CHATGPT. Foi antecipada em relação à ordem do plano, que previa o CAD 2D antes. Na versão 0.2 entraram os vínculos no padrão do MultiProject (Ctrl+F2, painel Vínculos, Ctrl+Shift+F2) e o **diagrama de rede da etapa P3**, com arrastar para ligar; 52 verificações automatizadas.
 
 **Dependências:** P2 exige o contrato de tarefa do [documento de integrações](Integracoes.md) e ao menos o CAD 2D na etapa 1; P4 exige a Maquete 3D com o Editor de Objetos e o Gerador de Texturas.
+
+
+## Evolução paralela com MultiProject e ambiente web (30/10/2026)
+
+**Requisito, ainda não implementado.** O Planejador de EngenhariaArquitetura e o MultiProject do MultiCNC continuarão como aplicativos independentes, com funcionalidades gerais de gestão equivalentes e especializações distintas.
+
+A comparação do código confirmou Gantt e diagrama de rede em ambos. MultiProject também contém Quadro/Kanban, visão Equipe, recursos, atribuições, nivelamento e custos; no Planejador essas capacidades ainda precisam ser acrescentadas. Calendário visual, Timeline, baselines e relatórios avançados ainda são pendências nos dois aplicativos (não confundir calendário de cálculo com visualização de calendário).
+
+**Banco e nuvem:** planejar PostgreSQL com vários projetos isolados por organização e identificador de projeto; um painel de portfólio reunirá cronogramas e indicadores de 20 ou mais projetos sem misturar tarefas. Desktop Lazarus e futuro site acessarão os mesmos dados através de API HTTPS autenticada e versionada, não diretamente pelo banco de dados na internet. Preservar exportação/importação local, arquivos legados, permissões, histórico, revisão de edição e tratamento de conflitos. Planejar Gantt e Timeline consolidados, recursos entre projetos, sincronização e modo offline opcional.
+
+**Sequência sugerida:** concluir proteção de arquivos e testes do Planejador; implementar Quadro/Equipe/Timeline; definir esquema multi-projeto, API, integração desktop e site; então portfólio e sincronização. Esta anotação não declara funcionalidade concluída nem altera o MultiCNC.
