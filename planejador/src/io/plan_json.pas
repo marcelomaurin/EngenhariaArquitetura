@@ -203,6 +203,7 @@ procedure PLCarregarProjeto(Doc: TPLProjeto; const AArquivo: string);
 var
   S: TStringList;
   D: TJSONData;
+  Temp: TPLProjeto;
 begin
   S := TStringList.Create;
   try
@@ -214,7 +215,15 @@ begin
   try
     if not (D is TJSONObject) then
       raise Exception.Create('arquivo JSON inválido');
-    PLProjetoDeJSON(Doc, TJSONObject(D));
+    { A leitura nunca modifica o documento ativo antes da validacao integral. }
+    Temp := TPLProjeto.Create;
+    try
+      PLProjetoDeJSON(Temp, TJSONObject(D));
+      Doc.TrocarCom(Temp);
+      Doc.Modificado := False;
+    finally
+      Temp.Free;
+    end;
   finally
     D.Free;
   end;
