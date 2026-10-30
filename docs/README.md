@@ -99,10 +99,9 @@ flowchart LR
 
 ## Histórico
 
-| 30/10/2026 | Auditoria de lacunas na branch `fila`: status do código, prioridades e validações pendentes; manter MultiCNC externo |
-
 | Data | Alteração |
 |---|---|
 | 28/10/2026 | Especificação da plataforma 1.8 e da Planta Baixa 2D 1.0 em documentos únicos |
 | 29/10/2026 | Incluído o SimuTubulações (sétimo aplicativo), a partir da especificação recebida em 29/10/2026; integrações I-18 a I-23 e fase 11 do plano. Etapas renomeadas para TB1–TB6 e entrega do Planejador para PL, para não colidir com o Gerador de Texturas e com a entrega Q da especificação |
 | 29/10/2026 | Especificação dividida em um documento por componente; criados os documentos de integrações e de plano de desenvolvimento, com etapas por componente. O conteúdo anterior permanece no histórico do git |
+| 30/10/2026 | Auditoria de lacunas na branch `fila`: status do código, prioridades e validações pendentes; manter MultiCNC externo |
