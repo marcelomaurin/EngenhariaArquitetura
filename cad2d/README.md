@@ -198,3 +198,8 @@ Ferramenta **Chanfro**: selecionar primeira linha, informar número da segunda l
 ## Fillet — arredondamento de cantos (2026-10-30)
 
 A ferramenta **Arredondar canto** usa duas linhas selecionadas por índice e um raio em milímetros. Calcula os pontos de tangência e aproxima o arco circular por segmentos, encurtando os trechos lineares e registrando a alteração no histórico Desfazer/Refazer. Ainda não cria uma entidade de arco paramétrico, e a geometria é arredondada a pontos inteiros; podem existir problemas para raios pequenos e configurações complexas. Limite inicial: linhas retas não paralelas com comprimento suficiente. Deve ser homologada com testes geométricos antes de uso profissional.
+
+
+## Cotas de referência sobre os segmentos
+
+O comando **Exibir cotas** alterna rótulos com os comprimentos dos segmentos em metros, posicionados próximos ao ponto médio. Os valores são recalculados na renderização e acompanham o zoom/pan. **São anotações visuais automáticas**, não objetos de cota associativos editáveis ou persistidos. Em geometrias densas pode haver sobreposição de textos; impressão, setas, estilo de cotagem e deslocamento configurável continuam pendentes.
