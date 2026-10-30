@@ -43,6 +43,7 @@ type
     procedure MirrorSelected(Sender: TObject);
     procedure OffsetSelected(Sender: TObject);
     procedure ExtendSelected(Sender: TObject);
+    procedure TrimSelected(Sender: TObject);
     procedure SelectionChanged(Sender: TObject);
     procedure AddSegment(const A, B: TPoint);
     procedure AddCircle(const Center, Edge: TPoint);
@@ -108,6 +109,7 @@ begin
   AddButton('Espelhar Y', @MirrorSelected); B.Tag := 1;
   AddButton('Offset seleção', @OffsetSelected);
   AddButton('Estender até linha', @ExtendSelected);
+  AddButton('Aparar (Trim)', @TrimSelected);
   AddButton('Zoom +', @ZoomDrawing); B.Tag := 1;
   AddButton('Zoom -', @ZoomDrawing); B.Tag := -1;
   AddButton('Pan esquerda', @PanDrawing); B.Tag := 1;
@@ -588,6 +590,49 @@ begin
   else FLines[Id].B := Point(Round(PX),Round(PY));
   FCanvas.Invalidate;
   RefreshStatus('Segmento estendido até a interseção');
+end;
+procedure TCADMainForm.TrimSelected(Sender: TObject);
+var TargetText, EndText: string; Id, Other: Integer;
+  AX, AY, BX, BY, CX, CY, DX, DY, Den, T, U: Double;
+  CutPoint: TPoint;
+begin
+  Id := FSelected;
+  if (Id < 0) or (Id >= Length(FLines)) then begin
+    ShowMessage('Selecione o segmento que deseja aparar.'); Exit;
+  end;
+  TargetText := '';
+  if not InputQuery('Aparar segmento',
+     'Número do segmento de limite (1 a '+IntToStr(Length(FLines))+'):',TargetText) then Exit;
+  if (not TryStrToInt(TargetText,Other)) or (Other < 1) or
+     (Other > Length(FLines)) or (Other = Id+1) then begin
+    ShowMessage('Segmento de limite inválido.'); Exit;
+  end;
+  Dec(Other);
+  AX := FLines[Id].A.X; AY := FLines[Id].A.Y;
+  BX := FLines[Id].B.X; BY := FLines[Id].B.Y;
+  CX := FLines[Other].A.X; CY := FLines[Other].A.Y;
+  DX := FLines[Other].B.X; DY := FLines[Other].B.Y;
+  Den := (BX-AX)*(DY-CY)-(BY-AY)*(DX-CX);
+  if Abs(Den) < 0.000001 then begin
+    ShowMessage('Linhas paralelas ou coincidentes.'); Exit;
+  end;
+  T := ((CX-AX)*(DY-CY)-(CY-AY)*(DX-CX))/Den;
+  U := ((CX-AX)*(BY-AY)-(CY-AY)*(BX-AX))/Den;
+  if (T<=0) or (T>=1) or (U<0) or (U>1) then begin
+    ShowMessage('Não há interseção interna para aparar.'); Exit;
+  end;
+  EndText := 'B';
+  if not InputQuery('Escolher extremidade', 'Remover lado A ou B?',EndText) then Exit;
+  EndText := UpperCase(Trim(EndText));
+  if (EndText <> 'A') and (EndText <> 'B') then begin
+    ShowMessage('Escolha A ou B.'); Exit;
+  end;
+  CutPoint := Point(Round(AX+T*(BX-AX)),Round(AY+T*(BY-AY)));
+  RecordChange;
+  if EndText='A' then FLines[Id].A := CutPoint
+  else FLines[Id].B := CutPoint;
+  FCanvas.Invalidate;
+  RefreshStatus('Segmento aparado');
 end;
 procedure TCADMainForm.EditLastObject(Sender: TObject);
 var V: string; MM, N: Integer;
