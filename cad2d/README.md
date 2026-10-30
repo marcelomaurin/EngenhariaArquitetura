@@ -193,3 +193,8 @@ O comando **Aparar (Trim)** trabalha sobre o segmento selecionado e solicita o �
 ## Chamfer (2026-10-30)
 
 Ferramenta **Chanfro**: selecionar primeira linha, informar número da segunda linha e distância em milímetros. Calcula a interseção das retas, ajusta a extremidade mais próxima de cada segmento e insere o segmento do chanfro. Integra-se ao histórico Desfazer/Refazer. **Limitações:** segmentos precisam ter comprimento suficiente até a interseção, a operação não cobre curvas nem grupos, e coordenadas são arredondadas aos pontos inteiros atuais. É uma implementação inicial, a testar com diferentes quadrantes e ângulos.
+
+
+## Fillet — arredondamento de cantos (2026-10-30)
+
+A ferramenta **Arredondar canto** usa duas linhas selecionadas por índice e um raio em milímetros. Calcula os pontos de tangência e aproxima o arco circular por segmentos, encurtando os trechos lineares e registrando a alteração no histórico Desfazer/Refazer. Ainda não cria uma entidade de arco paramétrico, e a geometria é arredondada a pontos inteiros; podem existir problemas para raios pequenos e configurações complexas. Limite inicial: linhas retas não paralelas com comprimento suficiente. Deve ser homologada com testes geométricos antes de uso profissional.
