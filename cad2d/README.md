@@ -117,3 +117,8 @@ A compilação Windows/Linux, o teste de interface e a validação do DXF export
 O CAD 2D agora tem ferramentas iniciais para representar **parede**, **porta** e **janela** como segmentos tipados, além de **Salvar projeto** e **Abrir projeto**. O arquivo `.eacad` é textual e versionado com cabeçalho `EACAD1`, escala e segmentos com camada e tipo, para continuar a edição posteriormente.
 
 **Limitação importante:** paredes ainda são segmentos de espessura visual; portas e janelas não abrem vãos na parede nem têm atributos BIM, ferragens, folhas ou dimensões editáveis. O desenho não possui cotas, zoom, deslocamento de tela, seleção e edição geométrica. É um protótipo de armazenamento e visualização; não atende à elaboração de plantas executivas. Exportação DXF ainda usa entidades LINE.
+
+
+## Etapa dimensional EACAD2 (2026-10-30)
+
+Objetos do tipo parede têm espessura inicial de 150 mm; porta e janela têm largura nominal inicial de 900 e 1200 mm. O comando **Editar último** permite alterar a dimensão do último objeto arquitetônico. O formato **EACAD2** persiste esta propriedade e lê arquivos antigos **EACAD1**, atribuindo valores iniciais. A geometria permanece baseada em segmentos: ainda **não existem vãos reais** cortados nas paredes, associação automática de esquadrias com paredes, seleção de qualquer objeto ou dimensões vinculadas ao DXF. Isso deve ser implementado e testado em uma etapa posterior.
