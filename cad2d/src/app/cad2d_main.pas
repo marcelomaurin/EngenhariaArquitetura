@@ -27,8 +27,14 @@ type
     FPanX, FPanY: Integer;
     FNextGroup: Integer;
     FUndo: array of TCADLine;
+    FHistoryUndo, FHistoryRedo: TStringList;
+    procedure RecordChange;
+    function Snapshot: string;
+    procedure RestoreSnapshot(const Value: string);
     procedure PanDrawing(Sender: TObject);
     procedure RedoDrawing(Sender: TObject);
+    procedure UndoHistory(Sender: TObject);
+    procedure RedoHistory(Sender: TObject);
     procedure ZoomDrawing(Sender: TObject);
     procedure SelectObjectAt(const P: TPoint);
     procedure DeleteSelected(Sender: TObject);
@@ -50,6 +56,7 @@ type
     procedure RefreshStatus(const S: string);
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
   end;
 var CADMainForm: TCADMainForm;
 implementation
@@ -71,12 +78,14 @@ begin
   FZoom := 1.0;
   FPanX := 0; FPanY := 0;
   FNextGroup := 1;
+  FHistoryUndo := TStringList.Create;
+  FHistoryRedo := TStringList.Create;
   FMillimetersPerPixel := 50; // grade de 20 pixels equivale a 1 metro
   TopBar := TPanel.Create(Self); TopBar.Parent := Self; TopBar.Align := alTop;
   TopBar.Height := 48; TopBar.BevelOuter := bvNone;
   AddButton('Exportar DXF', @ExportDXF);
-  AddButton('Desfazer', @UndoLine);
-  AddButton('Refazer', @RedoDrawing);
+  AddButton('Desfazer', @UndoHistory);
+  AddButton('Refazer', @RedoHistory);
   AddButton('Novo desenho', @NewDrawing);
   AddButton('Salvar projeto', @SaveDrawing);
   AddButton('Abrir projeto', @OpenDrawing);
@@ -118,6 +127,12 @@ begin
   FCanvas.OnMouseMove := @MouseMoveDrawing;
   RefreshStatus('Clique para começar uma linha. Botão direito cancela.');
 end;
+destructor TCADMainForm.Destroy;
+begin
+  FHistoryRedo.Free;
+  FHistoryUndo.Free;
+  inherited Destroy;
+end;
 function TCADMainForm.Snap(P: TPoint): TPoint;
 begin
   Result.X := Round((P.X-FPanX) / (FGrid * FZoom)) * FGrid;
@@ -140,6 +155,67 @@ begin
   else FZoom := Max(0.5, FZoom / 1.25);
   FCanvas.Invalidate;
   RefreshStatus('Zoom ajustado para ' + IntToStr(Round(FZoom*100)) + '%');
+end;
+function TCADMainForm.Snapshot: string;
+var I: Integer;
+begin
+  Result := IntToStr(FNextGroup) + '|' + IntToStr(Length(FLines));
+  for I := 0 to High(FLines) do
+    Result := Result + '|' + Format('%d,%d,%d,%d,%d,%d,%d,%d',
+      [FLines[I].A.X,FLines[I].A.Y,FLines[I].B.X,FLines[I].B.Y,
+       FLines[I].Layer,FLines[I].Kind,FLines[I].WidthMM,FLines[I].GroupID]);
+end;
+procedure TCADMainForm.RestoreSnapshot(const Value: string);
+var Parts, Fields: TStringList; I, N: Integer;
+begin
+  Parts := TStringList.Create; Fields := TStringList.Create;
+  try
+    Parts.Delimiter := '|'; Parts.StrictDelimiter := True;
+    Parts.DelimitedText := Value;
+    if Parts.Count < 2 then Exit;
+    N := StrToInt(Parts[1]);
+    if (N < 0) or (N > 200000) or (Parts.Count <> N+2) then Exit;
+    SetLength(FLines,N);
+    Fields.Delimiter := ','; Fields.StrictDelimiter := True;
+    for I := 0 to N-1 do begin
+      Fields.DelimitedText := Parts[I+2];
+      if Fields.Count <> 8 then Exit;
+      FLines[I].A.X := StrToInt(Fields[0]);
+      FLines[I].A.Y := StrToInt(Fields[1]);
+      FLines[I].B.X := StrToInt(Fields[2]);
+      FLines[I].B.Y := StrToInt(Fields[3]);
+      FLines[I].Layer := StrToInt(Fields[4]);
+      FLines[I].Kind := StrToInt(Fields[5]);
+      FLines[I].WidthMM := StrToInt(Fields[6]);
+      FLines[I].GroupID := StrToInt(Fields[7]);
+    end;
+    FNextGroup := StrToInt(Parts[0]);
+    FSelected := -1; FCanvas.Invalidate;
+  finally Fields.Free; Parts.Free; end;
+end;
+procedure TCADMainForm.RecordChange;
+begin
+  FHistoryUndo.Add(Snapshot);
+  if FHistoryUndo.Count > 60 then FHistoryUndo.Delete(0);
+  FHistoryRedo.Clear;
+end;
+procedure TCADMainForm.UndoHistory(Sender: TObject);
+var N: Integer; V: string;
+begin
+  N := FHistoryUndo.Count;
+  if N = 0 then Exit;
+  FHistoryRedo.Add(Snapshot);
+  V := FHistoryUndo[N-1]; FHistoryUndo.Delete(N-1);
+  RestoreSnapshot(V); RefreshStatus('Alteração desfeita');
+end;
+procedure TCADMainForm.RedoHistory(Sender: TObject);
+var N: Integer; V: string;
+begin
+  N := FHistoryRedo.Count;
+  if N = 0 then Exit;
+  FHistoryUndo.Add(Snapshot);
+  V := FHistoryRedo[N-1]; FHistoryRedo.Delete(N-1);
+  RestoreSnapshot(V); RefreshStatus('Alteração refeita');
 end;
 procedure TCADMainForm.SelectionChanged(Sender: TObject);
 begin
@@ -247,6 +323,7 @@ begin
     FStart := P; FHasStart := True;
     RefreshStatus('Selecione o segundo ponto');
   end else begin
+    RecordChange;
     if (ssShift in Shift) and (FToolSelect.ItemIndex in [0,2,3,4]) then begin
       if Abs(P.X-FStart.X) >= Abs(P.Y-FStart.Y) then P.Y := FStart.Y
       else P.X := FStart.X;
@@ -278,6 +355,7 @@ begin
   if (Length(FLines) > 0) and
     (MessageDlg('Novo desenho','Descartar o desenho atual?',
      mtConfirmation,[mbYes,mbNo],0) <> mrYes) then Exit;
+  RecordChange;
   SetLength(FLines,0); SetLength(FUndo,0);
   FNextGroup := 1; FHasStart := False; FSelected := -1; FPath := '';
   FCanvas.Invalidate; RefreshStatus('Novo desenho');
@@ -328,6 +406,7 @@ procedure TCADMainForm.DeleteSelected(Sender: TObject);
 var I: Integer;
 begin
   if FSelected < 0 then begin ShowMessage('Selecione um objeto antes de excluir.'); Exit; end;
+  RecordChange;
   for I := FSelected to High(FLines)-1 do FLines[I] := FLines[I+1];
   SetLength(FLines,Length(FLines)-1);
   FSelected := -1; FCanvas.Invalidate;
@@ -351,6 +430,7 @@ begin
   if (Abs(Int64(DX)) > 10000000) or (Abs(Int64(DY)) > 10000000) then begin
     ShowMessage('Deslocamento fora do limite.'); Exit;
   end;
+  RecordChange;
   Id := FSelected;
   if IsCopy then begin
     N := Length(FLines);
@@ -382,6 +462,7 @@ begin
   if (not TryStrToInt(V, MM)) or (MM < 50) or (MM > 10000) then begin
     ShowMessage('Informe de 50 a 10000 mm.'); Exit;
   end;
+  RecordChange;
   FLines[N].WidthMM := MM;
   FCanvas.Invalidate;
   RefreshStatus('Dimensão atualizada');
@@ -492,6 +573,7 @@ begin
          (Temp[N].Kind < 0) or (Temp[N].Kind > 4) then
         raise Exception.CreateFmt('Objeto inválido na linha %d',[I+1]);
     end;
+    FHistoryUndo.Clear; FHistoryRedo.Clear;
     FLines := Temp; SetLength(FUndo,0); FNextGroup := MaxGroup+1;
     FSelected := -1; FMillimetersPerPixel := Scale;
     FHasStart := False; FPath := D.FileName;
