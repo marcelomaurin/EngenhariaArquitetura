@@ -29,6 +29,7 @@ type
     procedure TransformSelected(Sender: TObject);
     procedure SelectionChanged(Sender: TObject);
     procedure AddSegment(const A, B: TPoint);
+    procedure AddCircle(const Center, Edge: TPoint);
     procedure PaintDrawing(Sender: TObject);
     procedure CanvasClick(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -92,6 +93,7 @@ begin
   FToolSelect.Items.Add('Parede'); FToolSelect.Items.Add('Porta');
   FToolSelect.Items.Add('Janela');
   FToolSelect.Items.Add('Selecionar');
+  FToolSelect.Items.Add('Círculo');
   FToolSelect.ItemIndex := 0; FToolSelect.OnChange := @SelectionChanged;
   Footer := TPanel.Create(Self); Footer.Parent := Self; Footer.Align := alBottom;
   Footer.Height := 32; Footer.BevelOuter := bvNone; Footer.Color := clWhite;
@@ -136,6 +138,24 @@ begin
   else FLines[N].WidthMM := 0;
   end;
   if FLines[N].Kind = 2 then FLines[N].Layer := 0;
+end;
+procedure TCADMainForm.AddCircle(const Center, Edge: TPoint);
+var Radius, Angle, NextAngle: Double; I: Integer; A, B: TPoint;
+begin
+  Radius := Hypot(Edge.X-Center.X, Edge.Y-Center.Y);
+  if Radius < 1 then Exit;
+  for I := 0 to 47 do begin
+    Angle := I * 2 * Pi / 48;
+    NextAngle := (I+1) * 2 * Pi / 48;
+    A := Point(Center.X+Round(Radius*Cos(Angle)),
+               Center.Y+Round(Radius*Sin(Angle)));
+    B := Point(Center.X+Round(Radius*Cos(NextAngle)),
+               Center.Y+Round(Radius*Sin(NextAngle)));
+    if (A.X<>B.X) or (A.Y<>B.Y) then begin
+      AddSegment(A,B);
+      FLines[High(FLines)].Kind := 0;
+    end;
+  end;
 end;
 procedure TCADMainForm.RefreshStatus(const S: string);
 begin
@@ -202,7 +222,12 @@ begin
     FStart := P; FHasStart := True;
     RefreshStatus('Selecione o segundo ponto');
   end else begin
-    if FToolSelect.ItemIndex = 1 then begin
+    if (ssShift in Shift) and (FToolSelect.ItemIndex in [0,2,3,4]) then begin
+      if Abs(P.X-FStart.X) >= Abs(P.Y-FStart.Y) then P.Y := FStart.Y
+      else P.X := FStart.X;
+    end;
+    if FToolSelect.ItemIndex = 6 then AddCircle(FStart,P)
+    else if FToolSelect.ItemIndex = 1 then begin
       AddSegment(FStart, Point(P.X,FStart.Y));
       AddSegment(Point(P.X,FStart.Y), P);
       AddSegment(P, Point(FStart.X,P.Y));
