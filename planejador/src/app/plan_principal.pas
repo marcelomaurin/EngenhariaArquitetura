@@ -30,6 +30,7 @@ type
     FProjetoPainel: TPanel;
     FTarefaPainel: TScrollBox;
     FPassos: array[1..7] of TSpeedButton;
+    FBotaoGantt, FBotaoRede: TSpeedButton;
     FEtapa: Integer;
     FGantt: TAIGanttView;
     FRede: TAINetworkView;
@@ -57,6 +58,7 @@ type
     procedure ExibirEtapa(ANumero: Integer);
     procedure AoNavegar(Sender: TObject);
     procedure AoValidar(Sender: TObject);
+    procedure AoDetalhesTarefa(Sender: TObject);
     procedure MontarPainelProjeto(P: TPanel);
     procedure MontarPainelTarefa(P: TWinControl);
     procedure MontarGantt(P: TPanel);
@@ -264,6 +266,8 @@ begin
   Add(Item, '-', nil);
   Add(Item, '&Gráfico de Gantt', @AoVistaGantt, ShortCut(VK_1, [ssCtrl]));
   Add(Item, '&Diagrama de rede', @AoVistaRede, ShortCut(VK_2, [ssCtrl]));
+  Add(Item, 'Detalhes da &tarefa', @AoDetalhesTarefa, ShortCut(VK_F2, [ssShift]));
+  Add(Item, '&Recalcular cronograma', @AoValidar, ShortCut(VK_F9, []));
   Item := TMenuItem.Create(M); Item.Caption := 'A&juda'; M.Items.Add(Item);
   Add(Item, '&Sobre o Planejador', @AoSobre);
 end;
@@ -302,7 +306,7 @@ begin
     end;
   end;
   B := Botao('Novo', 'Novo projeto (Ctrl+N)', 12, 332, 92, @AoNovo);
-  B := Botao('Abrir arquivo', 'Abrir arquivo local (Ctrl+O)',
+  B := Botao('Abrir', 'Abrir arquivo local (Ctrl+O)',
     110, 332, 92, @AoAbrir);
   B := Botao('Salvar', 'Salvar projeto no destino atual (Ctrl+S)',
     12, 372, 92, @AoSalvar);
@@ -326,6 +330,17 @@ procedure TPLJanelaPrincipal.AoNavegar(Sender: TObject);
 begin
   if Sender is TSpeedButton then
     ExibirEtapa(TSpeedButton(Sender).Tag);
+end;
+
+procedure TPLJanelaPrincipal.AoDetalhesTarefa(Sender: TObject);
+begin
+  if Selecionada = nil then
+  begin
+    Mensagem('Selecione uma tarefa para abrir os detalhes.');
+    Exit;
+  end;
+  ExibirEtapa(2);
+  if FTarNome.CanFocus then FTarNome.SetFocus;
 end;
 
 procedure TPLJanelaPrincipal.AoValidar(Sender: TObject);
@@ -356,12 +371,13 @@ begin
   Btn.Enabled := False;
   Btn := PLBotao(Vistas, 'Quadro', 'Vista planejada (ainda indisponivel)', nil);
   Btn.Enabled := False;
-  Btn := PLBotao(Vistas, 'Rede', 'Diagrama de rede (Ctrl+2)', @AoVistaRede);
-  Btn.GroupIndex := 2;
-  Btn.AllowAllUp := False;
-  Btn := PLBotao(Vistas, 'Gantt', 'Grafico de Gantt (Ctrl+1)', @AoVistaGantt);
-  Btn.GroupIndex := 2;
-  Btn.AllowAllUp := False;
+  FBotaoRede := PLBotao(Vistas, 'Rede', 'Diagrama de rede (Ctrl+2)', @AoVistaRede);
+  FBotaoRede.GroupIndex := 2;
+  FBotaoRede.AllowAllUp := False;
+  FBotaoGantt := PLBotao(Vistas, 'Gantt', 'Grafico de Gantt (Ctrl+1)', @AoVistaGantt);
+  FBotaoGantt.GroupIndex := 2;
+  FBotaoGantt.AllowAllUp := False;
+  FBotaoGantt.Down := True;
   PLBotao(Acoes, 'Ajustar', 'Ajustar a escala (Ctrl+0)', @AoAjustar);
   PLBotao(Acoes, 'Reduzir', 'Reduzir a escala de tempo', @AoReduzir);
   PLBotao(Acoes, 'Ampliar', 'Ampliar a escala de tempo', @AoAmpliar);
@@ -1152,6 +1168,12 @@ end;
 procedure TPLJanelaPrincipal.AoTecla(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if FGantt.Editing then Exit;
+  if (Key = VK_ESCAPE) and (Shift = []) and (FEtapa <> 1) then
+  begin
+    ExibirEtapa(1);
+    Key := 0;
+    Exit;
+  end;
   if (ActiveControl = FGantt) and (Key = VK_F2) and (Shift = []) and (Selecionada <> nil) then
   begin
     FGantt.EditCell(FGantt.Selected, COL_NOME);
@@ -1351,6 +1373,8 @@ begin
   FVistaRede := ARede;
   FRede.Visible := ARede;
   FGantt.Visible := not ARede;
+  if Assigned(FBotaoRede) then FBotaoRede.Down := ARede;
+  if Assigned(FBotaoGantt) then FBotaoGantt.Down := not ARede;
   if ARede then
   begin
     FRede.FitAll;
