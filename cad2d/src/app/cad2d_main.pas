@@ -25,9 +25,9 @@ type
     FSelected: Integer;
     FZoom: Double;
     FPanX, FPanY: Integer;
-    procedure PanDrawing(Sender: TObject);
     FNextGroup: Integer;
     FUndo: array of TCADLine;
+    procedure PanDrawing(Sender: TObject);
     procedure RedoDrawing(Sender: TObject);
     procedure ZoomDrawing(Sender: TObject);
     procedure SelectObjectAt(const P: TPoint);
