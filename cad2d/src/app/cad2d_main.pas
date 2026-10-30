@@ -417,19 +417,19 @@ begin
     D.DefaultExt := 'eacad'; D.Options := D.Options + [ofOverwritePrompt];
     if FPath <> '' then D.FileName := FPath else D.FileName := 'planta.eacad';
     if not D.Execute then Exit;
-    L.Add('EACAD2');
+    L.Add('EACAD3');
     L.Add(IntToStr(FMillimetersPerPixel));
     for I := 0 to High(FLines) do
-      L.Add(Format('%d;%d;%d;%d;%d;%d;%d', [FLines[I].A.X,FLines[I].A.Y,
+      L.Add(Format('%d;%d;%d;%d;%d;%d;%d;%d', [FLines[I].A.X,FLines[I].A.Y,
         FLines[I].B.X,FLines[I].B.Y,FLines[I].Layer,FLines[I].Kind,
-        FLines[I].WidthMM]));
+        FLines[I].WidthMM,FLines[I].GroupID]));
     L.SaveToFile(D.FileName);
     FPath := D.FileName; RefreshStatus('Projeto salvo: '+ExtractFileName(FPath));
   finally L.Free; D.Free; end;
 end;
 procedure TCADMainForm.OpenDrawing(Sender: TObject);
 var D: TOpenDialog; L, Fields: TStringList; I, N: Integer; Temp: array of TCADLine;
-  Scale: Integer; Legacy: Boolean;
+  Scale, MaxGroup: Integer; Legacy, Grouped: Boolean;
 begin
   D := TOpenDialog.Create(Self);
   L := TStringList.Create; Fields := TStringList.Create;
@@ -437,9 +437,11 @@ begin
     D.Filter := 'Projeto CAD 2D (*.eacad)|*.eacad';
     if not D.Execute then Exit;
     L.LoadFromFile(D.FileName);
-    if (L.Count < 2) or ((L[0] <> 'EACAD1') and (L[0] <> 'EACAD2')) then
+    if (L.Count < 2) or ((L[0] <> 'EACAD1') and (L[0] <> 'EACAD2') and (L[0] <> 'EACAD3')) then
       raise Exception.Create('Formato de projeto não reconhecido');
     Legacy := L[0] = 'EACAD1';
+    Grouped := L[0] = 'EACAD3';
+    MaxGroup := 0;
     Scale := StrToInt(L[1]);
     if (Scale < 1) or (Scale > 100000) then
       raise Exception.Create('Escala inválida');
@@ -448,10 +450,15 @@ begin
     for I := 2 to L.Count-1 do begin
       Fields.DelimitedText := L[I];
       if (Legacy and (Fields.Count <> 6)) or
-        ((not Legacy) and (Fields.Count <> 7)) then
+         ((not Legacy) and (not Grouped) and (Fields.Count <> 7)) or
+         (Grouped and (Fields.Count <> 8)) then
         raise Exception.CreateFmt('Linha %d inválida',[I+1]);
       N := I-2;
-      Temp[N].GroupID := N + 1;
+      if Grouped then Temp[N].GroupID := StrToInt(Fields[7])
+      else Temp[N].GroupID := N + 1;
+      if (Temp[N].GroupID < 1) or (Temp[N].GroupID > 100000000) then
+        raise Exception.CreateFmt('Grupo inválido na linha %d',[I+1]);
+      MaxGroup := Max(MaxGroup,Temp[N].GroupID);
       Temp[N].A.X := StrToInt(Fields[0]); Temp[N].A.Y := StrToInt(Fields[1]);
       Temp[N].B.X := StrToInt(Fields[2]); Temp[N].B.Y := StrToInt(Fields[3]);
       Temp[N].Layer := StrToInt(Fields[4]); Temp[N].Kind := StrToInt(Fields[5]);
@@ -467,7 +474,7 @@ begin
          (Temp[N].Kind < 0) or (Temp[N].Kind > 4) then
         raise Exception.CreateFmt('Objeto inválido na linha %d',[I+1]);
     end;
-    FLines := Temp; SetLength(FUndo,0); FNextGroup := Length(FLines)+1;
+    FLines := Temp; SetLength(FUndo,0); FNextGroup := MaxGroup+1;
     FSelected := -1; FMillimetersPerPixel := Scale;
     FHasStart := False; FPath := D.FileName;
     FCanvas.Invalidate; RefreshStatus('Projeto aberto: '+ExtractFileName(FPath));
