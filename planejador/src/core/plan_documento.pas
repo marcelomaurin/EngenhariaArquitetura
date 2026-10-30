@@ -31,6 +31,13 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure Limpar;
+    { troca todos os dados sem alocacoes; usado para carregar JSON com seguranca }
+    procedure TrocarCom(Outro: TPLProjeto);
+    { validacao integral antes de aplicar a edicao pelo painel }
+    function AplicarEdicaoTarefa(T: TPLTarefa;
+      const ANome, ADuracao, APredecessoras, AResponsavel, ANotas: string;
+      AAplicativo: TPLAplicativo; ASituacao: TPLSituacao; AProgresso: Integer;
+      out Err: string): Boolean;
     procedure Novo(const ANome: string; AInicio: TDateTime);
     function IdExiste(const AId: string): Boolean;
     function IndiceDe(const AId: string): Integer;
@@ -84,6 +91,26 @@ begin
   FTarefas.Free;
   FCalendario.Free;
   inherited Destroy;
+end;
+
+procedure TPLProjeto.TrocarCom(Outro: TPLProjeto);
+var
+  L: TPLListaTarefas;
+  C: TAIWorkCalendar;
+  N: Integer;
+  B: Boolean;
+  S: string;
+  D: TDateTime;
+begin
+  if Outro = nil then raise Exception.Create('projeto de destino ausente');
+  if Outro = Self then Exit;
+  L := FTarefas; FTarefas := Outro.FTarefas; Outro.FTarefas := L;
+  C := FCalendario; FCalendario := Outro.FCalendario; Outro.FCalendario := C;
+  N := FProximo; FProximo := Outro.FProximo; Outro.FProximo := N;
+  B := FModificado; FModificado := Outro.FModificado; Outro.FModificado := B;
+  S := Nome; Nome := Outro.Nome; Outro.Nome := S;
+  S := Objetivo; Objetivo := Outro.Objetivo; Outro.Objetivo := S;
+  D := Inicio; Inicio := Outro.Inicio; Outro.Inicio := D;
 end;
 
 function TPLProjeto.GetCount: Integer;
@@ -377,6 +404,67 @@ end;
 function TPLProjeto.TextoDuracao(T: TPLTarefa): string;
 begin
   Result := AIFormatDuration(T.Duracao, PL_MINUTOS_POR_DIA, PL_MINUTOS_POR_SEMANA);
+end;
+
+function TPLProjeto.AplicarEdicaoTarefa(T: TPLTarefa;
+  const ANome, ADuracao, APredecessoras, AResponsavel, ANotas: string;
+  AAplicativo: TPLAplicativo; ASituacao: TPLSituacao; AProgresso: Integer;
+  out Err: string): Boolean;
+var
+  D: TAIDuration;
+  Itens: TAIPredecessorItems;
+begin
+  Result := False;
+  Err := '';
+  if (T = nil) or (IndiceDe(T.Id) < 0) or (FTarefas[IndiceDe(T.Id)] <> T) then
+  begin
+    Err := 'tarefa nao pertence ao projeto';
+    Exit;
+  end;
+  if Trim(ANome) = '' then
+  begin
+    Err := 'o nome da tarefa nao pode ficar vazio';
+    Exit;
+  end;
+  if not AITryParseDuration(ADuracao, PL_MINUTOS_POR_DIA, PL_MINUTOS_POR_SEMANA, D, Err) then
+  begin
+    Err := 'duracao invalida: ' + Err;
+    Exit;
+  end;
+  if D.Minutes < 0 then
+  begin
+    Err := 'duracao negativa';
+    Exit;
+  end;
+  if (AProgresso < 0) or (AProgresso > 100) then
+  begin
+    Err := 'progresso deve estar entre 0 e 100';
+    Exit;
+  end;
+  if not AITryParsePredecessors(APredecessoras, PL_MINUTOS_POR_DIA,
+    PL_MINUTOS_POR_SEMANA, @IdExiste, Itens, Err) then
+  begin
+    Err := 'predecessoras: ' + Err;
+    Exit;
+  end;
+  { DefinirItens valida ciclo/duplicidade antes de escrever. Nada foi
+    alterado ate este ponto; falhas de validacao deixam a tarefa intacta. }
+  if not DefinirItens(T, Itens, Err) then
+  begin
+    Err := 'predecessoras: ' + Err;
+    Exit;
+  end;
+  T.Nome := Trim(ANome);
+  T.Duracao := D;
+  T.Marco := D.Minutes = 0;
+  T.Aplicativo := AAplicativo;
+  T.Situacao := ASituacao;
+  T.Responsavel := AResponsavel;
+  T.Notas := ANotas;
+  if ASituacao = plsConcluida then T.Progresso := 100
+  else T.Progresso := AProgresso;
+  MarcarModificado;
+  Result := True;
 end;
 
 procedure TPLProjeto.MarcarModificado;
