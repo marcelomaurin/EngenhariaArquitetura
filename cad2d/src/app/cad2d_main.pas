@@ -45,6 +45,7 @@ type
     procedure ExtendSelected(Sender: TObject);
     procedure TrimSelected(Sender: TObject);
     procedure ChamferSelected(Sender: TObject);
+    procedure FilletSelected(Sender: TObject);
     procedure SelectionChanged(Sender: TObject);
     procedure AddSegment(const A, B: TPoint);
     procedure AddCircle(const Center, Edge: TPoint);
@@ -112,6 +113,7 @@ begin
   AddButton('Estender até linha', @ExtendSelected);
   AddButton('Aparar (Trim)', @TrimSelected);
   AddButton('Chanfro', @ChamferSelected);
+  AddButton('Arredondar canto', @FilletSelected);
   AddButton('Zoom +', @ZoomDrawing); B.Tag := 1;
   AddButton('Zoom -', @ZoomDrawing); B.Tag := -1;
   AddButton('Pan esquerda', @PanDrawing); B.Tag := 1;
@@ -719,6 +721,106 @@ begin
   FSelected := N;
   FCanvas.Invalidate;
   RefreshStatus('Chanfro criado');
+end;
+procedure TCADMainForm.FilletSelected(Sender: TObject);
+var Id, Other, N, J, Steps: Integer; TextId, TextRadius: string;
+    AX, AY, BX, BY, CX, CY, DX, DY, Den, T, U, IX, IY,
+    V1X, V1Y, V2X, V2Y, L1, L2, DotValue, Angle, Radius,
+    Tangent, Q1X, Q1Y, Q2X, Q2Y, BisX, BisY, BisLen,
+    CenterX, CenterY, CenterDist, StartAngle, EndAngle,
+    Sweep, PrevX, PrevY, X, Y: Double;
+    P1, P2, PrevPoint, NextPoint: TPoint;
+    NearA1, NearA2: Boolean;
+begin
+  Id := FSelected;
+  if (Id < 0) or (Id >= Length(FLines)) then begin
+    ShowMessage('Selecione a primeira linha.'); Exit;
+  end;
+  TextId := '';
+  if not InputQuery('Arredondar canto','Número da segunda linha:',TextId) then Exit;
+  if (not TryStrToInt(TextId,Other)) or (Other<1) or
+     (Other>Length(FLines)) or (Other=Id+1) then begin
+    ShowMessage('Segunda linha inválida.'); Exit;
+  end;
+  Dec(Other);
+  TextRadius := '200';
+  if not InputQuery('Arredondar canto','Raio em milímetros:',TextRadius) then Exit;
+  if not TryStrToFloat(TextRadius,Radius) then begin
+    ShowMessage('Raio inválido.'); Exit;
+  end;
+  if IsNan(Radius) or IsInfinite(Radius) or
+     (Radius <= 0) or (Radius > 1000000) then begin
+    ShowMessage('Raio fora do limite.'); Exit;
+  end;
+  Radius := Radius / FMillimetersPerPixel;
+  AX := FLines[Id].A.X; AY := FLines[Id].A.Y;
+  BX := FLines[Id].B.X; BY := FLines[Id].B.Y;
+  CX := FLines[Other].A.X; CY := FLines[Other].A.Y;
+  DX := FLines[Other].B.X; DY := FLines[Other].B.Y;
+  Den := (BX-AX)*(DY-CY)-(BY-AY)*(DX-CX);
+  if Abs(Den)<0.000001 then begin
+    ShowMessage('Linhas paralelas ou coincidentes.'); Exit;
+  end;
+  T := ((CX-AX)*(DY-CY)-(CY-AY)*(DX-CX))/Den;
+  U := ((CX-AX)*(BY-AY)-(CY-AY)*(BX-AX))/Den;
+  IX := AX+T*(BX-AX); IY := AY+T*(BY-AY);
+  NearA1 := Hypot(IX-AX,IY-AY) <= Hypot(IX-BX,IY-BY);
+  NearA2 := Hypot(IX-CX,IY-CY) <= Hypot(IX-DX,IY-DY);
+  if NearA1 then begin V1X:=AX-IX; V1Y:=AY-IY; end
+  else begin V1X:=BX-IX; V1Y:=BY-IY; end;
+  if NearA2 then begin V2X:=CX-IX; V2Y:=CY-IY; end
+  else begin V2X:=DX-IX; V2Y:=DY-IY; end;
+  L1 := Hypot(V1X,V1Y); L2 := Hypot(V2X,V2Y);
+  if (L1<1) or (L2<1) then Exit;
+  V1X:=V1X/L1; V1Y:=V1Y/L1;
+  V2X:=V2X/L2; V2Y:=V2Y/L2;
+  DotValue := Max(-1.0,Min(1.0,V1X*V2X+V1Y*V2Y));
+  Angle := ArcCos(DotValue);
+  if (Angle < 0.05) or (Angle > Pi-0.05) then begin
+    ShowMessage('Ângulo inadequado para arredondamento.'); Exit;
+  end;
+  Tangent := Radius/Tan(Angle/2);
+  if (Tangent >= L1) or (Tangent >= L2) then begin
+    ShowMessage('Raio grande demais para os segmentos.'); Exit;
+  end;
+  Q1X:=IX+Tangent*V1X; Q1Y:=IY+Tangent*V1Y;
+  Q2X:=IX+Tangent*V2X; Q2Y:=IY+Tangent*V2Y;
+  BisX:=V1X+V2X; BisY:=V1Y+V2Y;
+  BisLen:=Hypot(BisX,BisY);
+  CenterDist:=Radius/Sin(Angle/2);
+  CenterX:=IX+CenterDist*BisX/BisLen;
+  CenterY:=IY+CenterDist*BisY/BisLen;
+  P1:=Point(Round(Q1X),Round(Q1Y));
+  P2:=Point(Round(Q2X),Round(Q2Y));
+  if (P1.X=P2.X) and (P1.Y=P2.Y) then begin
+    ShowMessage('Raio abaixo da resolução atual.'); Exit;
+  end;
+  StartAngle:=ArcTan2(Q1Y-CenterY,Q1X-CenterX);
+  EndAngle:=ArcTan2(Q2Y-CenterY,Q2X-CenterX);
+  Sweep:=EndAngle-StartAngle;
+  while Sweep>Pi do Sweep:=Sweep-2*Pi;
+  while Sweep< -Pi do Sweep:=Sweep+2*Pi;
+  Steps:=Max(4,Min(64,Ceil(Abs(Sweep)*Radius/3)));
+  RecordChange;
+  if NearA1 then FLines[Id].A:=P1 else FLines[Id].B:=P1;
+  if NearA2 then FLines[Other].A:=P2 else FLines[Other].B:=P2;
+  PrevPoint:=P1;
+  for J:=1 to Steps do begin
+    X:=CenterX+Radius*Cos(StartAngle+Sweep*J/Steps);
+    Y:=CenterY+Radius*Sin(StartAngle+Sweep*J/Steps);
+    NextPoint:=Point(Round(X),Round(Y));
+    if J=Steps then NextPoint:=P2;
+    if (PrevPoint.X<>NextPoint.X) or (PrevPoint.Y<>NextPoint.Y) then begin
+      N:=Length(FLines); SetLength(FLines,N+1);
+      FLines[N].A:=PrevPoint; FLines[N].B:=NextPoint;
+      FLines[N].Layer:=FLines[Id].Layer; FLines[N].Kind:=0;
+      FLines[N].WidthMM:=0; FLines[N].GroupID:=FNextGroup;
+    end;
+    PrevPoint:=NextPoint;
+  end;
+  Inc(FNextGroup);
+  FSelected:=-1; FCanvas.Invalidate;
+  RefreshStatus('Canto arredondado');
 end;
 procedure TCADMainForm.EditLastObject(Sender: TObject);
 var V: string; MM, N: Integer;
