@@ -245,3 +245,10 @@ Definido no documento do [Planejador](Planejador.md#contrato-de-tarefa-proposta)
 | G8 — Simulação elétrica | I-16, I-17 | SimuEletrica S1 |
 | G9 — Tubulações | I-18, I-19, I-22, I-23 | SimuTubulações TB1, Maquete 3D M2 |
 | G10 — Coordenação entre instalações | I-20, I-21 | SimuTubulações TB5, Elétrica 3D E4 |
+
+## Implementação local I-01/I-02 na versão 0.04
+
+Planejador e CAD 2D compartilham um espaço de trabalho JSON local para tarefas, identidades, arquivo associado e histórico de respostas. A devolução não escreve o projeto de origem: o gestor aplica o retorno no Planejador mediante confirmação. Esta entrega não implementa todo o contrato genérico de pacotes nem sincronização remota.
+
+Detalhes, perfis e limites: [Gestão de tarefas e usuários](Gestao_Tarefas_Usuarios.md).
+Entrega e validação: [Notas da versão 004](Notas_Versao_004.md).

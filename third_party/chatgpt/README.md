@@ -24,3 +24,10 @@ Ao alterar um destes componentes, a alteração deve ser feita primeiro na CHATG
 | `AIProjectCore` | `aicpmscheduler.pas` | Cronograma pelo caminho crítico |
 | `AIProject` | `aiganttview.pas` | Gráfico de Gantt com tabela editável |
 | `AIProject` | `ainetworkview.pas` | Diagrama de rede (reservado para a etapa P3 do Planejador) |
+
+## Histórico reutilizado no CAD 2D
+
+`AIProjectCore/aiundohistory.pas` foi copiado sem alterações do repositório local CHATGPT
+em 30/10/2026 (HEAD `b31c7dfe528137c59684b15bf5c5a1d9d4340929`). O CAD usa esta cópia para manter a compilação
+independente da pasta vizinha. Licença: a mesma GPL incluída neste diretório.
+SHA-256 do arquivo copiado: `274bac8b90abfc0fb6da2c3c1d3f2390d8e338d256239368a884d18f9ccd9dc6`.

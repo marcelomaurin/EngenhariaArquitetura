@@ -100,3 +100,8 @@ O desktop passou a oferecer, em **menu Banco de dados**, operações explícitas
 No Planejador, Arquivo > Salvar e Salvar como continuam sendo operações de arquivo local.
 
 **Limites e segurança:** a integração publicada salva o **JSON completo** do projeto no campo JSONB; as tabelas relacionais de tarefas, dependências e recursos ainda não são alimentadas nem consultadas pelo desktop. Falta integrar buscas e indicadores nessas tabelas, implementar autenticação/autorizações por usuário, API HTTPS para uso em nuvem e interface web. A conexão direta PostgreSQL deve ficar restrita a ambiente local ou rede privada confiável; não exponha a porta PostgreSQL à internet. O instalador precisa disponibilizar o cliente `libpq` compatível com cada plataforma. Sem compilação ou teste com PostgreSQL real nesta revisão.
+
+## Gestão de tarefas e usuários
+
+O fluxo integrado com login, quatro perfis, atribuição, respostas e devolução de arquivos
+está descrito em [Gestão de tarefas e usuários](../docs/Gestao_Tarefas_Usuarios.md).

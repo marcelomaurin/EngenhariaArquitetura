@@ -213,3 +213,57 @@ A largura gráfica dos segmentos do tipo **Parede** acompanha a ampliação do v
 ## Indicação visual de vãos de portas e janelas
 
 Os objetos lineares Porta e Janela desenham uma faixa branca sob o traço colorido, sugerindo uma abertura quando sobrepostos a uma parede previamente desenhada. **É apenas uma indicação gráfica**: ainda não corta o objeto parede, não calcula união/interseção arquitetônica e depende da ordem de renderização (paredes posteriores podem cobrir a faixa). O modelo precisa evoluir para paredes com faces e aberturas vinculadas antes de exportar informação confiável à Maquete 3D.
+
+## Interface 2D, menus e atalhos (30/10/2026)
+
+O CAD trabalha exclusivamente com desenho em X/Y, em vista superior ortográfica.
+Paredes, portas, janelas e móveis são representações em planta; não há geração,
+renderização ou exportação de imagens 3D neste aplicativo.
+
+A paleta escura existente foi mantida nos menus suspensos e na faixa de ferramentas.
+Menus Arquivo, Editar, Desenhar, Modificar, Arquitetura, Anotar, Exibir e Ajuda
+executam os comandos disponíveis. As abas Desenhar, Arquitetura, Anotar e Vista 2D
+reorganizam os grupos. O painel lateral permite escolher a camada, alternar sua
+visibilidade e impedir a seleção/edição de camadas bloqueadas.
+
+A roda aproxima/afasta ao redor do cursor; arrastar com o botão central desloca
+a vista; Enquadrar calcula os limites das entidades visíveis. A grade acompanha
+deslocamentos negativos. Móveis usam contornos técnicos em planta sem materiais.
+O documento exibe o nome real do arquivo .eacad. Não existe suporte DWG nativo.
+
+Atalhos implementados, baseados no guia oficial:
+https://www.autodesk.com/shortcuts/autocad-lt
+
+| Tecla | Função |
+|---|---|
+| Ctrl+N / Ctrl+O | Novo / abrir projeto |
+| Ctrl+S / Ctrl+Shift+S | Salvar projeto / salvar como (diálogo de arquivo) |
+| Ctrl+Z / Ctrl+Y | Desfazer / refazer geometria |
+| F1 / F2 | Ajuda / expandir histórico de comandos |
+| F3 | Captura de extremidades de objetos |
+| F7 / F8 / F9 | Grade / ortogonal / captura na grade |
+| Ctrl+L / Ctrl+B | Ortogonal / captura na grade |
+| Ctrl+1 / Ctrl+9 | Painel de camadas / linha de comandos |
+| Esc / Del | Cancelar / excluir seleção |
+| L, REC, C, M, CO, RO, MI, O, TR, EX, F, CHA, DI, LA, Z | Aliases digitados e confirmados com Enter |
+
+Somente os atalhos associados a funções existentes são implementados. Digite
+AJUDA para consultar comandos. O histórico de geometria usa TAIUndoHistory,
+da biblioteca AI Project Core do projeto CHATGPT, com limite de 60 passos.
+Visibilidade e bloqueio de camadas são estados da sessão, não persistidos no arquivo.
+
+Teste de regressão: compilar cad2d/tests/test_cad2d.lpi com Lazarus e executar
+dist/tests/test_cad2d.exe. São 36 verificações de interface, atalhos, camadas,
+transformações da vista e integração do histórico. A revisão visual manual e a
+homologação das exportações arquitetônicas completas permanecem pendentes.
+
+O menu superior usa `TMainMenu`, associado ao formulário, acima de toda a área
+de ferramentas. Os oito menus possuem submenus nativos e mantêm a paleta escura.
+
+A interface usa os azuis do MultiCNC/MultiSuite: #1E4091 e #0F172A, com
+destaques #2563EB nos menus, ferramentas e controles ativos.
+
+## Gestão de tarefas e usuários
+
+O fluxo integrado com login, quatro perfis, atribuição, respostas e devolução de arquivos
+está descrito em [Gestão de tarefas e usuários](../docs/Gestao_Tarefas_Usuarios.md).

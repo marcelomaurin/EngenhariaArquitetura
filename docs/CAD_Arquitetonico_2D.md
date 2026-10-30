@@ -249,3 +249,10 @@ Essa especificação serve como documento inicial de desenvolvimento do CAD Arqu
 | A5 — Avançado | Múltiplos pavimentos, revisões, DGN, vistas de IFC, referências externas e validações de acessibilidade | RF2D-017 a RF2D-020 | Comparar duas revisões de planta e sinalizar diferenças |
 
 **Dependências:** A1 exige a geometria 2D e a persistência do [Núcleo Comum](Nucleo_Comum.md); A4 exige o Motor de Importação; o DWG exige a decisão sobre a biblioteca (ver [Decisões](Decisoes.md)).
+
+## Interface e integração da versão 0.04
+
+O CAD permanece exclusivamente 2D. Inclui menus no topo, paleta azul, barra lateral 2D/Tarefa/Gestão e aba Gestão para responder, devolver o desenho associado e retornar ao Planejador.
+
+Detalhes, perfis e limites: [Gestão de tarefas e usuários](Gestao_Tarefas_Usuarios.md).
+Entrega e validação: [Notas da versão 004](Notas_Versao_004.md).

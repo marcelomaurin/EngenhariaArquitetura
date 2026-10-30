@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG><ProjectOptions><Version Value="12"/><General><ResourceType Value="res"/></General>
+<Units Count="1"><Unit0><Filename Value="test_cad2d.lpr"/><IsPartOfProject Value="True"/></Unit0></Units>
+<RequiredPackages Count="1"><Item1><PackageName Value="LCL"/></Item1></RequiredPackages></ProjectOptions>
+<CompilerOptions><Version Value="11"/><Target><Filename Value="../../dist/tests/test_cad2d"/></Target>
+<SearchPaths><OtherUnitFiles Value="../../shared;../src/app;../../third_party/chatgpt/AIProjectCore"/><UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/></SearchPaths>
+<Other><CustomOptions Value="-dCAD_TESTS"/></Other></CompilerOptions></CONFIG>

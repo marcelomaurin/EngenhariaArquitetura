@@ -1,0 +1,17 @@
+[
+    {
+        "test":  "test_planejador_core",
+        "passed":  true,
+        "summary":  "52 verificações, 0 falhas"
+    },
+    {
+        "test":  "test_cad2d",
+        "passed":  true,
+        "summary":  "47 verificacoes CAD 2D, 0 falhas"
+    },
+    {
+        "test":  "test_workflow",
+        "passed":  true,
+        "summary":  "38 verificacoes de gestao, usuarios e permissoes, 0 falhas"
+    }
+]

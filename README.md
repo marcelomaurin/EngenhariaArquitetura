@@ -33,9 +33,28 @@ O instalador para Windows 64 bits e os executáveis ficam em [`bin/`](bin/), com
 
 | Arquivo | Conteúdo |
 |---|---|
-| `bin/setup_engenhariaarquitetura_002.exe` | Instalador da plataforma (versão 0.02) |
+| `bin/setup_engenhariaarquitetura_004.exe` | Instalador da plataforma (versão 0.04) |
 | `bin/planejador.exe` | Planejador para Windows 64 bits |
+| `bin/cad2d.exe` | CAD Arquitetônico 2D para Windows 64 bits |
+| `bin/engenhariaarquitetura.exe` | Central de Aplicativos (lançador) |
 
 Como gerar o instalador: [installer/windows](installer/windows/README.md).
 
-> **Estado:** o **Planejador** tem a etapa P1 implementada (tarefas, dependências, caminho crítico, Gantt e gravação); os demais aplicativos estão em especificação.
+> **Estado:** Planejador e CAD 2D têm executáveis Windows, com gestão local integrada de tarefas, usuários e quatro perfis. O CAD trabalha exclusivamente em 2D e continua em evolução; os demais aplicativos permanecem em especificação.
+
+## Versão 0.04 — instalador 004
+
+O CAD inclui barra lateral 2D/Tarefa/Gestão, menu principal no topo, paleta azul
+do MultiCNC e aba Gestão para responder, devolver a tarefa com arquivo associado
+e voltar ao Planejador. O Planejador permite criar contas, atribuir tarefas e
+acompanhar andamento, retornos e pendências.
+
+Os acessos são Administrador, Usuário, Usuário restrito (my task only) e
+Visualizador. No primeiro acesso ao Planejador, crie o Administrador. A gestão
+é local e compartilhada entre os aplicativos; não há sincronização entre computadores.
+
+- [Guia de gestão, usuários e primeiro acesso](docs/Gestao_Tarefas_Usuarios.md)
+- [Notas da versão 004 e validação](docs/Notas_Versao_004.md)
+
+O histórico de Desfazer/Refazer reutiliza AI Project Core do projeto CHATGPT.
+A revisão visual manual da instalação e do fluxo completo permanece pendente.

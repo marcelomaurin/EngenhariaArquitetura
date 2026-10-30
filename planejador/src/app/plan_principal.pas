@@ -14,12 +14,27 @@ uses
   ExtCtrls, Menus, Dialogs, Buttons, Spin, EditBtn, LCLType,
   aiprojectduration, aicpmscheduler, aitaskgraph, aiganttview, ainetworkview,
   fpjson, jsonparser, plan_tipos, plan_documento, plan_cronograma, plan_json,
-  plan_exemplos, plan_estilo, plan_pg_store, plan_pg_picker;
+  plan_exemplos, plan_estilo, plan_pg_store, plan_pg_picker, ea_workflow, ea_workflow_ui;
 
 type
   TPLJanelaPrincipal = class(TForm)
   private
     FDoc: TPLProjeto;
+    FWorkflow: TWorkflow;
+    FWorkflowView: TWorkflowPanel;
+    FLegacyHost: TPanel;
+    FWorkflowToken: string;
+    FWorkflowReady: Boolean;
+    procedure BuildWorkflow;
+    procedure WorkflowShow(Sender: TObject);
+    procedure PlanningShow(Sender: TObject);
+    procedure WorkflowOpenCAD(Sender: TObject);
+    procedure WorkflowIdentityChanged(Sender: TObject);
+    procedure SendSelectedTask(Sender: TObject);
+    procedure ApplyTaskReturn(Sender: TObject);
+    procedure LoadResponsaveis;
+    function PlanningAllowed: Boolean;
+  private
     FCrono: TPLCronograma;
     FArquivo: string;
     FDBProjectId: string;
@@ -44,7 +59,8 @@ type
     FProjObjetivo: TMemo;
     FProjInicio: TDateEdit;
     FTarId: TLabel;
-    FTarNome, FTarDuracao, FTarPred, FTarResp: TEdit;
+    FTarNome, FTarDuracao, FTarPred: TEdit;
+    FTarResp: TComboBox;
     FTarApp, FTarSituacao: TComboBox;
     FTarProgresso: TSpinEdit;
     FTarNotas: TMemo;
@@ -152,6 +168,8 @@ constructor TPLJanelaPrincipal.Create(AOwner: TComponent);
 var Esq, Dir, Centro: TPanel;
 begin
   inherited CreateNew(AOwner, 1);
+  FWorkflow := TWorkflow.Create(WFArg('--workspace'));
+  FWorkflowToken := WFArg('--session');
   FDoc := TPLProjeto.Create;
   FCrono := TPLCronograma.Create;
   Caption := TITULO;
@@ -210,11 +228,13 @@ begin
     MostrarProjeto;
     Recalcular;
   end;
+  BuildWorkflow;
 end;
 
 destructor TPLJanelaPrincipal.Destroy;
 begin
   Application.RemoveAsyncCalls(Self);
+  FWorkflow.Free;
   FCrono.Free;
   FDoc.Free;
   inherited Destroy;
@@ -492,7 +512,7 @@ begin
   FTarPred := Campo('Predecessoras (ex.: T-0001; T-0002II+1d)');
   FTarApp := Lista('Aplicativo responsável');
   for A := Low(A) to High(A) do FTarApp.Items.Add(PL_APLICATIVO_NOME[A]);
-  FTarResp := Campo('Responsável');
+  FTarResp := Lista('Responsável (usuário)');
   FTarSituacao := Lista('Situação');
   for S := Low(S) to High(S) do FTarSituacao.Items.Add(PL_SITUACAO_NOME[S]);
   PLRotulo(P, 'Progresso (%)').Top := Y; Inc(Y);
@@ -914,6 +934,7 @@ end;
 
 procedure TPLJanelaPrincipal.AoSalvarBanco(Sender: TObject);
 begin
+  if FWorkflowReady and not PlanningAllowed then Exit;
   SalvarBanco;
 end;
 
@@ -926,6 +947,7 @@ var
   Data: TJSONData;
   Temp: TPLProjeto;
 begin
+  if FWorkflowReady and not PlanningAllowed then Exit;
   if not PLPGEnabled then
   begin
     Mensagem('PostgreSQL desabilitado; os arquivos locais continuam disponíveis.', True);
@@ -969,6 +991,7 @@ var
   Index: Integer;
   Revision: Int64;
 begin
+  if FWorkflowReady and not PlanningAllowed then Exit;
   if not PLPGEnabled then
   begin
     Mensagem('PostgreSQL desabilitado.', True);
@@ -1001,6 +1024,7 @@ end;
 
 procedure TPLJanelaPrincipal.AoNovo(Sender: TObject);
 begin
+  if FWorkflowReady and not PlanningAllowed then Exit;
   if not ConfirmarDescartar then Exit;
   FDoc.Novo('Novo projeto', Date);
   FArquivo := '';
@@ -1014,12 +1038,14 @@ end;
 
 procedure TPLJanelaPrincipal.AoAbrir(Sender: TObject);
 begin
+  if FWorkflowReady and not PlanningAllowed then Exit;
   if not ConfirmarDescartar then Exit;
   if FAbrir.Execute then AbrirArquivo(FAbrir.FileName);
 end;
 
 procedure TPLJanelaPrincipal.AoAbrirExemplo(Sender: TObject);
 begin
+  if FWorkflowReady and not PlanningAllowed then Exit;
   if not ConfirmarDescartar then Exit;
   PLCarregarExemploResidencia(FDoc, IncDay(Date, 1));
   FArquivo := '';
@@ -1033,12 +1059,14 @@ end;
 
 procedure TPLJanelaPrincipal.AoSalvar(Sender: TObject);
 begin
+  if FWorkflowReady and not PlanningAllowed then Exit;
   if FDBProjectId <> '' then SalvarBanco
   else SalvarEm(FArquivo);
 end;
 
 procedure TPLJanelaPrincipal.AoSalvarComo(Sender: TObject);
 begin
+  if FWorkflowReady and not PlanningAllowed then Exit;
   SalvarEm('');
 end;
 
@@ -1050,6 +1078,7 @@ end;
 procedure TPLJanelaPrincipal.AoNovaTarefa(Sender: TObject);
 var T: TPLTarefa; Pos: Integer;
 begin
+  if FWorkflowReady and not PlanningAllowed then Exit;
   Pos := FGantt.Selected + 1;
   if Pos <= 0 then Pos := FDoc.Count;
   T := FDoc.NovaTarefa('Nova tarefa', False, Pos);
@@ -1060,6 +1089,7 @@ end;
 procedure TPLJanelaPrincipal.AoNovoMarco(Sender: TObject);
 var T: TPLTarefa; Pos: Integer;
 begin
+  if FWorkflowReady and not PlanningAllowed then Exit;
   Pos := FGantt.Selected + 1;
   if Pos <= 0 then Pos := FDoc.Count;
   T := FDoc.NovaTarefa('Novo marco', True, Pos);
@@ -1070,6 +1100,7 @@ end;
 procedure TPLJanelaPrincipal.AoExcluir(Sender: TObject);
 var T: TPLTarefa; I: Integer; Id: string;
 begin
+  if FWorkflowReady and not PlanningAllowed then Exit;
   T := Selecionada;
   if T = nil then Exit;
   if MessageDlg('Planejador', Format('Excluir a tarefa %s — %s? Os vínculos com ela também serão removidos.',
@@ -1085,6 +1116,7 @@ end;
 procedure TPLJanelaPrincipal.AoSubir(Sender: TObject);
 var T: TPLTarefa;
 begin
+  if FWorkflowReady and not PlanningAllowed then Exit;
   T := Selecionada;
   if T = nil then Exit;
   FDoc.Mover(FGantt.Selected, -1);
@@ -1094,6 +1126,7 @@ end;
 procedure TPLJanelaPrincipal.AoDescer(Sender: TObject);
 var T: TPLTarefa;
 begin
+  if FWorkflowReady and not PlanningAllowed then Exit;
   T := Selecionada;
   if T = nil then Exit;
   FDoc.Mover(FGantt.Selected, 1);
@@ -1133,6 +1166,7 @@ procedure TPLJanelaPrincipal.AoEditarCelula(Sender: TObject; ARow, ACol: Integer
   var AText: string; var Accept: Boolean);
 var T: TPLTarefa; Err: string;
 begin
+  if FWorkflowReady and not PlanningAllowed then begin Accept := False; Exit; end;
   if (ARow < 0) or (ARow >= FDoc.Count) then begin Accept := False; Exit; end;
   T := FDoc[ARow];
   Err := '';
@@ -1160,6 +1194,7 @@ end;
 
 procedure TPLJanelaPrincipal.AoAlterarProjeto(Sender: TObject);
 begin
+  if FWorkflowReady and not PlanningAllowed then Exit;
   if FAtualizando then Exit;
   FDoc.Nome := FProjNome.Text;
   FDoc.Objetivo := FProjObjetivo.Text;
@@ -1182,6 +1217,7 @@ var
   App: TPLAplicativo;
   Sit: TPLSituacao;
 begin
+  if FWorkflowReady and not PlanningAllowed then Exit;
   if FAtualizando then Exit;
   T := Selecionada;
   if T = nil then Exit;
@@ -1204,6 +1240,8 @@ end;
 
 procedure TPLJanelaPrincipal.AoTecla(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
+  if (FWorkflowView <> nil) and FWorkflowView.Visible then Exit;
+  if not PlanningAllowed then Exit;
   if FGantt.Editing then Exit;
   if (Key = VK_ESCAPE) and (Shift = []) and (FEtapa <> 1) then
   begin
@@ -1220,6 +1258,15 @@ end;
 
 procedure TPLJanelaPrincipal.AoMostrar(Sender: TObject);
 begin
+  if not FWorkflowReady then begin
+    FWorkflowReady := True;
+    try
+      if FWorkflowToken = '' then
+        if not WFLoginDialog(FWorkflow,FWorkflowToken) then begin Close; Exit; end;
+      WorkflowIdentityChanged(nil);
+      if WFArg('--task') <> '' then FWorkflowView.SelectTask(WFArg('--task'));
+    except on E: Exception do begin ShowMessage(E.Message); FWorkflowToken := ''; Close; Exit; end; end;
+  end;
   { a escala de tempo depende da largura final do grafico }
   Application.QueueAsyncCall(@AjustarAssincrono, 0);
 end;
@@ -1339,6 +1386,7 @@ end;
 procedure TPLJanelaPrincipal.AoVincular(Sender: TObject);
 var T: TPLTarefa; Alvo, Err: string; Lag: TAITaskLag;
 begin
+  if FWorkflowReady and not PlanningAllowed then Exit;
   T := Selecionada;
   if (T = nil) or (FVincSucessora.ItemIndex < 0) then
   begin
@@ -1367,6 +1415,7 @@ end;
 procedure TPLJanelaPrincipal.AoVincularProxima(Sender: TObject);
 var I: Integer; Err: string;
 begin
+  if FWorkflowReady and not PlanningAllowed then Exit;
   I := FGantt.Selected;
   if FDoc.VincularProxima(I, Err) then
   begin
@@ -1380,6 +1429,7 @@ end;
 procedure TPLJanelaPrincipal.AoDesvincular(Sender: TObject);
 var T: TPLTarefa; N: Integer;
 begin
+  if FWorkflowReady and not PlanningAllowed then Exit;
   T := Selecionada;
   if T = nil then Exit;
   N := FDoc.Desvincular(FGantt.Selected);
@@ -1390,6 +1440,7 @@ end;
 procedure TPLJanelaPrincipal.AoRemoverVinculo(Sender: TObject);
 var S, De, Para: string; P: Integer; T: TPLTarefa;
 begin
+  if FWorkflowReady and not PlanningAllowed then Exit;
   T := Selecionada;
   if (T = nil) or (FVincLista.ItemIndex < 0) then Exit;
   S := FVincLista.Items[FVincLista.ItemIndex];
@@ -1441,6 +1492,7 @@ end;
 procedure TPLJanelaPrincipal.AoRedeLigar(Sender: TObject; AFromNode, AToNode: Integer; AAlt: Boolean);
 var A, B, Err: string; Tipo: TAITaskLinkType;
 begin
+  if FWorkflowReady and not PlanningAllowed then Exit;
   A := FRede.Node(AFromNode).Id;
   B := FRede.Node(AToNode).Id;
   if AAlt then Tipo := atlSS else Tipo := atlFS;
@@ -1459,6 +1511,131 @@ begin
   FGantt.Selected := FRede.Node(ANode).Tag;
   MostrarTarefa;
   if FTarNome.CanFocus then FTarNome.SetFocus;
+end;
+
+
+procedure TPLJanelaPrincipal.BuildWorkflow;
+var I: Integer; Bar: TPanel; B: TButton; G,M: TMenuItem;
+  procedure Entry(const Text: string; Action: TNotifyEvent);
+  begin M := TMenuItem.Create(Menu); M.Caption := Text; M.OnClick := Action; G.Add(M); end;
+begin
+  FLegacyHost := TPanel.Create(Self); FLegacyHost.Parent := Self;
+  FLegacyHost.Align := alClient; FLegacyHost.BevelOuter := bvNone;
+  for I := ControlCount - 1 downto 0 do if Controls[I] <> FLegacyHost then Controls[I].Parent := FLegacyHost;
+  FLegacyHost.Visible := False;
+  FWorkflowView := TWorkflowPanel.Create(Self); FWorkflowView.Parent := Self;
+  FWorkflowView.Align := alClient;
+  FWorkflowView.OnOpenCAD := @WorkflowOpenCAD;
+  FWorkflowView.OnIdentityChanged := @WorkflowIdentityChanged;
+  Bar := TPanel.Create(Self); Bar.Parent := Self; Bar.Align := alTop; Bar.Height := 40;
+  Bar.Color := RGBToColor(30,64,145);
+  B := TButton.Create(Self); B.Parent := Bar; B.SetBounds(10,4,160,32); B.Caption := 'Gestão de tarefas'; B.OnClick := @WorkflowShow;
+  B := TButton.Create(Self); B.Parent := Bar; B.SetBounds(180,4,160,32); B.Caption := 'Planejamento'; B.OnClick := @PlanningShow;
+  B := TButton.Create(Self); B.Parent := Bar; B.SetBounds(350,4,240,32); B.Caption := 'Enviar tarefa selecionada ao CAD'; B.OnClick := @SendSelectedTask;
+  B := TButton.Create(Self); B.Parent := Bar; B.SetBounds(600,4,220,32); B.Caption := 'Aplicar retorno ao planejamento'; B.OnClick := @ApplyTaskReturn;
+  G := TMenuItem.Create(Menu); G.Caption := 'Gestão'; Menu.Items.Add(G);
+  Entry('Tarefas e usuários',@WorkflowShow); Entry('Planejamento',@PlanningShow);
+  Entry('Enviar tarefa selecionada ao CAD',@SendSelectedTask); Entry('Aplicar retorno ao planejamento',@ApplyTaskReturn);
+end;
+
+function TPLJanelaPrincipal.PlanningAllowed: Boolean;
+var U: TJSONObject;
+begin
+  Result := False;
+  if FWorkflowToken = '' then Exit;
+  try U := FWorkflow.User(FWorkflowToken); try Result := WFManager(U); finally U.Free; end;
+  except Result := False; end;
+end;
+
+procedure TPLJanelaPrincipal.WorkflowIdentityChanged(Sender: TObject);
+var I: Integer; Allowed: Boolean;
+begin
+  if Sender <> nil then FWorkflowToken := FWorkflowView.Token;
+  Allowed := PlanningAllowed;
+  for I := 0 to Menu.Items.Count-1 do Menu.Items[I].Visible := Allowed or (Menu.Items[I].Caption='Gestão') or (Menu.Items[I].Caption='A&juda');
+  FLegacyHost.Enabled := Allowed;
+  if Allowed then LoadResponsaveis;
+  WorkflowShow(nil);
+end;
+
+procedure TPLJanelaPrincipal.WorkflowShow(Sender: TObject);
+begin
+  try
+    FLegacyHost.Visible := False; FWorkflowView.Visible := True;
+    FWorkflowView.Setup(FWorkflow,FWorkflowToken); FWorkflowView.BringToFront;
+  except on E: Exception do ShowMessage(E.Message); end;
+end;
+
+procedure TPLJanelaPrincipal.PlanningShow(Sender: TObject);
+begin
+  if not PlanningAllowed then begin ShowMessage('Este perfil acessa a gestão de tarefas, sem editar o planejamento completo.'); Exit; end;
+  LoadResponsaveis; FWorkflowView.Visible := False; FLegacyHost.Visible := True;
+  FLegacyHost.BringToFront;
+end;
+
+procedure TPLJanelaPrincipal.LoadResponsaveis;
+var A: TJSONArray; I: Integer; Prev: string; WasUpdating: Boolean;
+begin
+  Prev := FTarResp.Text; WasUpdating := FAtualizando; FAtualizando := True;
+  try
+    A := FWorkflow.Users(FWorkflowToken);
+    try
+      FTarResp.Items.Clear; FTarResp.Items.Add('');
+      for I := 0 to A.Count-1 do if A.Objects[I].Get('active',False) and (A.Objects[I].Get('role','') <> 'viewer') then FTarResp.Items.Add(A.Objects[I].Get('login',''));
+      FTarResp.ItemIndex := FTarResp.Items.IndexOf(Prev);
+    finally A.Free; end;
+  finally FAtualizando := WasUpdating; end;
+end;
+
+procedure TPLJanelaPrincipal.WorkflowOpenCAD(Sender: TObject);
+begin
+  if FWorkflowView.SelectedID = '' then Exit;
+  try WFLaunch(ExtractFilePath(ParamStr(0))+'cad2d.exe',
+    ['--workspace',FWorkflow.Path,'--session',FWorkflowToken,'--task',FWorkflowView.SelectedID]);
+  except on E: Exception do ShowMessage(E.Message); end;
+end;
+
+procedure TPLJanelaPrincipal.SendSelectedTask(Sender: TObject);
+var T: TPLTarefa; A,Tasks: TJSONArray; I: Integer; Assignee,ID,Artifact: string;
+begin
+  if not PlanningAllowed then Exit;
+  T := Selecionada;
+  if T = nil then begin ShowMessage('Selecione uma tarefa no planejamento.'); Exit; end;
+  AoAplicarTarefa(nil);
+  if not SalvarEm(FArquivo) then Exit;
+  Assignee := ''; ID := ''; Artifact := '';
+  try
+    A := FWorkflow.Users(FWorkflowToken);
+    try for I := 0 to A.Count-1 do if SameText(A.Objects[I].Get('login',''),T.Responsavel) then Assignee := A.Objects[I].Get('id',''); finally A.Free; end;
+    if Assignee = '' then raise EWorkflow.Create('Indique um usuário cadastrado como responsável pela tarefa.');
+    Tasks := FWorkflow.Tasks(FWorkflowToken);
+    try for I := 0 to Tasks.Count-1 do if SameFileName(Tasks.Objects[I].Get('source',''),ExpandFileName(FArquivo)) and (Tasks.Objects[I].Get('source_id','')=T.Id) then begin ID := Tasks.Objects[I].Get('id',''); Artifact := Tasks.Objects[I].Get('artifact',''); Break; end; finally Tasks.Free; end;
+    ID := FWorkflow.SaveTask(FWorkflowToken,ID,T.Nome,T.Notas,Assignee,Artifact,ExpandFileName(FArquivo),T.Id);
+    WorkflowShow(nil); FWorkflowView.SelectTask(ID); WorkflowOpenCAD(nil);
+  except on E: Exception do ShowMessage(E.Message); end;
+end;
+
+procedure TPLJanelaPrincipal.ApplyTaskReturn(Sender: TObject);
+var T: TJSONObject; Tar: TPLTarefa; I: Integer;
+begin
+  if not PlanningAllowed then Exit;
+  if FWorkflowView.SelectedID = '' then Exit;
+  try
+    T := FWorkflow.Task(FWorkflowToken,FWorkflowView.SelectedID);
+    try
+      if not SameFileName(T.Get('source',''),ExpandFileName(FArquivo)) then raise EWorkflow.Create('Abra o projeto de origem antes de aplicar o retorno.');
+      I := FDoc.IndiceDe(T.Get('source_id',''));
+      if I < 0 then raise EWorkflow.Create('Tarefa de origem não encontrada');
+      if MessageDlg('Aplicar retorno','Atualizar progresso, situação e notas da tarefa selecionada?',mtConfirmation,[mbYes,mbNo],0) <> mrYes then Exit;
+      Tar := FDoc[I]; Tar.Progresso := T.Get('progress',0);
+      if T.Get('state','')='concluida' then Tar.Situacao := plsConcluida
+      else if T.Get('state','')='pendente' then Tar.Situacao := plsAFazer else Tar.Situacao := plsEmAndamento;
+      Tar.Notas := Tar.Notas + LineEnding + 'Retorno CAD — arquivo: '+T.Get('artifact','');
+      if T.Arrays['history'].Count > 0 then Tar.Notas := Tar.Notas+LineEnding+T.Arrays['history'].Objects[T.Arrays['history'].Count-1].Get('text','');
+      FDoc.Modificado := True; MostrarTarefa; Recalcular(Tar.Id);
+      Mensagem('Retorno aplicado. Salve o planejamento para persistir.');
+    finally T.Free; end;
+  except on E: Exception do ShowMessage(E.Message); end;
 end;
 
 end.

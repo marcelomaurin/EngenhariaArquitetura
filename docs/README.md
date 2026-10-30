@@ -2,7 +2,7 @@
 
 Plataforma de aplicações independentes em Lazarus/Free Pascal para projetos de Engenharia e Arquitetura. Cada aplicativo funciona como uma etapa de uma **linha de produção**: o resultado de uma etapa alimenta a seguinte, por meio de arquivos de intercâmbio versionados.
 
-> **Estado:** o Planejador tem a etapa P1 implementada (código em [`planejador/`](../planejador/README.md)); os demais componentes estão em especificação.
+> **Estado na versão 0.04:** Planejador e CAD 2D têm executáveis Windows e gestão local integrada de tarefas e usuários. O CAD é exclusivamente 2D e permanece em evolução; os outros componentes estão em especificação.
 
 ## Como ler esta documentação
 
@@ -43,6 +43,8 @@ Plataforma de aplicações independentes em Lazarus/Free Pascal para projetos de
 
 | Documento | Conteúdo |
 |---|---|
+| [Gestão de tarefas e usuários](Gestao_Tarefas_Usuarios.md) | Primeiro acesso, perfis, atribuição, resposta, devolução, vínculo de arquivo e persistência local |
+| [Notas da versão 004](Notas_Versao_004.md) | Conteúdo do instalador 0.04, compilação, testes e limitações |
 | [Pendências do Planejador (30/10/2026)](Pendencias_Planejador_2026-10-30.md) | Auditoria focada no Planejador: proteção de dados, P2 (tarefas nos aplicativos), P3 (acompanhamento), P4 (objetos e skins), prioridades e testes |
 | [Auditoria de lacunas (30/10/2026)](Auditoria_Lacunas_2026-10-30.md) | Estado observado do código, prioridades P0/P1/P2, critérios de aceite e plano de implementação sem incorporar o MultiCNC |
 | [Visão geral da plataforma](Visao_Geral_Plataforma.md) | Aplicativos, objetivos de negócio, escopo, requisitos não funcionais comuns e fontes |
@@ -106,3 +108,5 @@ flowchart LR
 | 29/10/2026 | Incluído o SimuTubulações (sétimo aplicativo), a partir da especificação recebida em 29/10/2026; integrações I-18 a I-23 e fase 11 do plano. Etapas renomeadas para TB1–TB6 e entrega do Planejador para PL, para não colidir com o Gerador de Texturas e com a entrega Q da especificação |
 | 29/10/2026 | Especificação dividida em um documento por componente; criados os documentos de integrações e de plano de desenvolvimento, com etapas por componente. O conteúdo anterior permanece no histórico do git |
 | 30/10/2026 | Auditoria de lacunas na branch `fila`: status do código, prioridades e validações pendentes; manter MultiCNC externo |
+
+| 30/10/2026 | Versão 0.04 / instalador 004: CAD 2D com barra lateral e Gestão; integração local de tarefas, login, usuários, quatro perfis e testes de permissões |

@@ -3,6 +3,7 @@
  <ProjectOptions>
   <Version Value="12"/>
   <General><Title Value="CAD Arquitetônico 2D"/><UseAppBundle Value="False"/><ResourceType Value="res"/><UseXPManifest Value="True"/><Icon Value="0"/></General>
+  <VersionInfo><UseVersionInfo Value="True"/><MinorVersionNr Value="4"/><StringTable CompanyName="Maurinsoft" FileDescription="CAD Arquitetonico 2D" ProductName="EngenhariaArquitetura" ProductVersion="0.4.0"/></VersionInfo>
   <Units Count="2">
    <Unit0><Filename Value="cad2d.lpr"/><IsPartOfProject Value="True"/></Unit0>
    <Unit1><Filename Value="cad2d_main.pas"/><IsPartOfProject Value="True"/></Unit1>
@@ -12,7 +13,7 @@
  <CompilerOptions>
   <Version Value="11"/>
   <Target><Filename Value="../../../bin/cad2d"/></Target>
-  <SearchPaths><UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/></SearchPaths>
+  <SearchPaths><OtherUnitFiles Value="../../../shared;../../../third_party/chatgpt/AIProjectCore"/><UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/></SearchPaths>
   <Parsing><SyntaxOptions><SyntaxMode Value="ObjFPC"/></SyntaxOptions></Parsing>
   <CodeGeneration><Optimizations><OptimizationLevel Value="2"/></Optimizations></CodeGeneration>
   <Linking>

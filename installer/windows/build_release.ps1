@@ -74,6 +74,28 @@ foreach ($t in $Tests) {
   $qa += [ordered]@{ test = $name; passed = $ok; summary = "$summary" }
   if (-not $ok) { $run; throw "Testes falharam: $name" }
 }
+# Regressao do CAD: controles LCL, camadas, zoom, atalhos e historico CHATGPT.
+& $Lazbuild -B --cpu=x86_64 --os=win64 --ws=win32 "cad2d\tests\test_cad2d.lpi" *> (Join-Path $Dist "build-logs\test_cad2d.log")
+if ($LASTEXITCODE -ne 0) { Get-Content (Join-Path $Dist "build-logs\test_cad2d.log") -Tail 20; throw "Falha ao compilar testes CAD 2D" }
+$cadRun = & (Join-Path $Dist "tests\test_cad2d.exe") 2>&1
+$cadOK = $LASTEXITCODE -eq 0
+$cadSummary = "$($cadRun | Select-Object -Last 1)"
+Write-Host "  test_cad2d: $cadSummary"
+$qa += [ordered]@{ test = "test_cad2d"; passed = $cadOK; summary = $cadSummary }
+if (-not $cadOK) { $cadRun; throw "Testes CAD 2D falharam" }
+
+$wfOut = Join-Path $Dist "tests\workflow-units"
+New-Item -ItemType Directory -Force $wfOut | Out-Null
+$wfArgs = @("-Px86_64", "-Twin64", "-Mobjfpc", "-Sh", "-Fu$Root\shared", "-FU$wfOut", "-o$Dist\tests\test_workflow.exe", "shared\tests\test_workflow.lpr")
+& $Fpc @wfArgs *> (Join-Path $Dist "build-logs\test_workflow.log")
+if ($LASTEXITCODE -ne 0) { Get-Content (Join-Path $Dist "build-logs\test_workflow.log") -Tail 20; throw "Falha ao compilar testes de gestao" }
+$wfRun = & (Join-Path $Dist "tests\test_workflow.exe") 2>&1
+$wfOK = $LASTEXITCODE -eq 0
+$wfSummary = "$($wfRun | Select-Object -Last 1)"
+Write-Host "  test_workflow: $wfSummary"
+$qa += [ordered]@{ test = "test_workflow"; passed = $wfOK; summary = $wfSummary }
+if (-not $wfOK) { $wfRun; throw "Testes de gestao falharam" }
+
 [System.IO.File]::WriteAllText((Join-Path $App "qa-tests.json"), (ConvertTo-Json -InputObject @($qa)), [System.Text.UTF8Encoding]::new($false))
 
 New-Item -ItemType Directory -Force (Join-Path $App "documentation\docs"), (Join-Path $App "exemplos"), (Join-Path $App "licencas") | Out-Null

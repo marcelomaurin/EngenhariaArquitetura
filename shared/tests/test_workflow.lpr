@@ -1,0 +1,65 @@
+program test_workflow;
+{$mode objfpc}{$H+}{$codepage utf8}
+uses Classes, SysUtils, fpjson, ea_workflow;
+var W,W2: TWorkflow; Root,Admin,UserToken,Restricted,Viewer,UID,RID,VID,T1,T2,Temp,ID: string;
+  U,T: TJSONObject; A: TJSONArray; L: TStringList; Checks: Integer; Denied: Boolean; G: TGUID;
+procedure Check(OK: Boolean; const Msg: string);
+begin Inc(Checks); if not OK then raise Exception.Create(Msg); end;
+begin
+  CreateGUID(G); Root:=IncludeTrailingPathDelimiter(GetTempDir)+'ea-workflow-'+GUIDToString(G)+'.json';
+  W:=TWorkflow.Create(Root); W2:=TWorkflow.Create(Root); L:=TStringList.Create;
+  try
+    Check(W.Empty,'primeiro acesso');
+    Admin:=W.Bootstrap('admin','Administrador','TesteAdmin-123!');
+    Check(not W.Empty,'administrador persistido');
+    U:=W.User(Admin); try Check(U.Get('role','')='admin','perfil admin'); Check(U.Find('password_hash')=nil,'hash nao exposto'); finally U.Free; end;
+    Denied:=False; try W.Bootstrap('outro','Outro','TesteAdmin-123!'); except on E: EWorkflow do Denied:=True; end; Check(Denied,'sem segundo bootstrap');
+    UID:=W.SaveUser(Admin,'','usuario','Usuário','TesteUser-123!','user',True);
+    RID:=W.SaveUser(Admin,'','restrito','Restrito','TesteRestrito-123!','restricted',True);
+    VID:=W.SaveUser(Admin,'','leitor','Leitor','TesteLeitor-123!','viewer',True);
+    UserToken:=W.Login('usuario','TesteUser-123!'); Restricted:=W.Login('restrito','TesteRestrito-123!'); Viewer:=W.Login('leitor','TesteLeitor-123!');
+    Denied:=False; try W.SaveUser(Admin,'','usuario','Duplicado','TesteUser-123!','user',True); except on E: EWorkflow do Denied:=True; end; Check(Denied,'login unico');
+    Denied:=False; try W.SaveUser(Restricted,'','invalido','Inválido','TesteUser-123!','admin',True); except on E: EWorkflow do Denied:=True; end; Check(Denied,'restrito nao cria contas');
+    Denied:=False; try A:=W.Users(Restricted); A.Free; except on E: EWorkflow do Denied:=True; end; Check(Denied,'restrito nao lista usuarios');
+    A:=W.Users(Admin); try Check(A.Count=4,'contas criadas'); Check(A.Objects[0].Find('password_hash')=nil,'lista nao expoe hash'); finally A.Free; end;
+    U:=W.User(Admin); ID:=U.Get('id',''); U.Free;
+    Denied:=False; try W.SaveUser(Admin,ID,'admin','Administrador','','viewer',True); except on E: EWorkflow do Denied:=True; end; Check(Denied,'ultimo admin preservado');
+    Denied:=False; try W.Login('usuario','senha incorreta'); except on E: EWorkflow do Denied:=True; end; Check(Denied,'senha errada bloqueada');
+    T1:=W.SaveTask(Admin,'','Planta do térreo','Entregar planta e apontar pendências',RID,'','origem.plan.json','T-1');
+    T2:=W.SaveTask(UserToken,'','Outra tarefa','Outro responsável',UID,'','origem.plan.json','T-2');
+    A:=W.Tasks(Restricted); try Check(A.Count=1,'my task only'); Check(A.Objects[0].Get('id','')=T1,'somente tarefa propria'); finally A.Free; end;
+    A:=W.Tasks(Viewer); try Check(A.Count=2,'visualizador ve tarefas'); finally A.Free; end;
+    Denied:=False; try T:=W.Task(Restricted,T2); T.Free; except on E: EWorkflow do Denied:=True; end; Check(Denied,'acesso direto a tarefa alheia negado');
+    Denied:=False; try W.SaveTask(Viewer,'','Inválida','',UID,'','',''); except on E: EWorkflow do Denied:=True; end; Check(Denied,'visualizador nao cria tarefa');
+    Denied:=False; try W.Reply(Viewer,T1,'Não permitido','concluida',100,'',False); except on E: EWorkflow do Denied:=True; end; Check(Denied,'visualizador nao responde');
+    Denied:=False; try W.Reply(Restricted,T2,'Não permitido','concluida',100,'',False); except on E: EWorkflow do Denied:=True; end; Check(Denied,'restrito nao responde tarefa alheia');
+    W.Reply(Restricted,T1,'Paredes desenhadas. Faltam esquadrias.','em_andamento',40,'',False);
+    T:=W2.Task(Admin,T1); try Check(T.Get('progress',0)=40,'progresso compartilhado'); Check(T.Arrays['history'].Count=1,'resposta registrada'); finally T.Free; end;
+    Temp:=Root+'.eacad'; L.Text:='EACAD3'+LineEnding+'50'; L.SaveToFile(Temp);
+    W.Reply(Restricted,T1,'Planta devolvida para revisão.','em_andamento',80,Temp,True);
+    T:=W2.Task(Admin,T1); try
+      Check(T.Get('state','')='devolvida','retorno ao planejador');
+      Check(SameFileName(T.Get('artifact',''),Temp),'associacao automatica do arquivo');
+      Check(T.Arrays['history'].Count=2,'historico preservado');
+      Check(T.Get('source_id','')='T-1','vinculo com origem');
+    finally T.Free; end;
+    Denied:=False; try W.Reply(Restricted,T1,'Arquivo trocado','concluida',100,Root+'.outro',True); except on E: EWorkflow do Denied:=True; end; Check(Denied,'nao substitui associacao existente');
+    Denied:=False; try W.Reply(Restricted,T1,'','em_andamento',50,'',False); except on E: EWorkflow do Denied:=True; end; Check(Denied,'resposta vazia recusada');
+    Denied:=False; try W.Reply(Restricted,T1,'Inválida','invalido',50,'',False); except on E: EWorkflow do Denied:=True; end; Check(Denied,'estado invalido recusado');
+    Denied:=False; try W.Reply(Restricted,T1,'Inválida','em_andamento',101,'',False); except on E: EWorkflow do Denied:=True; end; Check(Denied,'progresso invalido recusado');
+    W.Reply(Admin,T1,'Revisão aceita. Sem pendências.','concluida',80,'',False);
+    T:=W.Task(Admin,T1); try Check(T.Get('progress',0)=100,'conclusao em 100%'); Check(T.Get('state','')='concluida','conclusao revisada'); Check(T.Arrays['history'].Count=3,'falhas nao gravaram respostas'); finally T.Free; end;
+    W.SaveUser(Admin,RID,'restrito','Restrito','','viewer',True);
+    Denied:=False; try W.Reply(Restricted,T1,'Antiga permissão','concluida',100,'',False); except on E: EWorkflow do Denied:=True; end; Check(Denied,'alteracao de perfil imediata');
+    W.SaveUser(Admin,VID,'leitor','Leitor','','viewer',False);
+    Denied:=False; try A:=W.Tasks(Viewer); A.Free; except on E: EWorkflow do Denied:=True; end; Check(Denied,'desativacao imediata');
+    W.SaveUser(Admin,UID,'usuario','Usuário','NovaSenha-123!','user',True);
+    Denied:=False; try U:=W.User(UserToken); U.Free; except on E: EWorkflow do Denied:=True; end; Check(Denied,'nova senha invalida sessoes antigas');
+    UserToken:=W.Login('usuario','NovaSenha-123!'); W.Logout(UserToken);
+    Denied:=False; try U:=W.User(UserToken); U.Free; except on E: EWorkflow do Denied:=True; end; Check(Denied,'logout invalida sessao');
+    L.LoadFromFile(Root); Check(Pos('TesteAdmin-123!',L.Text)=0,'senha nao gravada em texto'); Check(Pos('NovaSenha-123!',L.Text)=0,'nova senha nao gravada em texto');
+    WriteLn(Checks,' verificacoes de gestao, usuarios e permissoes, 0 falhas');
+  except on E: Exception do begin WriteLn('FALHA: ',E.Message); Halt(1); end; end;
+  L.Free; W.Free; W2.Free;
+  DeleteFile(Root); DeleteFile(Root+'.lock'); DeleteFile(Temp);
+end.

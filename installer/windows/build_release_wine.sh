@@ -74,6 +74,20 @@ for t in "${TESTS[@]}"; do
   printf '  {"test": "%s", "passed": %s, "summary": "%s"}' "$name" "$ok" "$resumo" >> "$QA"
   $ok || { cat "$DIST/build-logs/$name.run.log"; echo "Testes falharam: $name"; exit 1; }
 done
+# Regressao CAD 2D com LCL (rodar em sessao grafica Wine/Xvfb).
+"$LAZBUILD" -B --cpu=x86_64 --os=win64 --ws=win32 cad2d/tests/test_cad2d.lpi > "$DIST/build-logs/test_cad2d.log" 2>&1
+"$WINE" "$DIST/tests/test_cad2d.exe" > "$DIST/build-logs/test_cad2d.run.log" 2>&1
+resumo=$(tail -1 "$DIST/build-logs/test_cad2d.run.log" | tr -d '\r')
+echo "," >> "$QA"
+printf '  {"test": "test_cad2d", "passed": true, "summary": "%s"}' "$resumo" >> "$QA"
+echo "  test_cad2d: $resumo"
+mkdir -p "$DIST/tests/workflow-units"
+"$FPC_BIN" -Px86_64 -Twin64 -Mobjfpc -Sh -Fu"$ROOT/shared" -FU"$DIST/tests/workflow-units" -o"$DIST/tests/test_workflow.exe" shared/tests/test_workflow.lpr > "$DIST/build-logs/test_workflow.log" 2>&1
+"$WINE" "$DIST/tests/test_workflow.exe" > "$DIST/build-logs/test_workflow.run.log" 2>&1
+resumo=$(tail -1 "$DIST/build-logs/test_workflow.run.log" | tr -d '\r')
+echo "," >> "$QA"
+printf '  {"test": "test_workflow", "passed": true, "summary": "%s"}' "$resumo" >> "$QA"
+echo "  test_workflow: $resumo"
 echo "]" >> "$QA"
 cp "$QA" "$APP/qa-tests.json"
 

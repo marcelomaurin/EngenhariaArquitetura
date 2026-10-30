@@ -1,0 +1,173 @@
+{
+  "schema_version": "1.0",
+  "package_type": "build_manifest",
+  "product": "EngenhariaArquitetura",
+  "version": "0.03",
+  "binary_version": "0.3.0.0",
+  "setup_seq": "003",
+  "os": "windows",
+  "arch": "amd64",
+  "built_at": "2026-10-30T20:40:39+00:00",
+  "source_commit": "c026b4ea93c03b1ebf183574107dc2abdd0cd769",
+  "source_branch": "fila",
+  "source_dirty": true,
+  "tests": [
+    {
+      "test": "test_planejador_core",
+      "passed": true,
+      "summary": "52 verificações, 0 falhas"
+    },
+    {
+      "test": "test_cad2d",
+      "passed": true,
+      "summary": "47 verificacoes CAD 2D, 0 falhas"
+    },
+    {
+      "test": "test_workflow",
+      "passed": true,
+      "summary": "38 verificacoes de gestao, usuarios e permissoes, 0 falhas"
+    }
+  ],
+  "files": [
+    {
+      "path": "cad2d.exe",
+      "bytes": 3499008,
+      "sha256": "28ac98972c52d0566e451a96ad8231a0ad431896af288a74933644b0cedb129c"
+    },
+    {
+      "path": "documentation/CAD2D_README.md",
+      "bytes": 20089,
+      "sha256": "7dfce76302ef19cfd419c93e6e36f3573f9701cbda303aa0fc976e4cf232ccc0"
+    },
+    {
+      "path": "documentation/Planejador_README.md",
+      "bytes": 9680,
+      "sha256": "53caf2a4cfd0da64467272cc637cdc128f6749abe301cd86f163f627543aeddb"
+    },
+    {
+      "path": "documentation/README.md",
+      "bytes": 2738,
+      "sha256": "094445636b7535192c09bd1e595109f128af6cade6e99bc763d950f7d9f99287"
+    },
+    {
+      "path": "documentation/docs/Auditoria_Lacunas_2026-10-30.md",
+      "bytes": 17541,
+      "sha256": "3639993cd2d22bdc0d4e8b8c7eafc4f1ae36f6e95769064d384d8a715f0035e7"
+    },
+    {
+      "path": "documentation/docs/CAD_Arquitetonico_2D.md",
+      "bytes": 16045,
+      "sha256": "9b4f13800995f08b755571555ed4937d3ceae88742d396b0ffdc3d9ced63e660"
+    },
+    {
+      "path": "documentation/docs/Criador_Cenas.md",
+      "bytes": 8293,
+      "sha256": "61496a4d54ec832409ceefee1a33916988848c36d3648ceee5cc3aa6b06b0479"
+    },
+    {
+      "path": "documentation/docs/Decisoes.md",
+      "bytes": 5326,
+      "sha256": "218b0b8b23141907454776c4dadfed5a099e8b54214552b10896684203018f04"
+    },
+    {
+      "path": "documentation/docs/Editor_Objetos_3D.md",
+      "bytes": 22518,
+      "sha256": "5af7eaff7c3515f85c5df337e1fb5650ce619a54adcf2586c5472b2d2a53a827"
+    },
+    {
+      "path": "documentation/docs/Eletrica_3D.md",
+      "bytes": 9990,
+      "sha256": "a1583fa036a5a005564252bb247544aae52ef9b4ca9a5530692585f607e18879"
+    },
+    {
+      "path": "documentation/docs/Gerador_Texturas.md",
+      "bytes": 11005,
+      "sha256": "33d99ac8b7acc37349376d8a9b989fc74881511ce6211c4f91327af18648985c"
+    },
+    {
+      "path": "documentation/docs/Gestao_Tarefas_Usuarios.md",
+      "bytes": 4729,
+      "sha256": "488a5df8118c94dd4f6a97bdfbf8c30987fb2363d1f55eed07306338093baca0"
+    },
+    {
+      "path": "documentation/docs/Integracoes.md",
+      "bytes": 19026,
+      "sha256": "52974f45211ba1249035f16f6760e076ac45fc86a595e090bf18b57ebf19d06e"
+    },
+    {
+      "path": "documentation/docs/Maquete_3D.md",
+      "bytes": 7426,
+      "sha256": "2d44e56b18cc020fe08c7b18dde6db91c79102d48c2abb2eb331512d943b3c37"
+    },
+    {
+      "path": "documentation/docs/Motor_Importacao.md",
+      "bytes": 11572,
+      "sha256": "a591e0f90cf7caf4f990d5dd516b70852b5da180ceeb035f225fc177800b2574"
+    },
+    {
+      "path": "documentation/docs/Nucleo_Comum.md",
+      "bytes": 5332,
+      "sha256": "cdf7c889bbb12a1fe8872e8d123468ffe02ffb10f0e77178aca4b77a6ea52e12"
+    },
+    {
+      "path": "documentation/docs/Pendencias_Planejador_2026-10-30.md",
+      "bytes": 20282,
+      "sha256": "46bcc6b927b77723575d5abcc4a452cc085bb1bab634c32dee22df8e928ff999"
+    },
+    {
+      "path": "documentation/docs/Planejador.md",
+      "bytes": 8728,
+      "sha256": "5161b9a7d816f4dcb4128dd655965d741f041e1d22465c550121e44f00511509"
+    },
+    {
+      "path": "documentation/docs/Plano_Desenvolvimento.md",
+      "bytes": 13657,
+      "sha256": "7bb322b77dec9b02100a95265ae3fd89a0b2b5b697d7d7b1cb35344d8a4b8584"
+    },
+    {
+      "path": "documentation/docs/README.md",
+      "bytes": 6952,
+      "sha256": "13bb6fc910314ed9a080e0507a2ed0e1155e765a1d6cbbb5effd48b576837ef4"
+    },
+    {
+      "path": "documentation/docs/SimuEletrica.md",
+      "bytes": 20119,
+      "sha256": "4e2cf793beb2e43e93d27096726277566fc40eca93928534ba47967b965b1367"
+    },
+    {
+      "path": "documentation/docs/SimuTubulacoes.md",
+      "bytes": 29683,
+      "sha256": "8150cbc19b8bcaecd2d7937dc46abd824e1a0ebe54b348487872783e96f413f1"
+    },
+    {
+      "path": "documentation/docs/Visao_Geral_Plataforma.md",
+      "bytes": 13421,
+      "sha256": "0e3e988e62a8affc259798b3be3ff7c51901a6493a167be24c966a3f44a8d230"
+    },
+    {
+      "path": "engenhariaarquitetura.exe",
+      "bytes": 2808320,
+      "sha256": "31a6942c3ff7e3e8e9525b03862238293336127f91428504fff05ee830ab8316"
+    },
+    {
+      "path": "exemplos/residencia.plan.json",
+      "bytes": 16748,
+      "sha256": "47bce26a25301f09972fb0ebd23a64033982c490e7da5636cf89dd56f5bfeabd"
+    },
+    {
+      "path": "licencas/CHATGPT_LICENSE.txt",
+      "bytes": 35823,
+      "sha256": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809"
+    },
+    {
+      "path": "planejador.exe",
+      "bytes": 4154880,
+      "sha256": "e105824f0687f3d0d1359e481afe4812e5f4798ca584acb1f862ea4be7382b9b"
+    },
+    {
+      "path": "qa-tests.json",
+      "bytes": 424,
+      "sha256": "5f1a97c214c8df391bcf69f48a72cc14721cdd358320d2c120f3811501c838f4"
+    }
+  ]
+}

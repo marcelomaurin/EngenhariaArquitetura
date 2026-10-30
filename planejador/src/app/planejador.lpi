@@ -16,8 +16,8 @@
   </General>
   <VersionInfo>
    <UseVersionInfo Value="True" />
-   <MinorVersionNr Value="2" />
-   <StringTable CompanyName="Maurinsoft" FileDescription="Planejador - tarefas e cronograma de projetos de engenharia e arquitetura" ProductName="EngenhariaArquitetura" ProductVersion="0.2.0" />
+   <MinorVersionNr Value="4" />
+   <StringTable CompanyName="Maurinsoft" FileDescription="Planejador - tarefas e cronograma de projetos de engenharia e arquitetura" ProductName="EngenhariaArquitetura" ProductVersion="0.4.0" />
   </VersionInfo>
   <BuildModes Count="1">
    <Item1 Name="Default" Default="True" />
@@ -41,7 +41,7 @@
   </Target>
   <SearchPaths>
    <IncludeFiles Value="$(ProjOutDir);../../../../CHATGPT/pacote/AI Project;../../../third_party/chatgpt/AIProject" />
-   <OtherUnitFiles Value="../core;../io;../view;../../../../CHATGPT/pacote/AI Project Core;../../../../CHATGPT/pacote/AI Project;../../../third_party/chatgpt/AIProjectCore;../../../third_party/chatgpt/AIProject" />
+   <OtherUnitFiles Value="../../../shared;../core;../io;../view;../../../../CHATGPT/pacote/AI Project Core;../../../../CHATGPT/pacote/AI Project;../../../third_party/chatgpt/AIProjectCore;../../../third_party/chatgpt/AIProject" />
    <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)" />
   </SearchPaths>
   <Parsing>

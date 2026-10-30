@@ -113,3 +113,10 @@ A comparação do código confirmou Gantt e diagrama de rede em ambos. MultiProj
 **Banco e nuvem:** planejar PostgreSQL com vários projetos isolados por organização e identificador de projeto; um painel de portfólio reunirá cronogramas e indicadores de 20 ou mais projetos sem misturar tarefas. Desktop Lazarus e futuro site acessarão os mesmos dados através de API HTTPS autenticada e versionada, não diretamente pelo banco de dados na internet. Preservar exportação/importação local, arquivos legados, permissões, histórico, revisão de edição e tratamento de conflitos. Planejar Gantt e Timeline consolidados, recursos entre projetos, sincronização e modo offline opcional.
 
 **Sequência sugerida:** concluir proteção de arquivos e testes do Planejador; implementar Quadro/Equipe/Timeline; definir esquema multi-projeto, API, integração desktop e site; então portfólio e sincronização. Esta anotação não declara funcionalidade concluída nem altera o MultiCNC.
+
+## Entrega local da versão 0.04
+
+O Planejador inclui contas, quatro tipos de acesso, atribuição de tarefas, histórico de respostas e acompanhamento de devoluções do CAD 2D. O perfil restrito vê apenas suas tarefas; o Visualizador consulta sem editar.
+
+Detalhes, perfis e limites: [Gestão de tarefas e usuários](Gestao_Tarefas_Usuarios.md).
+Entrega e validação: [Notas da versão 004](Notas_Versao_004.md).
