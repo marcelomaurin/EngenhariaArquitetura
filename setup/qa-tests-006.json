@@ -1,0 +1,32 @@
+[
+    {
+        "test":  "test_planejador_core",
+        "passed":  true,
+        "summary":  "73 verificações, 0 falhas"
+    },
+    {
+        "test":  "test_cad_document",
+        "passed":  true,
+        "summary":  "33 verificacoes de persistencia CAD e gravacao segura, 0 falhas"
+    },
+    {
+        "test":  "test_cad_dxf",
+        "passed":  true,
+        "summary":  "15 verificacoes DXF 2D, 0 falhas"
+    },
+    {
+        "test":  "test_cad_catalog",
+        "passed":  true,
+        "summary":  "59 verificacoes de biblioteca e exemplos de saude, 0 falhas"
+    },
+    {
+        "test":  "test_cad2d",
+        "passed":  true,
+        "summary":  "67 verificacoes CAD 2D, 0 falhas"
+    },
+    {
+        "test":  "test_workflow",
+        "passed":  true,
+        "summary":  "41 verificacoes de gestao, usuarios e permissoes, 0 falhas"
+    }
+]

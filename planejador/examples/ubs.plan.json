@@ -1,0 +1,787 @@
+{
+  "schema_version" : "1.0",
+  "package_type" : "projeto_planejador",
+  "created_by" : {
+    "application" : "Planejador",
+    "version" : "0.6.0"
+  },
+  "units" : "mm",
+  "projeto" : {
+    "nome" : "UBS — exemplo de planejamento",
+    "objetivo" : "Estudo de projeto para estabelecimento de saúde. Confirmar programa assistencial, equipamentos, fluxos, acessibilidade e requisitos técnicos com a equipe responsável. Cronograma ilustrativo; não é projeto referencial oficial.",
+    "inicio" : "2026-11-03",
+    "calendario" : {
+      "name" : "Padrão",
+      "week" : [
+        [
+        ],
+        [
+          [
+            480,
+            720
+          ],
+          [
+            780,
+            1020
+          ]
+        ],
+        [
+          [
+            480,
+            720
+          ],
+          [
+            780,
+            1020
+          ]
+        ],
+        [
+          [
+            480,
+            720
+          ],
+          [
+            780,
+            1020
+          ]
+        ],
+        [
+          [
+            480,
+            720
+          ],
+          [
+            780,
+            1020
+          ]
+        ],
+        [
+          [
+            480,
+            720
+          ],
+          [
+            780,
+            1020
+          ]
+        ],
+        [
+        ]
+      ],
+      "exceptions" : [
+        {
+          "date" : "2025-01-01",
+          "name" : "Confraternizacao Universal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2025-04-18",
+          "name" : "Sexta-feira Santa",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2025-04-21",
+          "name" : "Tiradentes",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2025-05-01",
+          "name" : "Dia do Trabalho",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2025-09-07",
+          "name" : "Independencia do Brasil",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2025-10-12",
+          "name" : "Nossa Senhora Aparecida",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2025-11-02",
+          "name" : "Finados",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2025-11-15",
+          "name" : "Proclamacao da Republica",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2025-11-20",
+          "name" : "Dia Nacional de Zumbi e da Consciencia Negra",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2025-12-25",
+          "name" : "Natal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2026-01-01",
+          "name" : "Confraternizacao Universal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2026-04-03",
+          "name" : "Sexta-feira Santa",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2026-04-21",
+          "name" : "Tiradentes",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2026-05-01",
+          "name" : "Dia do Trabalho",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2026-09-07",
+          "name" : "Independencia do Brasil",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2026-10-12",
+          "name" : "Nossa Senhora Aparecida",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2026-11-02",
+          "name" : "Finados",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2026-11-15",
+          "name" : "Proclamacao da Republica",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2026-11-20",
+          "name" : "Dia Nacional de Zumbi e da Consciencia Negra",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2026-12-25",
+          "name" : "Natal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2027-01-01",
+          "name" : "Confraternizacao Universal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2027-03-26",
+          "name" : "Sexta-feira Santa",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2027-04-21",
+          "name" : "Tiradentes",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2027-05-01",
+          "name" : "Dia do Trabalho",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2027-09-07",
+          "name" : "Independencia do Brasil",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2027-10-12",
+          "name" : "Nossa Senhora Aparecida",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2027-11-02",
+          "name" : "Finados",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2027-11-15",
+          "name" : "Proclamacao da Republica",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2027-11-20",
+          "name" : "Dia Nacional de Zumbi e da Consciencia Negra",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2027-12-25",
+          "name" : "Natal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2028-01-01",
+          "name" : "Confraternizacao Universal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2028-04-14",
+          "name" : "Sexta-feira Santa",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2028-04-21",
+          "name" : "Tiradentes",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2028-05-01",
+          "name" : "Dia do Trabalho",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2028-09-07",
+          "name" : "Independencia do Brasil",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2028-10-12",
+          "name" : "Nossa Senhora Aparecida",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2028-11-02",
+          "name" : "Finados",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2028-11-15",
+          "name" : "Proclamacao da Republica",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2028-11-20",
+          "name" : "Dia Nacional de Zumbi e da Consciencia Negra",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2028-12-25",
+          "name" : "Natal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2029-01-01",
+          "name" : "Confraternizacao Universal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2029-03-30",
+          "name" : "Sexta-feira Santa",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2029-04-21",
+          "name" : "Tiradentes",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2029-05-01",
+          "name" : "Dia do Trabalho",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2029-09-07",
+          "name" : "Independencia do Brasil",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2029-10-12",
+          "name" : "Nossa Senhora Aparecida",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2029-11-02",
+          "name" : "Finados",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2029-11-15",
+          "name" : "Proclamacao da Republica",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2029-11-20",
+          "name" : "Dia Nacional de Zumbi e da Consciencia Negra",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2029-12-25",
+          "name" : "Natal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2030-01-01",
+          "name" : "Confraternizacao Universal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2030-04-19",
+          "name" : "Sexta-feira Santa",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2030-04-21",
+          "name" : "Tiradentes",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2030-05-01",
+          "name" : "Dia do Trabalho",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2030-09-07",
+          "name" : "Independencia do Brasil",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2030-10-12",
+          "name" : "Nossa Senhora Aparecida",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2030-11-02",
+          "name" : "Finados",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2030-11-15",
+          "name" : "Proclamacao da Republica",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2030-11-20",
+          "name" : "Dia Nacional de Zumbi e da Consciencia Negra",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2030-12-25",
+          "name" : "Natal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2031-01-01",
+          "name" : "Confraternizacao Universal",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2031-04-11",
+          "name" : "Sexta-feira Santa",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2031-04-21",
+          "name" : "Tiradentes",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2031-05-01",
+          "name" : "Dia do Trabalho",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2031-09-07",
+          "name" : "Independencia do Brasil",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2031-10-12",
+          "name" : "Nossa Senhora Aparecida",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2031-11-02",
+          "name" : "Finados",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2031-11-15",
+          "name" : "Proclamacao da Republica",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2031-11-20",
+          "name" : "Dia Nacional de Zumbi e da Consciencia Negra",
+          "intervals" : [
+          ]
+        },
+        {
+          "date" : "2031-12-25",
+          "name" : "Natal",
+          "intervals" : [
+          ]
+        }
+      ]
+    }
+  },
+  "tarefas" : [
+    {
+      "task_id" : "T-0001",
+      "nome" : "Levantamento do terreno e da edificação",
+      "aplicativo" : "",
+      "duracao_min" : 1440,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "Registrar implantação, restrições locais e condições existentes.",
+      "depende_de" : [
+      ]
+    },
+    {
+      "task_id" : "T-0002",
+      "nome" : "Programa assistencial e de necessidades",
+      "aplicativo" : "",
+      "duracao_min" : 1920,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "Definir atividades, público atendido, ambientes e capacidade com a gestão de saúde.",
+      "depende_de" : [
+        {
+          "task_id" : "T-0001",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0003",
+      "nome" : "Inventário de mobiliário e equipamentos",
+      "aplicativo" : "",
+      "duracao_min" : 1440,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "Consultar SOMASUS, equipamentos efetivos e fichas dos fabricantes; confirmar dimensões e infraestrutura.",
+      "depende_de" : [
+        {
+          "task_id" : "T-0002",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0004",
+      "nome" : "Estudo de zoneamento e fluxos",
+      "aplicativo" : "CAD2D",
+      "duracao_min" : 1920,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "Representar fluxos assistenciais e de apoio para revisão da equipe técnica.",
+      "depende_de" : [
+        {
+          "task_id" : "T-0002",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0005",
+      "nome" : "Planta 2D de ambientes e circulações",
+      "aplicativo" : "CAD2D",
+      "duracao_min" : 2400,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "Desenvolver o desenho em milímetros; identificar ambientes e acessos.",
+      "depende_de" : [
+        {
+          "task_id" : "T-0004",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0006",
+      "nome" : "Layout 2D de mobiliário e equipamentos",
+      "aplicativo" : "CAD2D",
+      "duracao_min" : 1920,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "Usar a biblioteca de saúde como base editável; ajustar envelopes e áreas operacionais ao projeto.",
+      "depende_de" : [
+        {
+          "task_id" : "T-0003",
+          "tipo" : "TI",
+          "latencia" : ""
+        },
+        {
+          "task_id" : "T-0005",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0007",
+      "nome" : "Revisão de acessibilidade e uso dos ambientes",
+      "aplicativo" : "CAD2D",
+      "duracao_min" : 1440,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "Análise técnica das rotas, sanitários, atendimento e circulação; não é verificação automática do software.",
+      "depende_de" : [
+        {
+          "task_id" : "T-0006",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0008",
+      "nome" : "Planejamento das instalações e infraestrutura",
+      "aplicativo" : "",
+      "duracao_min" : 1920,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "Levantar necessidades de elétrica, hidráulica, climatização e outros sistemas compatíveis com o programa assistencial.",
+      "depende_de" : [
+        {
+          "task_id" : "T-0006",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0009",
+      "nome" : "Compatibilização de arquitetura e disciplinas",
+      "aplicativo" : "CAD2D",
+      "duracao_min" : 1440,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "Registrar interferências e pendências para a equipe de projeto.",
+      "depende_de" : [
+        {
+          "task_id" : "T-0007",
+          "tipo" : "TI",
+          "latencia" : ""
+        },
+        {
+          "task_id" : "T-0008",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0010",
+      "nome" : "Quantitativos e estimativa de custos",
+      "aplicativo" : "",
+      "duracao_min" : 1440,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "Consolidar levantamento e bases orçamentárias aplicáveis ao empreendimento; conferência profissional.",
+      "depende_de" : [
+        {
+          "task_id" : "T-0009",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0011",
+      "nome" : "Revisão técnica e exigências locais",
+      "aplicativo" : "",
+      "duracao_min" : 1440,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "Conferir referências sanitárias, acessibilidade e exigências pertinentes ao serviço, local e data.",
+      "depende_de" : [
+        {
+          "task_id" : "T-0009",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0012",
+      "nome" : "Consolidação do projeto e documentação",
+      "aplicativo" : "CAD2D",
+      "duracao_min" : 1440,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "Consolidar desenhos, memoriais, inventário de equipamentos, respostas e pendências.",
+      "depende_de" : [
+        {
+          "task_id" : "T-0010",
+          "tipo" : "TI",
+          "latencia" : ""
+        },
+        {
+          "task_id" : "T-0011",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0013",
+      "nome" : "Revisão com a gestão e equipe assistencial",
+      "aplicativo" : "",
+      "duracao_min" : 960,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : false,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "Validar requisitos do empreendimento e registrar decisões do contratante.",
+      "depende_de" : [
+        {
+          "task_id" : "T-0012",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    },
+    {
+      "task_id" : "T-0014",
+      "nome" : "Entrega e registro de pendências",
+      "aplicativo" : "",
+      "duracao_min" : 0,
+      "duracao_unidade" : "d",
+      "duracao_corrida" : false,
+      "marco" : true,
+      "situacao" : "a_fazer",
+      "progresso" : 0,
+      "responsavel" : "",
+      "notas" : "Registrar arquivos entregues e pendências que impedem a próxima etapa.",
+      "depende_de" : [
+        {
+          "task_id" : "T-0013",
+          "tipo" : "TI",
+          "latencia" : ""
+        }
+      ]
+    }
+  ]
+}

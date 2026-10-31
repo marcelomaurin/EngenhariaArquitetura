@@ -1,3 +1,5 @@
+> Auditoria histórica: a versão 0.05 corrige parte das lacunas de persistência e validação e inclui integração local de tarefas. Consulte [Notas da versão 005](Notas_Versao_005.md) antes de usar esta lista como estado atual.
+
 # Auditoria de lacunas e plano de implementação — EngenhariaArquitetura
 
 **Data:** 30/10/2026  

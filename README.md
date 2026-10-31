@@ -1,6 +1,6 @@
 # EngenhariaArquitetura
 
-Software para Engenharia e Arquitetura.
+Software de Engenharia e Arquitetura de uso geral, direcionado prioritariamente a hospitais, UBS e centros assistenciais, incluindo o setor público do SUS. O direcionamento não restringe outros usos.
 
 Plataforma de aplicações independentes em Lazarus/Free Pascal que funcionam como uma linha de produção de projetos de edificações:
 
@@ -33,7 +33,7 @@ O instalador para Windows 64 bits e os executáveis ficam em [`bin/`](bin/), com
 
 | Arquivo | Conteúdo |
 |---|---|
-| `bin/setup_engenhariaarquitetura_004.exe` | Instalador da plataforma (versão 0.04) |
+| `bin/setup_engenhariaarquitetura_006.exe` | Instalador da plataforma (versão 0.06) |
 | `bin/planejador.exe` | Planejador para Windows 64 bits |
 | `bin/cad2d.exe` | CAD Arquitetônico 2D para Windows 64 bits |
 | `bin/engenhariaarquitetura.exe` | Central de Aplicativos (lançador) |
@@ -42,7 +42,7 @@ Como gerar o instalador: [installer/windows](installer/windows/README.md).
 
 > **Estado:** Planejador e CAD 2D têm executáveis Windows, com gestão local integrada de tarefas, usuários e quatro perfis. O CAD trabalha exclusivamente em 2D e continua em evolução; os demais aplicativos permanecem em especificação.
 
-## Versão 0.04 — instalador 004
+## Versão 0.06 — instalador 006
 
 O CAD inclui barra lateral 2D/Tarefa/Gestão, menu principal no topo, paleta azul
 do MultiCNC e aba Gestão para responder, devolver a tarefa com arquivo associado
@@ -58,3 +58,19 @@ Visualizador. No primeiro acesso ao Planejador, crie o Administrador. A gestão
 
 O histórico de Desfazer/Refazer reutiliza AI Project Core do projeto CHATGPT.
 A revisão visual manual da instalação e do fluxo completo permanece pendente.
+
+## Melhorias de confiabilidade (entrega 005)
+
+- EACAD4 preserva altura, peitoril, grupo, grade, visibilidade e bloqueio das camadas. A entrega 006 evolui para EACAD5, incluindo identificação dos blocos e nomes dos ambientes.
+- Leitura de EACAD1/2/3 com migração de coordenadas para resolução de 1 mm.
+- Salvamento com arquivo temporário e substituição segura no CAD e no Planejador.
+- Validação de arquivos inválidos, ciclos, autodependências e vínculos duplicados.
+- Importação DXF ASCII de entidades LINE 2D, com relatório de perdas e unidades.
+- Exportação CSV das tarefas permitidas ao perfil do usuário.
+- Enquadramento inicial do desenho após a janela adquirir seu tamanho final.
+
+Veja [as notas da versão 005](docs/Notas_Versao_005.md) para limites, testes e pendências.
+
+## Bibliotecas e exemplos de saúde
+
+A versão 0.06 inclui 48 itens em biblioteca 2D, estudos esquemáticos de UBS e ala hospitalar e exemplos de planejamento correspondentes. As medidas são iniciais e editáveis; o exemplo residencial e os recursos gerais permanecem disponíveis. Consulte [Direcionamento para saúde e SUS](docs/Direcionamento_Saude_SUS.md) e [Notas da versão 006](docs/Notas_Versao_006.md).

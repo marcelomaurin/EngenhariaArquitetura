@@ -64,10 +64,12 @@ com acesso irrestrito ao mesmo arquivo ou à mesma conta do Windows.
 
 ## Validação
 
-- `shared/tests/test_workflow.lpr`: 38 verificações isoladas de autenticação,
+- `shared/tests/test_workflow.lpr`: 41 verificações isoladas de autenticação,
   perfis, filtros, acesso direto, associação de arquivo, devolução, histórico,
   mudança de perfil, desativação, invalidação de sessões e ausência de senha em texto.
-- `cad2d/tests/test_cad2d.lpi`: 47 verificações, incluindo a barra lateral, aba
+- `cad2d/tests/test_cad2d.lpi`: 54 verificações, incluindo a barra lateral, aba
   Gestão, troca entre tarefa e 2D e proibição de edição por Visualizador.
 - Os testes integram os scripts de geração Windows e de compilação com Wine.
 - A inspeção visual manual do fluxo completo continua necessária.
+
+Na versão 0.05, Exportar CSV respeita a visão de tarefas do perfil. A persistência do CAD e do Planejador foi reforçada; consulte [Notas da versão 005](Notas_Versao_005.md).

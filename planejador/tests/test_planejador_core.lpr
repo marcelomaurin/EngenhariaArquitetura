@@ -7,8 +7,8 @@ program test_planejador_core;
 {$mode objfpc}{$H+}
 
 uses
-  SysUtils, DateUtils, aiprojectduration, aitaskgraph, plan_tipos, plan_documento,
-  plan_cronograma, plan_json;
+  Classes, SysUtils, DateUtils, fpjson, aiprojectduration, aitaskgraph, plan_tipos, plan_documento,
+  plan_cronograma, plan_json, plan_exemplos;
 
 var
   Falhas, Total: Integer;
@@ -201,6 +201,59 @@ begin
   end;
 end;
 
+procedure TesteIntegridadeArquivo;
+var P,Q: TPLProjeto; O: TJSONObject; L: TStringList; Hold: TFileStream;
+  FileName,Original: string; G: TGUID; Failed: Boolean; CaseNo: Integer;
+begin
+  CreateGUID(G); FileName:=IncludeTrailingPathDelimiter(GetTempDir)+'plan-validation-'+GUIDToString(G)+'.plan.json';
+  P:=Referencia; Q:=TPLProjeto.Create; L:=TStringList.Create;
+  try
+    PLSalvarProjeto(P,FileName); L.LoadFromFile(FileName); Original:=L.Text;
+    P.Nome:='Alteração não gravada'; P.Modificado:=True;
+    Hold:=TFileStream.Create(FileName,fmOpenRead or fmShareExclusive);
+    try Failed:=False; try PLSalvarProjeto(P,FileName); except on E: Exception do Failed:=True; end;
+      Confere(Failed,'falha de escrita reportada');
+      Confere(P.Modificado,'falha preserva indicador modificado');
+    finally Hold.Free; end;
+    L.LoadFromFile(FileName); ConfereTexto(L.Text,Original,'falha preserva arquivo original');
+    Q.Novo('Documento preservado',Date); Q.NovaTarefa('Tarefa preservada');
+    for CaseNo:=1 to 6 do begin
+      O:=PLProjetoParaJSON(P);
+      try
+        case CaseNo of
+          1: begin O.Arrays['tarefas'].Objects[0].Delete('progresso'); O.Arrays['tarefas'].Objects[0].Add('progresso',101); end;
+          2: begin O.Arrays['tarefas'].Objects[0].Delete('duracao_min'); O.Arrays['tarefas'].Objects[0].Add('duracao_min',-1); end;
+          3: O.Arrays['tarefas'].Objects[0].Arrays['depende_de'].Add(P[3].Id);
+          4: O.Arrays['tarefas'].Objects[0].Arrays['depende_de'].Add(P[0].Id);
+          5: O.Arrays['tarefas'].Objects[3].Arrays['depende_de'].Add(O.Arrays['tarefas'].Objects[3].Arrays['depende_de'].Items[0].Clone);
+          6: begin O.Arrays['tarefas'].Objects[0].Delete('situacao'); O.Arrays['tarefas'].Objects[0].Add('situacao','desconhecida'); end;
+        end;
+        L.Text:=O.AsJSON; L.SaveToFile(FileName);
+        Failed:=False; try PLCarregarProjeto(Q,FileName); except on E: Exception do Failed:=True; end;
+        Confere(Failed,'arquivo inválido recusado - caso '+IntToStr(CaseNo));
+        Confere((Q.Count=1) and (Q.Nome='Documento preservado'),'documento preservado na falha - caso '+IntToStr(CaseNo));
+      finally O.Free; end;
+    end;
+  finally L.Free; Q.Free; P.Free; DeleteFile(FileName); end;
+end;
+
+procedure TesteExemplosSaude;
+var P: TPLProjeto; C: TPLCronograma;
+begin
+  P:=TPLProjeto.Create; C:=TPLCronograma.Create;
+  try
+    PLCarregarExemploSaude(P,Date,False);
+    Confere(P.Count=14,'planejamento UBS com 14 tarefas');
+    Confere(Pos('UBS',P.Nome)>0,'exemplo UBS identificado');
+    C.Calcular(P); Confere(C.Valido,'cronograma de UBS valido');
+    PLCarregarExemploSaude(P,Date,True);
+    Confere(Pos('hospitalar',P.Nome)>0,'exemplo hospitalar identificado');
+    C.Calcular(P); Confere(C.Valido,'cronograma hospitalar valido');
+    PLCarregarExemploResidencia(P,Date);
+    Confere(P.Count=11,'exemplo residencial preservado para uso geral');
+  finally C.Free; P.Free; end;
+end;
+
 begin
   { como nos aplicativos LCL (LazUTF8): textos em UTF-8 }
   DefaultSystemCodePage := CP_UTF8;
@@ -212,6 +265,8 @@ begin
   TesteVinculos;
   TesteCaminhoCritico;
   TesteJSON;
+  TesteIntegridadeArquivo;
+  TesteExemplosSaude;
   WriteLn;
   WriteLn(Format('%d verificações, %d falhas', [Total, Falhas]));
   if Falhas > 0 then Halt(1);

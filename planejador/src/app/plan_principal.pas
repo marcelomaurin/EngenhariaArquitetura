@@ -259,7 +259,9 @@ begin
   Item := TMenuItem.Create(M); Item.Caption := '&Arquivo'; M.Items.Add(Item);
   Add(Item, '&Novo projeto', @AoNovo, ShortCut(VK_N, [ssCtrl]));
   Add(Item, '&Abrir arquivo...', @AoAbrir, ShortCut(VK_O, [ssCtrl]));
-  Add(Item, 'Abrir &exemplo (residência)', @AoAbrirExemplo);
+  Add(Item, 'Abrir exemplo &UBS', @AoAbrirExemplo);
+  with Add(Item, 'Abrir exemplo de ala &hospitalar', @AoAbrirExemplo) do Tag:=1;
+  with Add(Item, 'Abrir exemplo &residencial (uso geral)', @AoAbrirExemplo) do Tag:=2;
   Add(Item, '-', nil);
   Add(Item, '&Salvar', @AoSalvar, ShortCut(VK_S, [ssCtrl]));
   Add(Item, 'Salvar &como...', @AoSalvarComo, ShortCut(VK_S, [ssCtrl, ssShift]));
@@ -1044,17 +1046,22 @@ begin
 end;
 
 procedure TPLJanelaPrincipal.AoAbrirExemplo(Sender: TObject);
+var ExampleKind: Integer;
 begin
   if FWorkflowReady and not PlanningAllowed then Exit;
   if not ConfirmarDescartar then Exit;
-  PLCarregarExemploResidencia(FDoc, IncDay(Date, 1));
+  ExampleKind:=0; if Sender is TMenuItem then ExampleKind:=TMenuItem(Sender).Tag;
+  case ExampleKind of
+    1: PLCarregarExemploSaude(FDoc,IncDay(Date,1),True);
+    2: PLCarregarExemploResidencia(FDoc,IncDay(Date,1));
+  else PLCarregarExemploSaude(FDoc,IncDay(Date,1),False); end;
   FArquivo := '';
   FDBProjectId := '';
   FDBRevision := 0;
   MostrarProjeto;
   FGantt.Origin := 0;
   Recalcular;
-  Mensagem('Exemplo carregado: residência de dois pavimentos.');
+  Mensagem('Exemplo carregado: '+FDoc.Nome);
 end;
 
 procedure TPLJanelaPrincipal.AoSalvar(Sender: TObject);
@@ -1601,6 +1608,7 @@ begin
   if not PlanningAllowed then Exit;
   T := Selecionada;
   if T = nil then begin ShowMessage('Selecione uma tarefa no planejamento.'); Exit; end;
+  if T.Aplicativo <> plaCAD2D then begin ShowMessage('O envio integrado atual é para tarefas do CAD 2D. Selecione uma tarefa desse aplicativo.'); Exit; end;
   AoAplicarTarefa(nil);
   if not SalvarEm(FArquivo) then Exit;
   Assignee := ''; ID := ''; Artifact := '';

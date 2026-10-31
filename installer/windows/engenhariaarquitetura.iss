@@ -61,6 +61,7 @@ Name: "{userdocs}\EngenhariaArquitetura Projetos"
 
 [Files]
 Source: "..\..\dist\app\engenhariaarquitetura.exe"; DestDir: "{app}"; Components: apps; Flags: ignoreversion
+Source: "..\..\dist\app\bibliotecas\*"; DestDir: "{app}\bibliotecas"; Components: apps; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\..\dist\app\planejador.exe"; DestDir: "{app}"; Components: apps\planejador; Flags: ignoreversion
 Source: "..\..\dist\app\cad2d.exe"; DestDir: "{app}"; Components: apps\cad2d; Flags: ignoreversion
 Source: "..\..\dist\app\exemplos\*"; DestDir: "{app}\exemplos"; Components: extra\exemplos; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -78,6 +79,8 @@ Name: "desktopicon_cad2d"; Description: "Criar atalho do CAD Arquitetônico 2D n
 [Icons]
 Name: "{autoprograms}\EngenhariaArquitetura\Central de Aplicativos"; Filename: "{app}\engenhariaarquitetura.exe"; Components: apps
 Name: "{autoprograms}\EngenhariaArquitetura\Planejador"; Filename: "{app}\planejador.exe"; Components: apps\planejador
+Name: "{autoprograms}\EngenhariaArquitetura\Planejador - exemplo UBS"; Filename: "{app}\planejador.exe"; Parameters: """{app}\exemplos\ubs.plan.json"""; Components: apps\planejador and extra\exemplos
+Name: "{autoprograms}\EngenhariaArquitetura\Planejador - exemplo ala hospitalar"; Filename: "{app}\planejador.exe"; Parameters: """{app}\exemplos\ala_hospitalar.plan.json"""; Components: apps\planejador and extra\exemplos
 Name: "{autoprograms}\EngenhariaArquitetura\Planejador - exemplo da residência"; Filename: "{app}\planejador.exe"; Parameters: """{app}\exemplos\residencia.plan.json"""; Components: apps\planejador and extra\exemplos
 Name: "{autoprograms}\EngenhariaArquitetura\CAD Arquitetônico 2D"; Filename: "{app}\cad2d.exe"; Components: apps\cad2d
 Name: "{autoprograms}\EngenhariaArquitetura\Documentação"; Filename: "{app}\documentation"; Components: extra\docs

@@ -16,6 +16,7 @@ type
     FAccount, FSummary: TLabel;
     FNew,FEdit,FUsers,FRespond: TButton;
     procedure RefreshClick(Sender: TObject);
+    procedure ExportClick(Sender: TObject);
     procedure Selection(Sender: TObject; ACol,ARow: Integer);
     procedure NewClick(Sender: TObject);
     procedure EditClick(Sender: TObject);
@@ -40,7 +41,7 @@ type
 function WFLoginDialog(Store: TWorkflow; var Token: string): Boolean;
 procedure WFLaunch(const Executable: string; const Args: array of string);
 implementation
-uses Process;
+uses Process, ea_reports;
 const STATES: array[0..3] of string = ('pendente','em_andamento','devolvida','concluida');
 function RoleName(const Code: string): string;
 var I: Integer;
@@ -163,6 +164,7 @@ begin
   ButtonAt(TopBar,'Abrir no CAD 2D',265,40,130,@OpenClick);
   FUsers:=ButtonAt(TopBar,'Usuários',403,40,100,@UsersClick); ButtonAt(TopBar,'Atualizar',511,40,100,@RefreshClick);
   ButtonAt(TopBar,'Trocar usuário',619,40,125,@LoginClick);
+  ButtonAt(TopBar,'Exportar CSV',752,40,116,@ExportClick);
   FSummary:=LabelAt(TopBar,'',16,80,950); FSummary.Font.Color:=clWhite;
   Right:=TPanel.Create(Self); Right.Parent:=Self; Right.Align:=alRight; Right.Width:=360; Right.BevelOuter:=bvNone;
   FInfo:=TMemo.Create(Self); FInfo.Parent:=Right; FInfo.Align:=alTop; FInfo.Height:=140; FInfo.ReadOnly:=True; FInfo.ScrollBars:=ssAutoVertical;
@@ -285,4 +287,17 @@ function TWorkflowPanel.ReplyState: string;
 begin Result:=STATES[FState.ItemIndex]; end;
 function TWorkflowPanel.ReplyProgress: Integer;
 begin Result:=FProgress.Value; end;
+
+procedure TWorkflowPanel.ExportClick(Sender: TObject);
+var D: TSaveDialog;
+begin
+  D := TSaveDialog.Create(Self);
+  try
+    D.Filter := 'Relatório de tarefas (*.csv)|*.csv'; D.DefaultExt := 'csv';
+    D.FileName := 'tarefas.csv'; D.Options := D.Options + [ofOverwritePrompt];
+    if not D.Execute then Exit;
+    try WFExportTasksCSV(FStore,FToken,D.FileName); ShowMessage('Relatório exportado com as tarefas permitidas ao seu perfil.');
+    except on E: Exception do ShowMessage(E.Message); end;
+  finally D.Free; end;
+end;
 end.

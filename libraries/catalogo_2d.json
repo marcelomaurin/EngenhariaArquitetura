@@ -1,0 +1,2081 @@
+{
+  "schema_version": 1,
+  "title": "Biblioteca 2D — Saúde e uso geral",
+  "purpose": "CAD de uso geral, direcionado a projetos de hospitais, UBS e estabelecimentos assistenciais de saúde, incluindo SUS",
+  "units": "mm",
+  "items": [
+    {
+      "id": "consult_maca",
+      "name": "Maca de exame adulto",
+      "category": "Consultórios e avaliação",
+      "width_mm": 700,
+      "depth_mm": 1900,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          70,
+          60,
+          930,
+          940
+        ],
+        [
+          "rect",
+          180,
+          100,
+          820,
+          280
+        ],
+        [
+          "line",
+          70,
+          340,
+          930,
+          340
+        ]
+      ]
+    },
+    {
+      "id": "consult_maca_pediatrica",
+      "name": "Maca de exame pediátrico",
+      "category": "Consultórios e avaliação",
+      "width_mm": 600,
+      "depth_mm": 1400,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          70,
+          60,
+          930,
+          940
+        ],
+        [
+          "rect",
+          180,
+          100,
+          820,
+          280
+        ],
+        [
+          "line",
+          70,
+          340,
+          930,
+          340
+        ]
+      ]
+    },
+    {
+      "id": "consult_mesa",
+      "name": "Mesa de consulta / atendimento",
+      "category": "Consultórios e avaliação",
+      "width_mm": 1400,
+      "depth_mm": 700,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          30,
+          40,
+          250,
+          950
+        ],
+        [
+          "line",
+          700,
+          40,
+          700,
+          950
+        ]
+      ]
+    },
+    {
+      "id": "consult_cadeira_prof",
+      "name": "Cadeira do profissional",
+      "category": "Consultórios e avaliação",
+      "width_mm": 600,
+      "depth_mm": 600,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          50,
+          50,
+          950,
+          950
+        ],
+        [
+          "rect",
+          150,
+          250,
+          850,
+          850
+        ],
+        [
+          "line",
+          50,
+          180,
+          950,
+          180
+        ]
+      ]
+    },
+    {
+      "id": "consult_cadeira_paciente",
+      "name": "Cadeira do paciente / acompanhante",
+      "category": "Consultórios e avaliação",
+      "width_mm": 550,
+      "depth_mm": 550,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          50,
+          50,
+          950,
+          950
+        ],
+        [
+          "rect",
+          150,
+          250,
+          850,
+          850
+        ],
+        [
+          "line",
+          50,
+          180,
+          950,
+          180
+        ]
+      ]
+    },
+    {
+      "id": "consult_armario",
+      "name": "Armário clínico",
+      "category": "Consultórios e avaliação",
+      "width_mm": 1000,
+      "depth_mm": 450,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "line",
+          500,
+          0,
+          500,
+          1000
+        ],
+        [
+          "line",
+          450,
+          450,
+          450,
+          650
+        ],
+        [
+          "line",
+          550,
+          450,
+          550,
+          650
+        ]
+      ]
+    },
+    {
+      "id": "consult_lavatorio",
+      "name": "Lavatório de mãos",
+      "category": "Consultórios e avaliação",
+      "width_mm": 600,
+      "depth_mm": 500,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "ellipse",
+          200,
+          250,
+          800,
+          850
+        ],
+        [
+          "line",
+          500,
+          50,
+          500,
+          350
+        ]
+      ]
+    },
+    {
+      "id": "consult_balanca",
+      "name": "Balança antropométrica",
+      "category": "Consultórios e avaliação",
+      "width_mm": 500,
+      "depth_mm": 700,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          100,
+          450,
+          900,
+          900
+        ],
+        [
+          "line",
+          500,
+          100,
+          500,
+          450
+        ],
+        [
+          "rect",
+          250,
+          20,
+          750,
+          170
+        ]
+      ]
+    },
+    {
+      "id": "consult_mesa_gineco",
+      "name": "Mesa ginecológica",
+      "category": "Consultórios e avaliação",
+      "width_mm": 800,
+      "depth_mm": 1900,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          70,
+          60,
+          930,
+          940
+        ],
+        [
+          "rect",
+          180,
+          100,
+          820,
+          280
+        ],
+        [
+          "line",
+          70,
+          340,
+          930,
+          340
+        ]
+      ]
+    },
+    {
+      "id": "consult_ultrassom",
+      "name": "Aparelho de ultrassom",
+      "category": "Diagnóstico e procedimentos",
+      "width_mm": 700,
+      "depth_mm": 800,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          100,
+          350,
+          900,
+          950
+        ],
+        [
+          "rect",
+          150,
+          0,
+          850,
+          320
+        ],
+        [
+          "line",
+          150,
+          650,
+          850,
+          650
+        ],
+        [
+          "ellipse",
+          80,
+          850,
+          250,
+          1000
+        ],
+        [
+          "ellipse",
+          750,
+          850,
+          920,
+          1000
+        ]
+      ]
+    },
+    {
+      "id": "diagnostico_ecg",
+      "name": "Carrinho de eletrocardiógrafo",
+      "category": "Diagnóstico e procedimentos",
+      "width_mm": 650,
+      "depth_mm": 650,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          50,
+          50,
+          950,
+          950
+        ],
+        [
+          "rect",
+          120,
+          130,
+          880,
+          870
+        ],
+        [
+          "ellipse",
+          0,
+          0,
+          160,
+          160
+        ],
+        [
+          "ellipse",
+          840,
+          0,
+          1000,
+          160
+        ],
+        [
+          "ellipse",
+          0,
+          840,
+          160,
+          1000
+        ],
+        [
+          "ellipse",
+          840,
+          840,
+          1000,
+          1000
+        ]
+      ]
+    },
+    {
+      "id": "diagnostico_tomografo",
+      "name": "Tomógrafo — implantação esquemática",
+      "category": "Diagnóstico e procedimentos",
+      "width_mm": 3000,
+      "depth_mm": 6000,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          450
+        ],
+        [
+          "ellipse",
+          200,
+          50,
+          800,
+          400
+        ],
+        [
+          "rect",
+          350,
+          250,
+          650,
+          1000
+        ]
+      ]
+    },
+    {
+      "id": "lab_bancada",
+      "name": "Bancada laboratorial",
+      "category": "Laboratório e coleta",
+      "width_mm": 2400,
+      "depth_mm": 700,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "line",
+          0,
+          150,
+          1000,
+          150
+        ],
+        [
+          "line",
+          333,
+          150,
+          333,
+          1000
+        ],
+        [
+          "line",
+          667,
+          150,
+          667,
+          1000
+        ]
+      ]
+    },
+    {
+      "id": "lab_microscopio",
+      "name": "Microscópio de bancada",
+      "category": "Laboratório e coleta",
+      "width_mm": 300,
+      "depth_mm": 450,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          100,
+          820,
+          900,
+          980
+        ],
+        [
+          "line",
+          750,
+          820,
+          750,
+          400
+        ],
+        [
+          "line",
+          750,
+          400,
+          450,
+          80
+        ],
+        [
+          "line",
+          450,
+          80,
+          300,
+          180
+        ],
+        [
+          "line",
+          300,
+          180,
+          600,
+          500
+        ],
+        [
+          "rect",
+          200,
+          550,
+          800,
+          620
+        ],
+        [
+          "ellipse",
+          580,
+          300,
+          850,
+          570
+        ]
+      ]
+    },
+    {
+      "id": "lab_centrifuga",
+      "name": "Centrífuga de bancada",
+      "category": "Laboratório e coleta",
+      "width_mm": 500,
+      "depth_mm": 600,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "ellipse",
+          120,
+          120,
+          880,
+          880
+        ],
+        [
+          "line",
+          500,
+          150,
+          500,
+          850
+        ],
+        [
+          "line",
+          150,
+          500,
+          850,
+          500
+        ]
+      ]
+    },
+    {
+      "id": "lab_analisador",
+      "name": "Analisador laboratorial",
+      "category": "Laboratório e coleta",
+      "width_mm": 900,
+      "depth_mm": 750,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          80,
+          100,
+          920,
+          700
+        ],
+        [
+          "line",
+          500,
+          700,
+          500,
+          900
+        ],
+        [
+          "line",
+          250,
+          900,
+          750,
+          900
+        ]
+      ]
+    },
+    {
+      "id": "lab_cabine",
+      "name": "Cabine de segurança biológica — envelope",
+      "category": "Laboratório e coleta",
+      "width_mm": 1500,
+      "depth_mm": 800,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "line",
+          0,
+          150,
+          1000,
+          150
+        ],
+        [
+          "line",
+          333,
+          150,
+          333,
+          1000
+        ],
+        [
+          "line",
+          667,
+          150,
+          667,
+          1000
+        ]
+      ]
+    },
+    {
+      "id": "lab_poltrona_coleta",
+      "name": "Poltrona de coleta",
+      "category": "Laboratório e coleta",
+      "width_mm": 800,
+      "depth_mm": 1100,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          50,
+          50,
+          950,
+          950
+        ],
+        [
+          "rect",
+          150,
+          250,
+          850,
+          850
+        ],
+        [
+          "line",
+          50,
+          180,
+          950,
+          180
+        ]
+      ]
+    },
+    {
+      "id": "lab_lavagem",
+      "name": "Bancada com cuba laboratorial",
+      "category": "Laboratório e coleta",
+      "width_mm": 1800,
+      "depth_mm": 700,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "ellipse",
+          200,
+          250,
+          800,
+          850
+        ],
+        [
+          "line",
+          500,
+          50,
+          500,
+          350
+        ]
+      ]
+    },
+    {
+      "id": "vacina_camara",
+      "name": "Câmara de conservação de imunobiológicos",
+      "category": "Vacinação e farmácia",
+      "width_mm": 800,
+      "depth_mm": 850,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "line",
+          0,
+          400,
+          1000,
+          400
+        ],
+        [
+          "line",
+          850,
+          500,
+          850,
+          800
+        ]
+      ]
+    },
+    {
+      "id": "vacina_mesa",
+      "name": "Bancada de preparo de vacinação",
+      "category": "Vacinação e farmácia",
+      "width_mm": 1800,
+      "depth_mm": 650,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "line",
+          0,
+          150,
+          1000,
+          150
+        ],
+        [
+          "line",
+          333,
+          150,
+          333,
+          1000
+        ],
+        [
+          "line",
+          667,
+          150,
+          667,
+          1000
+        ]
+      ]
+    },
+    {
+      "id": "farmacia_armario",
+      "name": "Armário de medicamentos",
+      "category": "Vacinação e farmácia",
+      "width_mm": 1000,
+      "depth_mm": 450,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "line",
+          500,
+          0,
+          500,
+          1000
+        ],
+        [
+          "line",
+          450,
+          450,
+          450,
+          650
+        ],
+        [
+          "line",
+          550,
+          450,
+          550,
+          650
+        ]
+      ]
+    },
+    {
+      "id": "internacao_cama",
+      "name": "Cama hospitalar adulto",
+      "category": "Internação e observação",
+      "width_mm": 1000,
+      "depth_mm": 2200,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          80,
+          50,
+          920,
+          950
+        ],
+        [
+          "rect",
+          180,
+          90,
+          820,
+          270
+        ],
+        [
+          "line",
+          20,
+          300,
+          20,
+          800
+        ],
+        [
+          "line",
+          980,
+          300,
+          980,
+          800
+        ],
+        [
+          "line",
+          100,
+          980,
+          900,
+          980
+        ]
+      ]
+    },
+    {
+      "id": "internacao_berco",
+      "name": "Berço hospitalar",
+      "category": "Internação e observação",
+      "width_mm": 700,
+      "depth_mm": 1200,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          80,
+          50,
+          920,
+          950
+        ],
+        [
+          "rect",
+          180,
+          90,
+          820,
+          270
+        ],
+        [
+          "line",
+          20,
+          300,
+          20,
+          800
+        ],
+        [
+          "line",
+          980,
+          300,
+          980,
+          800
+        ],
+        [
+          "line",
+          100,
+          980,
+          900,
+          980
+        ]
+      ]
+    },
+    {
+      "id": "internacao_mesa_cabeceira",
+      "name": "Mesa de cabeceira",
+      "category": "Internação e observação",
+      "width_mm": 450,
+      "depth_mm": 450,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "line",
+          500,
+          0,
+          500,
+          1000
+        ],
+        [
+          "line",
+          450,
+          450,
+          450,
+          650
+        ],
+        [
+          "line",
+          550,
+          450,
+          550,
+          650
+        ]
+      ]
+    },
+    {
+      "id": "internacao_poltrona",
+      "name": "Poltrona de acompanhante",
+      "category": "Internação e observação",
+      "width_mm": 800,
+      "depth_mm": 900,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          50,
+          50,
+          950,
+          950
+        ],
+        [
+          "rect",
+          150,
+          250,
+          850,
+          850
+        ],
+        [
+          "line",
+          50,
+          180,
+          950,
+          180
+        ]
+      ]
+    },
+    {
+      "id": "internacao_monitor",
+      "name": "Monitor multiparamétrico — suporte",
+      "category": "Internação e observação",
+      "width_mm": 500,
+      "depth_mm": 500,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          80,
+          100,
+          920,
+          700
+        ],
+        [
+          "line",
+          500,
+          700,
+          500,
+          900
+        ],
+        [
+          "line",
+          250,
+          900,
+          750,
+          900
+        ]
+      ]
+    },
+    {
+      "id": "urgencia_maca",
+      "name": "Maca de transporte",
+      "category": "Urgência e emergência",
+      "width_mm": 750,
+      "depth_mm": 2100,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          70,
+          60,
+          930,
+          940
+        ],
+        [
+          "rect",
+          180,
+          100,
+          820,
+          280
+        ],
+        [
+          "line",
+          70,
+          340,
+          930,
+          340
+        ]
+      ]
+    },
+    {
+      "id": "urgencia_carro",
+      "name": "Carro de emergência",
+      "category": "Urgência e emergência",
+      "width_mm": 700,
+      "depth_mm": 600,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          50,
+          50,
+          950,
+          950
+        ],
+        [
+          "rect",
+          120,
+          130,
+          880,
+          870
+        ],
+        [
+          "ellipse",
+          0,
+          0,
+          160,
+          160
+        ],
+        [
+          "ellipse",
+          840,
+          0,
+          1000,
+          160
+        ],
+        [
+          "ellipse",
+          0,
+          840,
+          160,
+          1000
+        ],
+        [
+          "ellipse",
+          840,
+          840,
+          1000,
+          1000
+        ]
+      ]
+    },
+    {
+      "id": "urgencia_desfibrilador",
+      "name": "Desfibrilador — envelope de bancada",
+      "category": "Urgência e emergência",
+      "width_mm": 400,
+      "depth_mm": 400,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          80,
+          100,
+          920,
+          700
+        ],
+        [
+          "line",
+          500,
+          700,
+          500,
+          900
+        ],
+        [
+          "line",
+          250,
+          900,
+          750,
+          900
+        ]
+      ]
+    },
+    {
+      "id": "urgencia_ventilador",
+      "name": "Ventilador pulmonar — suporte",
+      "category": "Urgência e emergência",
+      "width_mm": 600,
+      "depth_mm": 650,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          80,
+          100,
+          920,
+          700
+        ],
+        [
+          "line",
+          500,
+          700,
+          500,
+          900
+        ],
+        [
+          "line",
+          250,
+          900,
+          750,
+          900
+        ]
+      ]
+    },
+    {
+      "id": "procedimentos_mesa",
+      "name": "Mesa de procedimentos",
+      "category": "Diagnóstico e procedimentos",
+      "width_mm": 800,
+      "depth_mm": 2000,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          70,
+          60,
+          930,
+          940
+        ],
+        [
+          "rect",
+          180,
+          100,
+          820,
+          280
+        ],
+        [
+          "line",
+          70,
+          340,
+          930,
+          340
+        ]
+      ]
+    },
+    {
+      "id": "procedimentos_foco",
+      "name": "Foco de procedimentos — projeção",
+      "category": "Diagnóstico e procedimentos",
+      "width_mm": 800,
+      "depth_mm": 800,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "ellipse",
+          200,
+          200,
+          800,
+          800
+        ],
+        [
+          "line",
+          500,
+          0,
+          500,
+          1000
+        ],
+        [
+          "line",
+          0,
+          500,
+          1000,
+          500
+        ]
+      ]
+    },
+    {
+      "id": "odonto_cadeira",
+      "name": "Conjunto de cadeira odontológica — envelope",
+      "category": "Odontologia",
+      "width_mm": 1800,
+      "depth_mm": 2400,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          180,
+          250,
+          750,
+          900
+        ],
+        [
+          "rect",
+          250,
+          0,
+          680,
+          220
+        ],
+        [
+          "line",
+          180,
+          500,
+          40,
+          500
+        ],
+        [
+          "line",
+          750,
+          500,
+          950,
+          500
+        ],
+        [
+          "ellipse",
+          800,
+          50,
+          1000,
+          250
+        ]
+      ]
+    },
+    {
+      "id": "odonto_mocho",
+      "name": "Mocho odontológico",
+      "category": "Odontologia",
+      "width_mm": 600,
+      "depth_mm": 600,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          50,
+          50,
+          950,
+          950
+        ],
+        [
+          "rect",
+          150,
+          250,
+          850,
+          850
+        ],
+        [
+          "line",
+          50,
+          180,
+          950,
+          180
+        ]
+      ]
+    },
+    {
+      "id": "esterilizacao_autoclave",
+      "name": "Autoclave de bancada — envelope",
+      "category": "Esterilização e apoio",
+      "width_mm": 700,
+      "depth_mm": 800,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "ellipse",
+          80,
+          150,
+          750,
+          850
+        ],
+        [
+          "rect",
+          800,
+          100,
+          950,
+          500
+        ]
+      ]
+    },
+    {
+      "id": "esterilizacao_bancada",
+      "name": "Bancada de preparo / esterilização",
+      "category": "Esterilização e apoio",
+      "width_mm": 2200,
+      "depth_mm": 700,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "line",
+          0,
+          150,
+          1000,
+          150
+        ],
+        [
+          "line",
+          333,
+          150,
+          333,
+          1000
+        ],
+        [
+          "line",
+          667,
+          150,
+          667,
+          1000
+        ]
+      ]
+    },
+    {
+      "id": "apoio_expurgo",
+      "name": "Bancada de expurgo — envelope",
+      "category": "Esterilização e apoio",
+      "width_mm": 1800,
+      "depth_mm": 700,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "ellipse",
+          200,
+          250,
+          800,
+          850
+        ],
+        [
+          "line",
+          500,
+          50,
+          500,
+          350
+        ]
+      ]
+    },
+    {
+      "id": "apoio_dml",
+      "name": "Tanque / apoio DML",
+      "category": "Esterilização e apoio",
+      "width_mm": 700,
+      "depth_mm": 700,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "ellipse",
+          200,
+          250,
+          800,
+          850
+        ],
+        [
+          "line",
+          500,
+          50,
+          500,
+          350
+        ]
+      ]
+    },
+    {
+      "id": "apoio_carro_roupa",
+      "name": "Carro de roupa / apoio",
+      "category": "Esterilização e apoio",
+      "width_mm": 900,
+      "depth_mm": 650,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          50,
+          50,
+          950,
+          950
+        ],
+        [
+          "rect",
+          120,
+          130,
+          880,
+          870
+        ],
+        [
+          "ellipse",
+          0,
+          0,
+          160,
+          160
+        ],
+        [
+          "ellipse",
+          840,
+          0,
+          1000,
+          160
+        ],
+        [
+          "ellipse",
+          0,
+          840,
+          160,
+          1000
+        ],
+        [
+          "ellipse",
+          840,
+          840,
+          1000,
+          1000
+        ]
+      ]
+    },
+    {
+      "id": "recepcao_balcao",
+      "name": "Balcão de recepção — envelope",
+      "category": "Recepção e acessibilidade",
+      "width_mm": 2400,
+      "depth_mm": 700,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          30,
+          40,
+          250,
+          950
+        ],
+        [
+          "line",
+          700,
+          40,
+          700,
+          950
+        ]
+      ]
+    },
+    {
+      "id": "recepcao_longarina",
+      "name": "Longarina de espera (3 lugares)",
+      "category": "Recepção e acessibilidade",
+      "width_mm": 1800,
+      "depth_mm": 650,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "line",
+          0,
+          170,
+          1000,
+          170
+        ],
+        [
+          "line",
+          333,
+          170,
+          333,
+          1000
+        ],
+        [
+          "line",
+          667,
+          170,
+          667,
+          1000
+        ]
+      ]
+    },
+    {
+      "id": "acesso_cadeira_rodas",
+      "name": "Cadeira de rodas — envelope",
+      "category": "Recepção e acessibilidade",
+      "width_mm": 700,
+      "depth_mm": 1200,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          220,
+          230,
+          780,
+          780
+        ],
+        [
+          "ellipse",
+          0,
+          180,
+          260,
+          900
+        ],
+        [
+          "ellipse",
+          740,
+          180,
+          1000,
+          900
+        ],
+        [
+          "line",
+          220,
+          180,
+          780,
+          180
+        ],
+        [
+          "line",
+          300,
+          780,
+          300,
+          1000
+        ],
+        [
+          "line",
+          700,
+          780,
+          700,
+          1000
+        ]
+      ]
+    },
+    {
+      "id": "sanitario_vaso",
+      "name": "Bacia sanitária — envelope",
+      "category": "Recepção e acessibilidade",
+      "width_mm": 400,
+      "depth_mm": 700,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "https://somasus.saude.gov.br/index.html",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          150,
+          0,
+          850,
+          250
+        ],
+        [
+          "ellipse",
+          200,
+          180,
+          800,
+          1000
+        ],
+        [
+          "ellipse",
+          320,
+          300,
+          680,
+          850
+        ]
+      ]
+    },
+    {
+      "id": "geral_mesa",
+      "name": "Mesa de escritório",
+      "category": "Uso geral",
+      "width_mm": 1400,
+      "depth_mm": 700,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          30,
+          40,
+          250,
+          950
+        ],
+        [
+          "line",
+          700,
+          40,
+          700,
+          950
+        ]
+      ]
+    },
+    {
+      "id": "geral_cadeira",
+      "name": "Cadeira",
+      "category": "Uso geral",
+      "width_mm": 550,
+      "depth_mm": 550,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "rect",
+          50,
+          50,
+          950,
+          950
+        ],
+        [
+          "rect",
+          150,
+          250,
+          850,
+          850
+        ],
+        [
+          "line",
+          50,
+          180,
+          950,
+          180
+        ]
+      ]
+    },
+    {
+      "id": "geral_armario",
+      "name": "Armário",
+      "category": "Uso geral",
+      "width_mm": 1200,
+      "depth_mm": 500,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "line",
+          500,
+          0,
+          500,
+          1000
+        ],
+        [
+          "line",
+          450,
+          450,
+          450,
+          650
+        ],
+        [
+          "line",
+          550,
+          450,
+          550,
+          650
+        ]
+      ]
+    },
+    {
+      "id": "geral_sofa",
+      "name": "Sofá de 2 lugares",
+      "category": "Uso geral",
+      "width_mm": 1800,
+      "depth_mm": 900,
+      "dimension_status": "initial_editable_envelope",
+      "clinical_validation": "not_evaluated",
+      "reference_url": "",
+      "notes": "Dimensões iniciais de representação. Ajustar ao fabricante, ao programa de necessidades e ao projeto; não constituem mínimos normativos.",
+      "shapes": [
+        [
+          "rect",
+          0,
+          0,
+          1000,
+          1000
+        ],
+        [
+          "line",
+          0,
+          170,
+          1000,
+          170
+        ],
+        [
+          "line",
+          333,
+          170,
+          333,
+          1000
+        ],
+        [
+          "line",
+          667,
+          170,
+          667,
+          1000
+        ]
+      ]
+    }
+  ]
+}

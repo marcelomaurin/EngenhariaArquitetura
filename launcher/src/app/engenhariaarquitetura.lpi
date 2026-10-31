@@ -8,7 +8,7 @@
    <ResourceType Value="res"/>
    <UseXPManifest Value="True"/><Icon Value="0"/>
   </General>
-  <VersionInfo><UseVersionInfo Value="True"/><MinorVersionNr Value="4"/><StringTable CompanyName="Maurinsoft" FileDescription="Central de Aplicativos EngenhariaArquitetura" ProductName="EngenhariaArquitetura" ProductVersion="0.4.0"/></VersionInfo>
+  <VersionInfo><UseVersionInfo Value="True"/><MinorVersionNr Value="6"/><StringTable CompanyName="Maurinsoft" FileDescription="Central de Aplicativos EngenhariaArquitetura" ProductName="EngenhariaArquitetura" ProductVersion="0.6.0"/></VersionInfo>
   <Units Count="2">
    <Unit0><Filename Value="engenhariaarquitetura.lpr"/><IsPartOfProject Value="True"/></Unit0>
    <Unit1><Filename Value="ea_launcher_main.pas"/><IsPartOfProject Value="True"/></Unit1>

@@ -27,7 +27,7 @@
    <Filename Value="lib/test_planejador_core" />
   </Target>
   <SearchPaths>
-   <OtherUnitFiles Value="../src/core;../src/io;../../../CHATGPT/pacote/AI Project Core;../../third_party/chatgpt/AIProjectCore" />
+   <OtherUnitFiles Value="../../shared;../src/core;../src/io;../../../CHATGPT/pacote/AI Project Core;../../third_party/chatgpt/AIProjectCore" />
    <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)" />
   </SearchPaths>
   <Parsing>

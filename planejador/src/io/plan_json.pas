@@ -10,12 +10,12 @@ interface
 
 uses
   Classes, SysUtils, DateUtils, fpjson, jsonparser, aiprojectduration,
-  aitaskgraph, plan_tipos, plan_documento;
+  aitaskgraph, plan_tipos, plan_documento, ea_fileio;
 
 const
   PL_SCHEMA_VERSION = '1.0';
   PL_PACKAGE_TYPE = 'projeto_planejador';
-  PL_VERSAO_APLICATIVO = '0.4.0';
+  PL_VERSAO_APLICATIVO = '0.6.0';
   PL_EXTENSAO = '.plan.json';
 
 function PLProjetoParaJSON(Doc: TPLProjeto): TJSONObject;
@@ -104,6 +104,7 @@ var
   U: TAIDurationUnit;
   Item: TAIPredecessorItem;
   Err, Versao: string;
+  Graph: TAITaskGraph;
 begin
   Versao := O.Get('schema_version', '');
   if Versao = '' then
@@ -145,6 +146,11 @@ begin
       Tar.Free;
       raise;
     end;
+    if Tar.Duracao.Minutes < 0 then raise Exception.Create('Duração negativa no arquivo');
+    if (Tar.Progresso < 0) or (Tar.Progresso > 100) then raise Exception.Create('Progresso fora de 0 a 100 no arquivo');
+    if not SameText(T.Get('situacao',PL_SITUACAO_CODIGO[Tar.Situacao]),PL_SITUACAO_CODIGO[Tar.Situacao]) then
+      raise Exception.Create('Situação desconhecida no arquivo');
+    if (Tar.Situacao = plsConcluida) and (Tar.Progresso <> 100) then raise Exception.Create('Tarefa concluída deve ter progresso de 100%');
   end;
   for I := 0 to Arr.Count - 1 do
   begin
@@ -179,6 +185,11 @@ begin
       Tar.Predecessoras[High(Tar.Predecessoras)] := Item;
     end;
   end;
+  Graph := TAITaskGraph.Create;
+  try
+    Doc.MontarGrafo(Graph,Err);
+    if Err <> '' then raise Exception.Create('Dependências inválidas no arquivo: '+Err);
+  finally Graph.Free; end;
   Doc.Modificado := False;
 end;
 
@@ -191,7 +202,7 @@ begin
   S := TStringList.Create;
   try
     S.Text := O.FormatJSON;
-    S.SaveToFile(AArquivo);
+    EAAtomicWriteText(AArquivo,S.Text);
     Doc.Modificado := False;
   finally
     S.Free;

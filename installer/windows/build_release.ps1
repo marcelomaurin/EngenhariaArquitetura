@@ -32,7 +32,7 @@ if ($SetupSeq -notmatch '^\d{3}$') { throw "SetupSeq invalido: $SetupSeq" }
 if (-not $AllowDirty -and (git status --porcelain -- . ':!bin' ':!setup' ':!dist')) { throw "A release exige uma arvore Git limpa. Para build local use -AllowDirty." }
 
 $Lazbuild = Find-Tool "LAZBUILD" @("lazbuild.exe", "C:\lazarus\lazbuild.exe")
-$FpcCandidates = @("fpc.exe") + @(Get-ChildItem "C:\lazarus\fpc\*\bin\x86_64-win64\fpc.exe" -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
+$FpcCandidates = @(Get-ChildItem "C:\lazarus\fpc\*\bin\x86_64-win64\fpc.exe" -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }) + @("fpc.exe")
 $Fpc = Find-Tool "FPC" $FpcCandidates
 $Python = Find-Tool "PYTHON" @("python.exe", "py.exe")
 $Iscc = Find-Tool "ISCC" @("ISCC.exe", "C:\Program Files (x86)\Inno Setup 6\ISCC.exe", "C:\Program Files\Inno Setup 6\ISCC.exe", "C:\Program Files (x86)\Inno Setup 7\ISCC.exe", "C:\Program Files\Inno Setup 7\ISCC.exe")
@@ -57,14 +57,27 @@ foreach ($t in $Targets) {
   Copy-Item (Join-Path $Bin "$($t.Name).exe") (Join-Path $App "$($t.Name).exe") -Force
 }
 
+# Gerar os exemplos de saude a partir dos fontes e do catalogo distribuido.
+New-Item -ItemType Directory -Force (Join-Path $Dist "tools\units") | Out-Null
+$genArgs = @("-Px86_64", "-Twin64", "-Mobjfpc", "-Sh", "-Fu$Root\shared", "-Fu$Root\cad2d\src\app", "-Fu$Root\planejador\src\core", "-Fu$Root\planejador\src\io", "-Fu$Core", "-FU$Dist\tools\units", "-o$Dist\tools\gerar_exemplos_saude.exe", "planejador\tools\gerar_exemplos_saude.lpr")
+& $Fpc @genArgs *> (Join-Path $Dist "build-logs\gerar_exemplos_saude.log")
+if ($LASTEXITCODE -ne 0) { Get-Content (Join-Path $Dist "build-logs\gerar_exemplos_saude.log") -Tail 20; throw "Falha ao compilar gerador de exemplos" }
+& (Join-Path $Dist "tools\gerar_exemplos_saude.exe") $Root
+if ($LASTEXITCODE -ne 0) { throw "Falha ao gerar exemplos de saude" }
+
 Write-Host "Testes de console..."
-$Tests = @(@{ Source = "planejador\tests\test_planejador_core"; Paths = @("planejador\src\core", "planejador\src\io") })
+$Tests = @(
+  @{ Source = "planejador\tests\test_planejador_core"; Paths = @("planejador\src\core", "planejador\src\io") },
+  @{ Source = "cad2d\tests\test_cad_document"; Paths = @("cad2d\src\app", "shared") },
+  @{ Source = "cad2d\tests\test_cad_dxf"; Paths = @("cad2d\src\app", "shared") },
+  @{ Source = "cad2d\tests\test_cad_catalog"; Paths = @("cad2d\src\app", "shared") }
+)
 $qa = @()
 foreach ($t in $Tests) {
   $name = Split-Path $t.Source -Leaf
   $out = Join-Path $Dist "tests\$name"
   New-Item -ItemType Directory -Force $out | Out-Null
-  $fpcArgs = @("-Px86_64", "-Twin64", "-Mobjfpc", "-Sh", "-FU$out") + ($t.Paths | ForEach-Object { "-Fu$Root\$_" }) + @("-Fu$Core", "-o$out.exe", "$($t.Source).lpr")
+  $fpcArgs = @("-Px86_64", "-Twin64", "-Mobjfpc", "-Sh", "-FU$out") + ($t.Paths | ForEach-Object { "-Fu$Root\$_" }) + @("-Fu$Core", "-Fu$Root\shared", "-o$out.exe", "$($t.Source).lpr")
   & $Fpc @fpcArgs *> (Join-Path $Dist "build-logs\$name.log")
   if ($LASTEXITCODE -ne 0) { Get-Content (Join-Path $Dist "build-logs\$name.log") -Tail 20; throw "Falha ao compilar $name" }
   $run = & "$out.exe" 2>&1
@@ -99,11 +112,16 @@ if (-not $wfOK) { $wfRun; throw "Testes de gestao falharam" }
 [System.IO.File]::WriteAllText((Join-Path $App "qa-tests.json"), (ConvertTo-Json -InputObject @($qa)), [System.Text.UTF8Encoding]::new($false))
 
 New-Item -ItemType Directory -Force (Join-Path $App "documentation\docs"), (Join-Path $App "exemplos"), (Join-Path $App "licencas") | Out-Null
+New-Item -ItemType Directory -Force (Join-Path $App "documentation\libraries") | Out-Null
+Copy-Item libraries\README.md (Join-Path $App "documentation\libraries")
 Copy-Item README.md (Join-Path $App "documentation")
 Copy-Item docs\*.md (Join-Path $App "documentation\docs")
 Copy-Item planejador\README.md (Join-Path $App "documentation\Planejador_README.md")
 Copy-Item cad2d\README.md (Join-Path $App "documentation\CAD2D_README.md")
 Copy-Item planejador\examples\*.plan.json (Join-Path $App "exemplos")
+Copy-Item cad2d\examples\*.eacad (Join-Path $App "exemplos")
+New-Item -ItemType Directory -Force (Join-Path $App "bibliotecas") | Out-Null
+Copy-Item libraries\catalogo_2d.json (Join-Path $App "bibliotecas")
 Copy-Item third_party\chatgpt\LICENSE (Join-Path $App "licencas\CHATGPT_LICENSE.txt")
 
 $clean = @("--require-clean"); if ($AllowDirty) { $clean = @() }

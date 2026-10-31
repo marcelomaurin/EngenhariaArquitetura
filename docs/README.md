@@ -2,7 +2,7 @@
 
 Plataforma de aplicações independentes em Lazarus/Free Pascal para projetos de Engenharia e Arquitetura. Cada aplicativo funciona como uma etapa de uma **linha de produção**: o resultado de uma etapa alimenta a seguinte, por meio de arquivos de intercâmbio versionados.
 
-> **Estado na versão 0.04:** Planejador e CAD 2D têm executáveis Windows e gestão local integrada de tarefas e usuários. O CAD é exclusivamente 2D e permanece em evolução; os outros componentes estão em especificação.
+> **Estado na versão 0.06:** Planejador e CAD 2D têm executáveis Windows e gestão local integrada de tarefas e usuários. O CAD é exclusivamente 2D e permanece em evolução; os outros componentes estão em especificação.
 
 ## Como ler esta documentação
 
@@ -44,6 +44,9 @@ Plataforma de aplicações independentes em Lazarus/Free Pascal para projetos de
 | Documento | Conteúdo |
 |---|---|
 | [Gestão de tarefas e usuários](Gestao_Tarefas_Usuarios.md) | Primeiro acesso, perfis, atribuição, resposta, devolução, vínculo de arquivo e persistência local |
+| [Direcionamento para saúde e SUS](Direcionamento_Saude_SUS.md) | Foco em hospitais e UBS, com uso geral preservado; bibliotecas e limites dos exemplos |
+| [Notas da versão 006](Notas_Versao_006.md) | Catálogo 2D, blocos, exemplos de saúde e entrega |
+| [Notas da versão 005](Notas_Versao_005.md) | Persistência EACAD4, resolução de 1 mm, DXF de linhas, CSV e validação de arquivos |
 | [Notas da versão 004](Notas_Versao_004.md) | Conteúdo do instalador 0.04, compilação, testes e limitações |
 | [Pendências do Planejador (30/10/2026)](Pendencias_Planejador_2026-10-30.md) | Auditoria focada no Planejador: proteção de dados, P2 (tarefas nos aplicativos), P3 (acompanhamento), P4 (objetos e skins), prioridades e testes |
 | [Auditoria de lacunas (30/10/2026)](Auditoria_Lacunas_2026-10-30.md) | Estado observado do código, prioridades P0/P1/P2, critérios de aceite e plano de implementação sem incorporar o MultiCNC |

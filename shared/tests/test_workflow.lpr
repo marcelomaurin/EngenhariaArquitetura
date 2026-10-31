@@ -1,11 +1,13 @@
 program test_workflow;
 {$mode objfpc}{$H+}{$codepage utf8}
-uses Classes, SysUtils, fpjson, ea_workflow;
+uses Classes, SysUtils, fpjson, ea_workflow, ea_reports;
 var W,W2: TWorkflow; Root,Admin,UserToken,Restricted,Viewer,UID,RID,VID,T1,T2,Temp,ID: string;
-  U,T: TJSONObject; A: TJSONArray; L: TStringList; Checks: Integer; Denied: Boolean; G: TGUID;
+  CSVStream: TFileStream; CSVBytes: RawByteString; U,T: TJSONObject; A: TJSONArray; L: TStringList; Checks: Integer; Denied: Boolean; G: TGUID;
 procedure Check(OK: Boolean; const Msg: string);
 begin Inc(Checks); if not OK then raise Exception.Create(Msg); end;
 begin
+  DefaultSystemCodePage := CP_UTF8;
+  SetMultiByteConversionCodePage(CP_UTF8);
   CreateGUID(G); Root:=IncludeTrailingPathDelimiter(GetTempDir)+'ea-workflow-'+GUIDToString(G)+'.json';
   W:=TWorkflow.Create(Root); W2:=TWorkflow.Create(Root); L:=TStringList.Create;
   try
@@ -33,6 +35,15 @@ begin
     Denied:=False; try W.SaveTask(Viewer,'','Inválida','',UID,'','',''); except on E: EWorkflow do Denied:=True; end; Check(Denied,'visualizador nao cria tarefa');
     Denied:=False; try W.Reply(Viewer,T1,'Não permitido','concluida',100,'',False); except on E: EWorkflow do Denied:=True; end; Check(Denied,'visualizador nao responde');
     Denied:=False; try W.Reply(Restricted,T2,'Não permitido','concluida',100,'',False); except on E: EWorkflow do Denied:=True; end; Check(Denied,'restrito nao responde tarefa alheia');
+    WFExportTasksCSV(W,Restricted,Root+'.csv');
+    CSVStream:=TFileStream.Create(Root+'.csv',fmOpenRead);
+    try SetLength(CSVBytes,CSVStream.Size); if Length(CSVBytes)>0 then CSVStream.ReadBuffer(CSVBytes[1],Length(CSVBytes)); finally CSVStream.Free; end;
+    L.LoadFromFile(Root+'.csv'); Check((Pos('Planta do t',CSVBytes)>0) and (Pos(#$C3#$A9,CSVBytes)>0),'relatorio inclui tarefa propria com acento UTF8');
+    Check(Pos('Outra tarefa',L.Text)=0,'relatorio nao revela tarefa alheia');
+    W.SaveTask(Admin,T1,'=1+1','Entregar planta e apontar pendências',RID,'','origem.plan.json','T-1');
+    WFExportTasksCSV(W,Restricted,Root+'.csv'); L.LoadFromFile(Root+'.csv');
+    Check(Pos(#39+'=1+1',L.Text)>0,'formula neutralizada no CSV');
+    DeleteFile(Root+'.csv');
     W.Reply(Restricted,T1,'Paredes desenhadas. Faltam esquadrias.','em_andamento',40,'',False);
     T:=W2.Task(Admin,T1); try Check(T.Get('progress',0)=40,'progresso compartilhado'); Check(T.Arrays['history'].Count=1,'resposta registrada'); finally T.Free; end;
     Temp:=Root+'.eacad'; L.Text:='EACAD3'+LineEnding+'50'; L.SaveToFile(Temp);

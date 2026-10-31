@@ -105,3 +105,11 @@ No Planejador, Arquivo > Salvar e Salvar como continuam sendo operações de arq
 
 O fluxo integrado com login, quatro perfis, atribuição, respostas e devolução de arquivos
 está descrito em [Gestão de tarefas e usuários](../docs/Gestao_Tarefas_Usuarios.md).
+
+## Melhorias da versão 0.05
+
+Consulte [Notas da versão 005](../docs/Notas_Versao_005.md) para correções de persistência, validação, precisão, DXF e relatórios CSV. Os estados descritos em etapas anteriores são históricos.
+
+## Direcionamento da versão 0.06
+
+A ferramenta permanece de uso geral, com foco em projetos de saúde e SUS. Os exemplos de UBS e ala assistencial são esquemáticos. Consulte [Direcionamento para saúde e SUS](../docs/Direcionamento_Saude_SUS.md) e [Notas da versão 006](../docs/Notas_Versao_006.md).

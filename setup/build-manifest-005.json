@@ -1,0 +1,193 @@
+{
+  "schema_version": "1.0",
+  "package_type": "build_manifest",
+  "product": "EngenhariaArquitetura",
+  "version": "0.05",
+  "binary_version": "0.5.0.0",
+  "setup_seq": "005",
+  "os": "windows",
+  "arch": "amd64",
+  "built_at": "2026-10-31T16:02:09+00:00",
+  "source_commit": "e344ca8f72b62e09c0a8220b27a2d22df327de88",
+  "source_branch": "fila",
+  "source_dirty": true,
+  "tests": [
+    {
+      "test": "test_planejador_core",
+      "passed": true,
+      "summary": "67 verificações, 0 falhas"
+    },
+    {
+      "test": "test_cad_document",
+      "passed": true,
+      "summary": "33 verificacoes de persistencia CAD e gravacao segura, 0 falhas"
+    },
+    {
+      "test": "test_cad_dxf",
+      "passed": true,
+      "summary": "15 verificacoes DXF 2D, 0 falhas"
+    },
+    {
+      "test": "test_cad2d",
+      "passed": true,
+      "summary": "54 verificacoes CAD 2D, 0 falhas"
+    },
+    {
+      "test": "test_workflow",
+      "passed": true,
+      "summary": "41 verificacoes de gestao, usuarios e permissoes, 0 falhas"
+    }
+  ],
+  "files": [
+    {
+      "path": "cad2d.exe",
+      "bytes": 3518464,
+      "sha256": "5e0950f6920dd6e59b9ed2af53fed0492c49f33877d4a866b7faf58628906dc8"
+    },
+    {
+      "path": "documentation/CAD2D_README.md",
+      "bytes": 20327,
+      "sha256": "e69508a6a483046dc4cc4c5c34ba0d6840e587397691bf163ab01714669c26ef"
+    },
+    {
+      "path": "documentation/Planejador_README.md",
+      "bytes": 9918,
+      "sha256": "b888c0ecd157caf6360426f2b10cdf749f163f80a1efdbb479e5900afcd6d694"
+    },
+    {
+      "path": "documentation/README.md",
+      "bytes": 4553,
+      "sha256": "ff992cf6ce0b311df618de90ce7787d71effb3e7868a5e5971c109eef5c052af"
+    },
+    {
+      "path": "documentation/docs/Auditoria_Lacunas_2026-10-30.md",
+      "bytes": 17777,
+      "sha256": "1c60c17dba973c04c746ecb0dbe919aac7d50292097ae8eb942f18288f17c37c"
+    },
+    {
+      "path": "documentation/docs/CAD_Arquitetonico_2D.md",
+      "bytes": 16444,
+      "sha256": "d22aa7ebe657ee49eb423f49506d84f753daff96276dbda98dfccac3a6beb568"
+    },
+    {
+      "path": "documentation/docs/Criador_Cenas.md",
+      "bytes": 8293,
+      "sha256": "61496a4d54ec832409ceefee1a33916988848c36d3648ceee5cc3aa6b06b0479"
+    },
+    {
+      "path": "documentation/docs/Decisoes.md",
+      "bytes": 5326,
+      "sha256": "218b0b8b23141907454776c4dadfed5a099e8b54214552b10896684203018f04"
+    },
+    {
+      "path": "documentation/docs/Editor_Objetos_3D.md",
+      "bytes": 22518,
+      "sha256": "5af7eaff7c3515f85c5df337e1fb5650ce619a54adcf2586c5472b2d2a53a827"
+    },
+    {
+      "path": "documentation/docs/Eletrica_3D.md",
+      "bytes": 9990,
+      "sha256": "a1583fa036a5a005564252bb247544aae52ef9b4ca9a5530692585f607e18879"
+    },
+    {
+      "path": "documentation/docs/Gerador_Texturas.md",
+      "bytes": 11005,
+      "sha256": "33d99ac8b7acc37349376d8a9b989fc74881511ce6211c4f91327af18648985c"
+    },
+    {
+      "path": "documentation/docs/Gestao_Tarefas_Usuarios.md",
+      "bytes": 4911,
+      "sha256": "3de5c2e87fb19ad3774d43a503383f5a9df5cf9443b90c2649b444338e8743bf"
+    },
+    {
+      "path": "documentation/docs/Integracoes.md",
+      "bytes": 19590,
+      "sha256": "a976ae5f3c8d76a5fd651bc24cc1701677911ac3b9d6ac2c726f12242ff494a5"
+    },
+    {
+      "path": "documentation/docs/Maquete_3D.md",
+      "bytes": 7426,
+      "sha256": "2d44e56b18cc020fe08c7b18dde6db91c79102d48c2abb2eb331512d943b3c37"
+    },
+    {
+      "path": "documentation/docs/Motor_Importacao.md",
+      "bytes": 11572,
+      "sha256": "a591e0f90cf7caf4f990d5dd516b70852b5da180ceeb035f225fc177800b2574"
+    },
+    {
+      "path": "documentation/docs/Notas_Versao_004.md",
+      "bytes": 2867,
+      "sha256": "b69d37cb2559c98be65724b596a21d1755dbfcdf582c390e76474154727cda9d"
+    },
+    {
+      "path": "documentation/docs/Notas_Versao_005.md",
+      "bytes": 4381,
+      "sha256": "e062cbf0f885fdbe504e078162096399a74c179e2b89d05015719d2a730914fe"
+    },
+    {
+      "path": "documentation/docs/Nucleo_Comum.md",
+      "bytes": 5332,
+      "sha256": "cdf7c889bbb12a1fe8872e8d123468ffe02ffb10f0e77178aca4b77a6ea52e12"
+    },
+    {
+      "path": "documentation/docs/Pendencias_Planejador_2026-10-30.md",
+      "bytes": 20518,
+      "sha256": "5464b25ae725ba95a804aa0956c729e7845f8835a05fbee2a6399538a27cf6e6"
+    },
+    {
+      "path": "documentation/docs/Planejador.md",
+      "bytes": 9153,
+      "sha256": "a7c3d121b32dd86c2fddfa7beba4b464e9f58fc4c68ce1647169a1e1b09dee4a"
+    },
+    {
+      "path": "documentation/docs/Plano_Desenvolvimento.md",
+      "bytes": 13657,
+      "sha256": "7bb322b77dec9b02100a95265ae3fd89a0b2b5b697d7d7b1cb35344d8a4b8584"
+    },
+    {
+      "path": "documentation/docs/README.md",
+      "bytes": 7624,
+      "sha256": "dac5f5d6e5a779ac067fc5bd0f4d15f09af2f7ea2d2ddde114d11f8e6bd1c1e4"
+    },
+    {
+      "path": "documentation/docs/SimuEletrica.md",
+      "bytes": 20119,
+      "sha256": "4e2cf793beb2e43e93d27096726277566fc40eca93928534ba47967b965b1367"
+    },
+    {
+      "path": "documentation/docs/SimuTubulacoes.md",
+      "bytes": 29683,
+      "sha256": "8150cbc19b8bcaecd2d7937dc46abd824e1a0ebe54b348487872783e96f413f1"
+    },
+    {
+      "path": "documentation/docs/Visao_Geral_Plataforma.md",
+      "bytes": 13421,
+      "sha256": "0e3e988e62a8affc259798b3be3ff7c51901a6493a167be24c966a3f44a8d230"
+    },
+    {
+      "path": "engenhariaarquitetura.exe",
+      "bytes": 2808832,
+      "sha256": "086cddcf8292c8656e46c7cb5a3f299c2ce8e0079723b7d2afb0f1159dbb919b"
+    },
+    {
+      "path": "exemplos/residencia.plan.json",
+      "bytes": 16748,
+      "sha256": "47bce26a25301f09972fb0ebd23a64033982c490e7da5636cf89dd56f5bfeabd"
+    },
+    {
+      "path": "licencas/CHATGPT_LICENSE.txt",
+      "bytes": 35823,
+      "sha256": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809"
+    },
+    {
+      "path": "planejador.exe",
+      "bytes": 4160000,
+      "sha256": "f09d86e29978a96a10997430258a186e91fc6979c928b8578d87fbf0a01bb23d"
+    },
+    {
+      "path": "qa-tests.json",
+      "bytes": 722,
+      "sha256": "bc48a3308f8dfec7756ec31fb6641b927d1df631416d29f9e921a2ec771601a7"
+    }
+  ]
+}

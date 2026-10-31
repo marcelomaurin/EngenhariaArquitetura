@@ -4,7 +4,7 @@ Windows 64 bits, Git, Python 3.9+ com Pillow, Lazarus/Free Pascal 64 bits e Inno
 
 ## Gerar no Windows
 
-    installer\windows\build_release.bat -Version 0.04 -SetupSeq 004
+    installer\windows\build_release.bat -Version 0.06 -SetupSeq 006
 
 Sem parâmetros, a versão e a sequência vêm de [installer/VERSION.ini](../VERSION.ini). O script procura as ferramentas nas pastas usuais; os caminhos podem ser definidos pelas variáveis LAZBUILD, FPC, PYTHON e ISCC. EA_CHATGPT_DIR aponta para o repositório CHATGPT quando ele não estiver ao lado deste (padrão: `..\CHATGPT`).
 
@@ -12,7 +12,7 @@ A publicação exige árvore Git limpa. Para gerar e testar um instalador local 
 
 ## Gerar no Linux (compilação cruzada)
 
-    ISCC=/caminho/ISCC.exe installer/windows/build_release_wine.sh 0.04 004
+    ISCC=/caminho/ISCC.exe installer/windows/build_release_wine.sh 0.06 006
 
 Mesmos passos do `build_release.ps1`:
 
@@ -61,3 +61,11 @@ A Central de Aplicativos (engenhariaarquitetura.exe) é instalada com os aplicat
 ## Versão atual
 
 A versão 0.04 usa a sequência 004. O pacote inclui o guia de gestão de tarefas e usuários, os quatro perfis e as notas da versão em documentation/docs. No primeiro acesso ao Planejador, crie o Administrador. Consulte [Notas da versão 004](../../docs/Notas_Versao_004.md).
+
+## Versão 0.05 / sequência 005
+
+A geração inclui cinco suítes com 210 verificações esperadas. Consulte o resultado efetivo em qa-tests-005.json e [Notas da versão 005](../../docs/Notas_Versao_005.md).
+
+## Versão 0.06 / sequência 006
+
+Inclui o catálogo 2D de saúde e uso geral, exemplos CAD e de planejamento de UBS/ala hospitalar e os exemplos gerais existentes. A geração executa seis suítes (288 verificações esperadas). Consulte qa-tests-006.json e [Notas da versão 006](../../docs/Notas_Versao_006.md).

@@ -52,19 +52,27 @@ for t in "${TARGETS[@]}"; do
   cp "$BIN/$name.exe" "$APP/$name.exe"
 done
 
+mkdir -p "$DIST/tools/units"
+"$FPC_BIN" -Px86_64 -Twin64 -Mobjfpc -Sh -Fu"$ROOT/shared" -Fu"$ROOT/cad2d/src/app" -Fu"$ROOT/planejador/src/core" -Fu"$ROOT/planejador/src/io" -Fu"$CORE" -FU"$DIST/tools/units" -o"$DIST/tools/gerar_exemplos_saude.exe" planejador/tools/gerar_exemplos_saude.lpr > "$DIST/build-logs/gerar_exemplos_saude.log" 2>&1
+GEN_ROOT="Z:$(printf '%s' "$ROOT" | tr '/' '\\')"
+"$WINE" "$DIST/tools/gerar_exemplos_saude.exe" "$GEN_ROOT"
+
 # testes de console win64 no Wine
 echo "Testes de console..."
 TESTS=(
   "planejador/tests/test_planejador_core|planejador/src/core;planejador/src/io"
+  "cad2d/tests/test_cad_document|cad2d/src/app;shared"
+  "cad2d/tests/test_cad_dxf|cad2d/src/app;shared"
+  "cad2d/tests/test_cad_catalog|cad2d/src/app;shared"
 )
 QA="$DIST/qa-tests.json"; echo "[" > "$QA"; first=1
 mkdir -p "$DIST/tests"
 for t in "${TESTS[@]}"; do
   src=${t%%|*}; paths=${t##*|}; name=$(basename "$src")
   args=(); IFS=';' read -ra P <<< "$paths"; for p in "${P[@]}"; do args+=("-Fu$ROOT/$p"); done
-  "$FPC_BIN" -Px86_64 -Twin64 -Mobjfpc -Sh -FU"$DIST/tests/$name" "${args[@]}" -Fu"$CORE" \
+  "$FPC_BIN" -Px86_64 -Twin64 -Mobjfpc -Sh -FU"$DIST/tests/$name" "${args[@]}" -Fu"$CORE" -Fu"$ROOT/shared" \
     -o"$DIST/tests/$name.exe" "$src.lpr" > "$DIST/build-logs/$name.log" 2>&1 \
-    || { mkdir -p "$DIST/tests/$name" && "$FPC_BIN" -Px86_64 -Twin64 -Mobjfpc -Sh -FU"$DIST/tests/$name" "${args[@]}" -Fu"$CORE" \
+    || { mkdir -p "$DIST/tests/$name" && "$FPC_BIN" -Px86_64 -Twin64 -Mobjfpc -Sh -FU"$DIST/tests/$name" "${args[@]}" -Fu"$CORE" -Fu"$ROOT/shared" \
     -o"$DIST/tests/$name.exe" "$src.lpr" > "$DIST/build-logs/$name.log" 2>&1; } \
     || { tail -20 "$DIST/build-logs/$name.log"; echo "Falha ao compilar $name"; exit 1; }
   if "$WINE" "$DIST/tests/$name.exe" > "$DIST/build-logs/$name.run.log" 2>&1; then ok=true; else ok=false; fi
@@ -93,11 +101,16 @@ cp "$QA" "$APP/qa-tests.json"
 
 # documentacao, exemplos e licencas
 mkdir -p "$APP/documentation/docs" "$APP/exemplos" "$APP/licencas"
+mkdir -p "$APP/documentation/libraries"
+cp libraries/README.md "$APP/documentation/libraries/"
 cp README.md "$APP/documentation/"
 cp docs/*.md "$APP/documentation/docs/"
 cp planejador/README.md "$APP/documentation/Planejador_README.md"
 cp cad2d/README.md "$APP/documentation/CAD2D_README.md"
 cp planejador/examples/*.plan.json "$APP/exemplos/"
+cp cad2d/examples/*.eacad "$APP/exemplos/"
+mkdir -p "$APP/bibliotecas"
+cp libraries/catalogo_2d.json "$APP/bibliotecas/"
 cp third_party/chatgpt/LICENSE "$APP/licencas/CHATGPT_LICENSE.txt"
 
 CLEAN=--require-clean; [ "$ALLOW_DIRTY" = "--allow-dirty" ] && CLEAN=
