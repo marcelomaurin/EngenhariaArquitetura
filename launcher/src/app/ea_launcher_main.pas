@@ -10,7 +10,12 @@ type
     FNavigation, FHeader, FContent, FFooter: TPanel;
     FTitle, FSubtitle, FStatus: TLabel;
     FSection: Integer;
+    FUpdateTimer: TTimer;
     FNavButtons: array[0..3] of TSpeedButton;
+    procedure UpdateTick(Sender: TObject);
+    procedure CheckUpdates(Sender: TObject);
+    procedure StartUpdateCheck(AManual: Boolean);
+    function UpdaterPath: string;
     procedure BuildInterface;
     procedure Navigate(Sender: TObject);
     procedure ShowSection(AIndex: Integer);
@@ -57,6 +62,10 @@ begin
   Font.Size := 10; Color := ColorRGB(244,246,250);
   BuildInterface;
   ShowSection(0);
+  FUpdateTimer := TTimer.Create(Self);
+  FUpdateTimer.Interval := 4000;
+  FUpdateTimer.Enabled := True;
+  FUpdateTimer.OnTimer := @UpdateTick;
 end;
 procedure TEALauncherForm.SetStatus(const S: string);
 begin FStatus.Caption := S; end;
@@ -125,9 +134,82 @@ begin
   B.SetBounds(12,267,196,38); B.Caption := 'Atualizar disponibilidade';
   B.Hint := 'Verificar novamente os executáveis instalados'; B.ShowHint := True;
   B.OnClick := @RefreshCatalog;
+  B := TSpeedButton.Create(Self); B.Parent := FNavigation;
+  B.SetBounds(12,315,196,38); B.Caption := 'Verificar atualizações';
+  B.Hint := 'Consultar versões publicadas no GitHub Releases'; B.ShowHint := True;
+  B.OnClick := @CheckUpdates;
   FContent := TPanel.Create(Self); FContent.Parent := Self;
   FContent.Align := alClient; FContent.BevelOuter := bvNone;
   FContent.Color := ColorRGB(244,246,250);
+end;
+function TEALauncherForm.UpdaterPath: string;
+var Base, Candidate, Relative: string;
+begin
+  Result := '';
+  Base := ExtractFilePath(ExpandFileName(ParamStr(0)));
+  {$IFDEF WINDOWS}
+  Relative := 'updater'+DirectorySeparator+'windows'+DirectorySeparator+'update.ps1';
+  {$ELSE}
+  Relative := 'updater'+DirectorySeparator+'linux'+DirectorySeparator+'update.py';
+  {$ENDIF}
+  Candidate := ExpandFileName(Base+Relative);
+  if FileExists(Candidate) then Exit(Candidate);
+  Candidate := ExpandFileName(Base+'..'+DirectorySeparator+Relative);
+  if FileExists(Candidate) then Exit(Candidate);
+end;
+procedure TEALauncherForm.StartUpdateCheck(AManual: Boolean);
+var Script, Base: string; P: TProcess;
+begin
+  Script := UpdaterPath;
+  Base := ExtractFilePath(ExpandFileName(ParamStr(0)));
+  if Script = '' then begin
+    if AManual then SetStatus('Atualizador ausente; utilize uma instalação publicada.');
+    Exit;
+  end;
+  {$IFDEF WINDOWS}
+  if not FileExists(Base+'build-manifest.json') then begin
+    if AManual then SetStatus('Atualizador disponível somente em versões instaladas.');
+    Exit;
+  end;
+  {$ELSE}
+  if not FileExists(ExpandFileName(Base+'..'+DirectorySeparator+'release-version.txt')) then begin
+    if AManual then SetStatus('Atualizador disponível somente em pacotes publicados.');
+    Exit;
+  end;
+  {$ENDIF}
+  P := TProcess.Create(nil);
+  try
+    {$IFDEF WINDOWS}
+    P.Executable := 'powershell.exe';
+    P.Parameters.Add('-NoProfile');
+    P.Parameters.Add('-ExecutionPolicy');
+    P.Parameters.Add('Bypass');
+    P.Parameters.Add('-File');
+    {$ELSE}
+    P.Executable := 'python3';
+    {$ENDIF}
+    P.Parameters.Add(Script);
+    if AManual then begin
+      {$IFDEF WINDOWS} P.Parameters.Add('-Manual'); {$ELSE} P.Parameters.Add('--manual'); {$ENDIF}
+    end;
+    P.Options := [poNoConsole];
+    P.Execute;
+    if AManual then
+      SetStatus('Verificação iniciada. O atualizador instalará releases verificadas.');
+  except
+    on E: Exception do
+      if AManual then MessageDlg('Atualização',E.Message,mtWarning,[mbOK],0);
+  end;
+  P.Free;
+end;
+procedure TEALauncherForm.UpdateTick(Sender: TObject);
+begin
+  FUpdateTimer.Enabled := False;
+  StartUpdateCheck(False);
+end;
+procedure TEALauncherForm.CheckUpdates(Sender: TObject);
+begin
+  StartUpdateCheck(True);
 end;
 procedure TEALauncherForm.Navigate(Sender: TObject);
 begin ShowSection(TSpeedButton(Sender).Tag); end;

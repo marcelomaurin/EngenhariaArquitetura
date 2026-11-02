@@ -50,6 +50,7 @@ Name: "custom"; Description: "Instalação personalizada (escolher os itens)"; F
 
 [Components]
 Name: "apps"; Description: "Aplicativos da plataforma"; Types: full compact custom; Flags: fixed
+Name: "apps\cad2d"; Description: "CAD Arquitetônico 2D - plantas e desenho"; Types: full compact custom
 Name: "apps\planejador"; Description: "Planejador - tarefas, dependências, caminho crítico e Gantt"; Types: full compact custom; Flags: fixed
 Name: "extra"; Description: "Recursos complementares"; Types: full custom
 Name: "extra\exemplos"; Description: "Projetos de exemplo"; Types: full custom
@@ -60,6 +61,8 @@ Name: "{userdocs}\EngenhariaArquitetura Projetos"
 
 [Files]
 Source: "..\..\dist\app\engenhariaarquitetura.exe"; DestDir: "{app}"; Components: apps; Flags: ignoreversion
+Source: "..\..\dist\app\cad2d.exe"; DestDir: "{app}"; Components: apps\cad2d; Flags: ignoreversion
+Source: "..\..\updater\windows\update.ps1"; DestDir: "{app}\updater\windows"; Components: apps; Flags: ignoreversion
 Source: "..\..\dist\app\planejador.exe"; DestDir: "{app}"; Components: apps\planejador; Flags: ignoreversion
 Source: "..\..\dist\app\exemplos\*"; DestDir: "{app}\exemplos"; Components: extra\exemplos; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\..\dist\app\exemplos\*"; DestDir: "{userdocs}\EngenhariaArquitetura Projetos\Exemplos"; Components: extra\exemplos; Flags: ignoreversion onlyifdoesntexist recursesubdirs createallsubdirs
@@ -74,6 +77,7 @@ Name: "desktopicon_planejador"; Description: "Criar atalho do Planejador na áre
 
 [Icons]
 Name: "{autoprograms}\EngenhariaArquitetura\Central de Aplicativos"; Filename: "{app}\engenhariaarquitetura.exe"; Components: apps
+Name: "{autoprograms}\EngenhariaArquitetura\CAD Arquitetônico 2D"; Filename: "{app}\cad2d.exe"; Components: apps\cad2d
 Name: "{autoprograms}\EngenhariaArquitetura\Planejador"; Filename: "{app}\planejador.exe"; Components: apps\planejador
 Name: "{autoprograms}\EngenhariaArquitetura\Planejador - exemplo da residência"; Filename: "{app}\planejador.exe"; Parameters: """{app}\exemplos\residencia.plan.json"""; Components: apps\planejador and extra\exemplos
 Name: "{autoprograms}\EngenhariaArquitetura\Documentação"; Filename: "{app}\documentation"; Components: extra\docs
