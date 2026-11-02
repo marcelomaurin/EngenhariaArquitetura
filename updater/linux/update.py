@@ -52,14 +52,14 @@ def safe_extract(data, dest):
         if len(members) > 2000:
             raise ValueError("arquivo possui entradas demais")
         for member in members:
-            name = member.name.lstrip("./")
+            name = member.name.removeprefix("./")
             path = Path(name)
-            if (not name or path.is_absolute() or ".." in path.parts or
+            if (member.name.startswith("/") or ".." in path.parts or
                     not (member.isfile() or member.isdir()) or
                     member.size > MAX_BYTES):
                 raise ValueError("pacote com caminho ou tipo inseguro")
         for member in members:
-            name = member.name.lstrip("./")
+            name = member.name.removeprefix("./")
             if not name:
                 continue
             target = dest / name
@@ -112,7 +112,7 @@ def install(release_tag, data):
     versions.mkdir(exist_ok=True)
     final = versions / release_tag
     if not final.is_dir():
-        with tempfile.TemporaryDirectory(prefix="ea-update-") as tmp:
+        with tempfile.TemporaryDirectory(prefix="ea-update-", dir=versions) as tmp:
             staging = Path(tmp) / "stage"
             staging.mkdir()
             safe_extract(data, staging)
@@ -128,9 +128,9 @@ def install(release_tag, data):
     bindir.mkdir(parents=True, exist_ok=True)
     for app in ("engenhariaarquitetura", "cad2d"):
         wrapper = bindir / app
-        if wrapper.exists() and not wrapper.read_text(encoding="utf-8").startswith("# EA managed launcher"):
+        if wrapper.exists() and "# EA managed launcher" not in wrapper.read_text(encoding="utf-8").splitlines()[:2]:
             continue
-        wrapper.write_text('# EA managed launcher\n#!/bin/sh\nexec "$HOME/.local/share/EngenhariaArquitetura/current/bin/' +
+        wrapper.write_text('#!/bin/sh\n# EA managed launcher\nexec "$HOME/.local/share/EngenhariaArquitetura/current/bin/' +
                            app + '" "$@"\n', encoding="utf-8")
         wrapper.chmod(0o755)
 
