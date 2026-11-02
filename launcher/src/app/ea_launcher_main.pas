@@ -189,7 +189,9 @@ begin
     P.Executable := 'python3';
     {$ENDIF}
     P.Parameters.Add(Script);
-    if AManual then P.Parameters.Add('--manual');
+    if AManual then begin
+      {$IFDEF WINDOWS} P.Parameters.Add('-Manual'); {$ELSE} P.Parameters.Add('--manual'); {$ENDIF}
+    end;
     P.Options := [poNoConsole];
     P.Execute;
     if AManual then
