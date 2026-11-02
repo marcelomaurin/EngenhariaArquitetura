@@ -1,0 +1,110 @@
+name: Publicar atualizacoes EngenhariaArquitetura
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'launcher/**'
+      - 'cad2d/**'
+      - 'planejador/**'
+      - 'updater/**'
+      - 'installer/**'
+      - '.github/workflows/release-updates.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dependencias Linux
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lazarus libgtk2.0-dev pkg-config xvfb xauth
+      - name: Testar atualizador e compilar aplicativos
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s updater/tests -v
+          lazbuild -B --ws=gtk2 launcher/src/app/engenhariaarquitetura.lpi
+          lazbuild -B --ws=gtk2 cad2d/src/app/cad2d.lpi
+          lazbuild -B --ws=gtk2 planejador/src/app/planejador.lpi
+          test -x bin/engenhariaarquitetura
+          test -x bin/cad2d
+          test -x bin/planejador
+      - name: Montar pacote Linux
+        run: |
+          set -euo pipefail
+          mkdir -p dist/linux-package/bin dist/linux-package/updater/linux
+          cp bin/engenhariaarquitetura bin/cad2d bin/planejador dist/linux-package/bin/
+          cp updater/linux/update.py dist/linux-package/updater/linux/
+          printf '0.02.%s\n' "$GITHUB_RUN_NUMBER" > dist/linux-package/release-version.txt
+          tar -czf dist/engenhariaarquitetura-linux-x86_64.tar.gz -C dist/linux-package .
+          cd dist
+          sha256sum engenhariaarquitetura-linux-x86_64.tar.gz > engenhariaarquitetura-linux-x86_64.tar.gz.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pacote-linux
+          path: |
+            dist/engenhariaarquitetura-linux-x86_64.tar.gz
+            dist/engenhariaarquitetura-linux-x86_64.tar.gz.sha256
+          if-no-files-found: error
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar Lazarus e Inno Setup
+        shell: pwsh
+        run: |
+          choco install lazarus innosetup -y --no-progress
+          python -m pip install --disable-pip-version-check Pillow
+      - name: Testar sintaxe do PowerShell e gerar instalador completo
+        shell: pwsh
+        run: |
+          $ast = $null; $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path 'updater/windows/update.ps1').Path, [ref]$ast, [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) { throw ($errors | Out-String) }
+          $seq = '{0:000}' -f ([int]$env:GITHUB_RUN_NUMBER % 1000)
+          & ./installer/windows/build_release.ps1 -Version "0.02.$env:GITHUB_RUN_NUMBER" -SetupSeq $seq
+          if ($LASTEXITCODE -ne 0) { throw 'Falha no instalador Windows' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pacote-windows
+          path: dist/setup_engenhariaarquitetura_*.exe
+          if-no-files-found: error
+
+  publicar:
+    if: ${{ always() && needs.linux.result == 'success' }}
+    needs: [linux, windows]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: pacote-linux
+          path: release-assets
+      - uses: actions/download-artifact@v4
+        if: ${{ needs.windows.result == 'success' }}
+        with:
+          name: pacote-windows
+          path: release-assets
+      - name: Publicar release e checksums
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          cd release-assets
+          shopt -s nullglob
+          assets=(engenhariaarquitetura-linux-x86_64.tar.gz)
+          windows=(setup_engenhariaarquitetura_*.exe)
+          if (( ${#windows[@]} > 0 )); then assets+=("${windows[@]}"); fi
+          sha256sum "${assets[@]}" > SHA256SUMS
+          tag="v0.02.${GITHUB_RUN_NUMBER}"
+          gh release create "$tag" *.tar.gz *.sha256 SHA256SUMS "${windows[@]}" \
+            --target "${GITHUB_SHA}" --title "EngenhariaArquitetura $tag" --latest \
+            --notes "Compilacao automatica da branch main. Somente pacotes presentes nesta release sao atualizaveis. Conferir testes antes de usar em producao."
