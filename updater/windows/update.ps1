@@ -85,10 +85,10 @@ try {
     }
     $sumsFile = Join-Path $Data 'SHA256SUMS.new'
     Invoke-WebRequest -Uri $sumsUrl -OutFile $sumsFile -TimeoutSec 25 -UseBasicParsing
-    $entries = Get-Content $sumsFile | Where-Object {
+    $entries = @(Get-Content $sumsFile | Where-Object {
         $_ -match '^([a-fA-F0-9]{64})  (.+)$' -and $Matches[2] -eq $packageName
-    }
-    if (@($entries).Count -ne 1 -or $entries[0] -notmatch '^([a-fA-F0-9]{64})  ') {
+    })
+    if ($entries.Count -ne 1 -or $entries[0] -notmatch '^([a-fA-F0-9]{64})  ') {
         throw 'Checksum da release nao encontrado ou ambiguo'
     }
     $sha = $Matches[1].ToLowerInvariant()
