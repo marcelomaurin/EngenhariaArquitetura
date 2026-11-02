@@ -44,3 +44,9 @@ O instalador Linux não modifica uma instalação gerenciada por `apt`, `dpkg` o
 6. O comportamento de atualização e de reinicialização em equipamentos Windows/Linux reais ainda precisa de homologação final.
 
 Comando local para testar a implementação Linux: `python3 -m unittest discover -s updater/tests -v`. Para investigar qualquer falha, consulte **GitHub Actions → Publicar atualizacoes EngenhariaArquitetura**.
+
+## Publicação bloqueada por permissão do Actions
+
+O workflow foi testado e a compilação dos pacotes Linux/Windows funcionou, mas o GitHub recusou a operação de criação de release com **HTTP 403 — Resource not accessible by integration**. Sem release publicada, o programa não tem um novo pacote confiável para instalar e **não consegue completar uma atualização automática**.
+
+Para habilitar a publicação, no GitHub do repositório acesse **Settings → Actions → General → Workflow permissions**, selecione **Read and write permissions** e salve. O workflow já pede somente `contents: write`; se a conta/organização bloquear essa configuração, use um token de acesso com permissão **Contents: Read and write** restrita a este repositório como secret **EA_RELEASE_TOKEN** em **Settings → Secrets and variables → Actions**. Jamais publique o token em código, logs ou arquivos de configuração. Depois execute novamente o workflow **Publicar atualizacoes EngenhariaArquitetura**. Não há permissão de administração disponível na integração atual para alterar essa opção diretamente.

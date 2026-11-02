@@ -110,7 +110,7 @@ jobs:
           path: release-assets
       - name: Publicar release e checksums
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.EA_RELEASE_TOKEN || github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
