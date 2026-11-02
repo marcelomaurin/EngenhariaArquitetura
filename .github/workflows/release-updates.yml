@@ -15,8 +15,23 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: engenhariaarquitetura-release-main
+  cancel-in-progress: true
+
 jobs:
+  metadata:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: version
+        run: |
+          base=$(sed -n 's/^AppVersion=//p' installer/VERSION.ini | tr -d '\r')
+          echo "version=${base}.${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
   linux:
+    needs: metadata
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -40,7 +55,7 @@ jobs:
           mkdir -p dist/linux-package/bin dist/linux-package/updater/linux
           cp bin/engenhariaarquitetura bin/cad2d bin/planejador dist/linux-package/bin/
           cp updater/linux/update.py dist/linux-package/updater/linux/
-          printf '0.02.%s\n' "$GITHUB_RUN_NUMBER" > dist/linux-package/release-version.txt
+          printf '%s\n' "${{ needs.metadata.outputs.version }}" > dist/linux-package/release-version.txt
           tar -czf dist/engenhariaarquitetura-linux-x86_64.tar.gz -C dist/linux-package .
           cd dist
           sha256sum engenhariaarquitetura-linux-x86_64.tar.gz > engenhariaarquitetura-linux-x86_64.tar.gz.sha256
@@ -53,6 +68,7 @@ jobs:
           if-no-files-found: error
 
   windows:
+    needs: metadata
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -70,7 +86,7 @@ jobs:
           ) | Out-Null
           if ($errors.Count -gt 0) { throw ($errors | Out-String) }
           $seq = '{0:000}' -f ([int]$env:GITHUB_RUN_NUMBER % 1000)
-          & ./installer/windows/build_release.ps1 -Version "0.02.$env:GITHUB_RUN_NUMBER" -SetupSeq $seq
+          & ./installer/windows/build_release.ps1 -Version "${{ needs.metadata.outputs.version }}" -SetupSeq $seq
           if ($LASTEXITCODE -ne 0) { throw 'Falha no instalador Windows' }
       - uses: actions/upload-artifact@v4
         with:
@@ -79,8 +95,8 @@ jobs:
           if-no-files-found: error
 
   publicar:
-    if: ${{ always() && needs.linux.result == 'success' }}
-    needs: [linux, windows]
+    if: ${{ always() && needs.metadata.result == 'success' && needs.linux.result == 'success' }}
+    needs: [metadata, linux, windows]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/download-artifact@v4
@@ -104,7 +120,7 @@ jobs:
           windows=(setup_engenhariaarquitetura_*.exe)
           if (( ${#windows[@]} > 0 )); then assets+=("${windows[@]}"); fi
           sha256sum "${assets[@]}" > SHA256SUMS
-          tag="v0.02.${GITHUB_RUN_NUMBER}"
+          tag="v${{ needs.metadata.outputs.version }}"
           gh release create "$tag" *.tar.gz *.sha256 SHA256SUMS "${windows[@]}" \
             --target "${GITHUB_SHA}" --title "EngenhariaArquitetura $tag" --latest \
             --notes "Compilacao automatica da branch main. Somente pacotes presentes nesta release sao atualizaveis. Conferir testes antes de usar em producao."
