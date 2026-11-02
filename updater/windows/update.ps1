@@ -50,7 +50,8 @@ try {
     if ((-not $Manual) -and (Test-Path $Status)) {
         try {
             $old = Get-Content $Status -Raw | ConvertFrom-Json
-            if (([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() - [long]$old.last_check) -lt 86400) {
+            if (([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() - [long]$old.last_check) -lt 86400 -and
+                ([string]$old.status -notmatch 'aguardando')) {
                 exit 0
             }
         } catch { }
