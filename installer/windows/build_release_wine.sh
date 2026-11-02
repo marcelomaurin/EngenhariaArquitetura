@@ -39,6 +39,7 @@ CORE="$ROOT/third_party/chatgpt/AIProjectCore"
 
 TARGETS=(
   "planejador/src/app/planejador|planejador"
+  "cad2d/src/app/cad2d|cad2d"
   "launcher/src/app/engenhariaarquitetura|engenhariaarquitetura"
 )
 for t in "${TARGETS[@]}"; do
