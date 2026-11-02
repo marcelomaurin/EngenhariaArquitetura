@@ -11,11 +11,11 @@ type
     FTitle, FSubtitle, FStatus: TLabel;
     FSection: Integer;
     FUpdateTimer: TTimer;
+    FNavButtons: array[0..3] of TSpeedButton;
     procedure UpdateTick(Sender: TObject);
     procedure CheckUpdates(Sender: TObject);
     procedure StartUpdateCheck(AManual: Boolean);
     function UpdaterPath: string;
-    FNavButtons: array[0..3] of TSpeedButton;
     procedure BuildInterface;
     procedure Navigate(Sender: TObject);
     procedure ShowSection(AIndex: Integer);
