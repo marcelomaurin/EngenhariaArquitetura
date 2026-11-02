@@ -27,6 +27,12 @@ Cada pasta tem um README com o resumo do aplicativo. A documentação completa, 
 
 O launcher independente em [`launcher/`](launcher/README.md) segue o catálogo do MultiSuite: relaciona sete softwares, mostra a disponibilidade dos executáveis e abre programas instalados. Os módulos ainda não compilados ficam indisponíveis. A homologação Windows/Linux está pendente.
 
+## Atualização automática pelo GitHub
+
+A **Central de Aplicativos** verifica novas releases estáveis ao abrir e possui o comando **Verificar atualizações**. Pacotes publicados são verificados por SHA-256; o código-fonte do Git **não** é aplicado diretamente sobre os executáveis. No Windows a atualização usa o instalador e aguarda os programas fecharem (pode solicitar UAC); no Linux x86_64 usa uma instalação versionada na pasta do usuário.
+
+A publicação automática é disparada por alterações na branch `main` e depende de compilações bem-sucedidas. Se uma plataforma não gerar pacote, ela não será atualizada. Veja [instruções, status e limitações](docs/Atualizacao_Automatica.md).
+
 ## Instalação
 
 O instalador para Windows 64 bits e os executáveis ficam em [`bin/`](bin/), como no MultiCNC:
