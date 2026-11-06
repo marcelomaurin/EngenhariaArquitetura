@@ -1,0 +1,22 @@
+[
+  {
+    "test": "test_planejador_core",
+    "passed": true,
+    "summary": "52 verificações, 0 falhas"
+  },
+  {
+    "test": "test_cad2d_import",
+    "passed": true,
+    "summary": "Total de verificacoes: 22 | Falhas: 0"
+  },
+  {
+    "test": "test_cad2d_ui",
+    "passed": true,
+    "summary": "PASS: all tabs opened"
+  },
+  {
+    "test": "test_cad2d_commands",
+    "passed": true,
+    "summary": "TOTAL: 33 checks passed"
+  }
+]
