@@ -213,3 +213,34 @@ A largura gráfica dos segmentos do tipo **Parede** acompanha a ampliação do v
 ## Indicação visual de vãos de portas e janelas
 
 Os objetos lineares Porta e Janela desenham uma faixa branca sob o traço colorido, sugerindo uma abertura quando sobrepostos a uma parede previamente desenhada. **É apenas uma indicação gráfica**: ainda não corta o objeto parede, não calcula união/interseção arquitetônica e depende da ordem de renderização (paredes posteriores podem cobrir a faixa). O modelo precisa evoluir para paredes com faces e aberturas vinculadas antes de exportar informação confiável à Maquete 3D.
+
+## Importação de Arquivos DWG, DXF e IFC (BIM)
+
+O CAD 2D conta com integração ao subsistema de importação e interoperabilidade (`cad2d/src/io/cad2d_importador.pas`):
+
+- **AutoCAD DXF (RFI-005, RFI-006, RF2D-011):**
+  - Leitor nativo de seções `ENTITIES` (`LINE`, `LWPOLYLINE`, `CIRCLE`, `ARC`).
+  - Reconhecimento automático de camadas para classificação arquitetônica: camadas contendo `WALL`, `PAREDE` ou `ALVENARIA` viram entidades do tipo Parede; camadas `DOOR`/`PORTA` viram Portas; camadas `WINDOW`/`JANELA` viram Janelas. Elementos estruturais e de instalações são mapeados para suas respectivas camadas.
+  - Enquadramento automático (*Fit to bounds*) com ajuste de zoom e pan.
+
+- **AutoCAD DWG (RFI-001, RFI-013, RF2D-011):**
+  - Detecção exata de versão do arquivo pelos *magic bytes* no cabeçalho binário (AutoCAD 2000 até 2024: `AC1015`, `AC1018`, `AC1021`, `AC1024`, `AC1027`, `AC1032`).
+  - Adaptador para conversores CLI (`dwg2dxf` do LibreDWG ou ODA File Converter), convertendo de forma transparente para DXF temporário quando o utilitário estiver presente.
+  - Diagnóstico com relatório informativo (RFI-007) quando conversores externos não estiverem no PATH.
+
+- **Modelos BIM IFC (ISO 16739 / STEP, RF2D-017, I7):**
+  - Leitura estruturada STEP (ISO 10303-21) identificando pavimentos (`IFCBUILDINGSTOREY`).
+  - Extração de projeções 2D no plano do pavimento selecionado para `IFCWALL`, `IFCDOOR` e `IFCWINDOW`.
+  - Conversão de medidas e distribuição paramétrica na planta baixa.
+
+- **Relatório de Importação e Rastreabilidade (RFI-007, RFI-009):**
+  - Registro de origem com caminho do arquivo e cálculo do hash SHA-1.
+  - Relatório consolidado com quantidade de paredes, portas, janelas e linhas gerais importadas, além de contagem de entidades ignoradas e avisos.
+
+## Interface reorganizada — 06/11/2026
+
+Ribbon por tarefas, canvas escuro, propriedades da seleção e controles de precisão, seguindo o padrão visual do MultiCNC. Consulte [alterações, testes e limitações](../docs/UI_CAD2D_2026-11-06.md). Esta seção complementa o histórico acima; recursos da especificação não equivalem a funcionalidades já implementadas.
+
+## Comandos, propriedades, texto e cotas — 06/11/2026
+
+O editor agora inclui propriedades editáveis, seleção de grupos, polilinha/arco/elipse/polígono, Stretch, escala, array retangular, texto, cotas alinhadas e símbolos 2D de planta baixa. Grava EACAD4 e lê EACAD1–3. Consulte [uso, pesquisa Autodesk, validação e limitações](../docs/CAD2D_Comandos_2026-11-06.md). Essa revisão substitui as descrições históricas de persistência e recursos acima.

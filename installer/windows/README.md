@@ -51,3 +51,9 @@ Os próximos aplicativos da plataforma entram como novos componentes em `engenha
 ## Validação
 
 Não distribuir um instalador se a compilação ou os testes falharem. A versão 0.01 (sequência 001) e a 0.02 (002) foram geradas no Linux pelo `build_release_wine.sh` e testadas no Wine: assistente em português, instalação completa, atalhos, abertura do Planejador instalado com o exemplo e desinstalação. O `build_release.ps1` segue os mesmos passos, mas ainda não foi executado no Windows.
+
+## Versão 0.03 / sequência 003
+
+Inclui Central de Aplicativos, CAD 2D atualizado e Planejador; CAD 2D integra as instalações completa e básica, com atalho no menu Iniciar e atalho opcional na área de trabalho. A instalação completa inclui a planta demonstrativa EACAD4 e documentação. As quatro suítes de testes (Planejador, importação CAD, interface CAD e comandos CAD) são executadas antes do empacotamento.
+
+Para o Lazarus de 32 bits disponível nesta máquina: build_release.ps1 -Version 0.03 -SetupSeq 003 -TargetCPU i386 -AllowDirty. Os executáveis são x86 e o instalador continua destinado ao Windows x64; o manifesto registra arch=x86 e source_dirty=true. O alvo padrão do script continua x86_64. A geração e integridade foram verificadas; não foi feita instalação no Windows do usuário.

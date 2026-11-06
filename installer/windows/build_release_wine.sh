@@ -84,6 +84,9 @@ cp docs/*.md "$APP/documentation/docs/"
 cp planejador/README.md "$APP/documentation/Planejador_README.md"
 cp planejador/examples/*.plan.json "$APP/exemplos/"
 cp third_party/chatgpt/LICENSE "$APP/licencas/CHATGPT_LICENSE.txt"
+cp -R samples "$APP/samples"
+mkdir -p "$APP/updater/windows"
+cp updater/windows/update.ps1 "$APP/updater/windows/"
 
 CLEAN=--require-clean; [ "$ALLOW_DIRTY" = "--allow-dirty" ] && CLEAN=
 python3 tools/release_manifest.py --app-dir "$APP" --version "$VERSION" --seq "$SEQ" \

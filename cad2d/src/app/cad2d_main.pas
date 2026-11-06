@@ -2,19 +2,48 @@ unit cad2d_main;
 {$mode objfpc}{$H+}
 interface
 uses Classes, SysUtils, Forms, Controls, ExtCtrls, StdCtrls, Menus,
-  Graphics, Types, Math, Dialogs;
+  Graphics, Types, Math, Dialogs, ComCtrls, ValEdit, LCLType, cad2d_importador, cad2d_controls;
 type
+  TCADPoints = array of TPoint;
   TCADLine = record
     A, B: TPoint;
     Layer: Integer;
     Kind: Integer; // 0 linha, 1 retangulo, 2 parede, 3 porta, 4 janela
     WidthMM: Integer;
     GroupID: Integer;
+    Ink, Weight: Integer;
+    Content: string;
   end;
   TCADMainForm = class(TForm)
   private
     FCanvas: TPaintBox;
-    FStatus: TLabel;
+    FPropertyEditor: TValueListEditor;
+    FPicked: array of Integer;
+    FArcCenter: TPoint;
+    FArcStage: Integer;
+    procedure AdvancedEdit(Sender: TObject);
+    procedure ApplyProperties(Sender: TObject);
+    procedure UpdatePropertyEditor;
+    function IsPicked(Index: Integer): Boolean;
+    procedure AddArc(const Center, StartPoint, EndPoint: TPoint);
+    procedure AddAnnotation(const A,B: TPoint; const AText: string; Dimension: Boolean);
+    procedure PaintAnnotation(const E: TCADLine);
+    procedure AddPlanComponent(Tool: Integer; const A,B: TPoint);
+  private
+    FStatus, FCoordinates, FProperties, FDocument: TLabel;
+    FGridCheck, FSnapCheck, FOrthoCheck: TCheckBox;
+    FPropertiesPanel, FLibrary: TScrollBox;
+    FPropertiesToggle: TButton;
+    FLibraryGroups, FLibraryItems: array[0..1] of TPanel;
+    FLibraryHeaders: array[0..1] of TButton;
+    procedure ToggleProperties(Sender: TObject);
+    procedure ToggleLibraryGroup(Sender: TObject);
+    procedure LayoutLibrary;
+    procedure ChooseTool(Sender: TObject);
+    procedure ViewOptionsChanged(Sender: TObject);
+    procedure FitView(Sender: TObject);
+    procedure Shortcut(Sender: TObject; var Key: Word; Shift: TShiftState);
+  private
     FLayerSelect, FToolSelect: TComboBox;
     FLines: array of TCADLine;
     FHasStart: Boolean;
@@ -61,95 +90,331 @@ type
     procedure ToggleDimensions(Sender: TObject);
     procedure SaveDrawing(Sender: TObject);
     procedure OpenDrawing(Sender: TObject);
+    procedure ImportDWGDXF(Sender: TObject);
+    procedure ImportIFCDrawing(Sender: TObject);
+    procedure ApplyImportedEntities(const AEntities: array of TImportedEntity; ACount: Integer);
+    procedure FitDrawingToBounds;
     procedure UndoLine(Sender: TObject);
     procedure EditLastObject(Sender: TObject);
     function Snap(P: TPoint): TPoint;
     procedure RefreshStatus(const S: string);
   public
+    procedure ExportProject(const FileName: string; AsSVG: Boolean);
+    procedure StretchWindow(const Bounds:TRect; DX,DY:Integer);
+    procedure SaveProject(const FileName: string);
+    procedure LoadProject(const FileName: string);
+    procedure EditSelection(Mode: Integer; X,Y: Double; Rows: Integer=1; Cols: Integer=1);
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
   end;
 var CADMainForm: TCADMainForm;
 implementation
+{$I cad2d_editing.inc}
+{$I cad2d_export.inc}
 constructor TCADMainForm.Create(AOwner: TComponent);
-var TopBar, Footer: TPanel; B: TButton;
-  procedure AddButton(const Caption: string; Action: TNotifyEvent);
+var Header, Footer, ModelBar: TPanel; Side: TScrollBox;
+  Ribbon: TPageControl; Page: TTabSheet; Strip: TScrollBox;
+  Group: TPanel; B: TCADCommandButton; L: TLabel; ApplyButton: TButton;
+  GX, BI, LibraryIndex: Integer;
+  procedure LabelAt(ParentControl: TWinControl; const Text: string; Y: Integer);
   begin
-    B := TButton.Create(Self); B.Parent := TopBar; B.Align := alLeft;
-    B.Width := 125; B.Caption := Caption; B.OnClick := Action;
+    L := TLabel.Create(Self); L.Parent := ParentControl;
+    L.SetBounds(16,Y,220,24); L.Caption := Text;
+  end;
+  procedure Tab(const Text: string);
+  begin
+    Page := TTabSheet.Create(Self); Page.PageControl := Ribbon;
+    Page.Caption := Text;
+    Strip := TScrollBox.Create(Self); Strip.Parent := Page;
+    Strip.Align := alClient; Strip.BorderStyle := bsNone;
+    Strip.VertScrollBar.Visible := False; Strip.Color := RGBToColor(47,57,71); GX := 8;
+  end;
+  procedure Section(const Text: string; Columns: Integer);
+  begin
+    Group := TPanel.Create(Self); Group.Parent := Strip;
+    Group.BevelOuter := bvNone; Group.Color := RGBToColor(47,57,71);
+    Group.SetBounds(GX,4,Columns*180+16,104);
+    L := TLabel.Create(Self); L.Parent := Group; L.Align := alBottom;
+    L.AutoSize := False; L.Height := 20; L.Alignment := taCenter;
+    L.Caption := Text; L.Font.Size := 8; L.Font.Color := RGBToColor(148,163,184);
+    Inc(GX,Group.Width+8); BI := 0;
+  end;
+  procedure Button(const Text: string; Action: TNotifyEvent; ATag: Integer = 0);
+  begin
+    B := TCADCommandButton.Create(Self); B.Parent := Group;
+    B.SetBounds(8+BI*90,2,86,78);
+    B.Caption := Text; B.OnClick := Action; B.Tag := ATag;
+    B.Hint := Text; B.ShowHint := True;
+    if (Text='Linha') or (Text='Retângulo') or (Text='Círculo') or
+       (Text='Parede') or (Text='Porta') or (Text='Janela') or (Text='Selecionar') or
+       (Text='Polilinha') or (Text='Arco') or (Text='Texto') or (Text='Cota alinhada') then
+      B.ToolIndex := ATag;
+    B.Active := B.ToolIndex=0; Inc(BI);
+  end;
+  procedure LibraryGroup(const Text: string; Index: Integer; Expanded: Boolean);
+  begin
+    LibraryIndex := Index; BI := 0;
+    FLibraryGroups[Index] := TPanel.Create(Self);
+    with FLibraryGroups[Index] do begin
+      Parent := FLibrary; BevelOuter := bvNone;
+      Color := RGBToColor(47,57,71); SetBounds(0,0,110,32);
+    end;
+    FLibraryHeaders[Index] := TButton.Create(Self);
+    with FLibraryHeaders[Index] do begin
+      Parent := FLibraryGroups[Index]; SetBounds(2,0,106,30);
+      Name := 'LibraryGroup'+IntToStr(Index); Tag := Index;
+      Hint := Text+' — expandir / recolher'; ShowHint := True;
+      OnClick := @ToggleLibraryGroup;
+    end;
+    FLibraryItems[Index] := TPanel.Create(Self);
+    with FLibraryItems[Index] do begin
+      Parent := FLibraryGroups[Index]; SetBounds(0,32,110,0);
+      BevelOuter := bvNone; Color := RGBToColor(47,57,71);
+      Visible := Expanded;
+    end;
+  end;
+  procedure LibraryTool(const Text: string; Index: Integer);
+  begin
+    B := TCADCommandButton.Create(Self); B.Parent := FLibraryItems[LibraryIndex];
+    B.SetBounds(5,4+BI*84,100,78);
+    B.Caption := Text; B.Tag := Index; B.ToolIndex := Index;
+    B.Active := Index=0; B.OnClick := @ChooseTool;
+    B.ShowHint := True; B.Hint := Text+' — clique e marque os pontos no desenho';
+    Inc(BI); FLibraryItems[LibraryIndex].Height := BI*84+8;
+  end;
+  procedure Check(var C: TCheckBox; const Text: string; X: Integer; Value: Boolean);
+  begin
+    C := TCheckBox.Create(Self); C.Parent := ModelBar;
+    C.SetBounds(X,5,94,26); C.Caption := Text; C.Checked := Value;
+    C.OnChange := @ViewOptionsChanged;
   end;
 begin
   inherited CreateNew(AOwner, 1);
-  Caption := 'CAD Arquitetônico 2D — desenho inicial';
-  Width := 1100; Height := 730; Position := poScreenCenter;
-  Constraints.MinWidth := 700; Constraints.MinHeight := 480;
-  Color := RGBToColor(244,246,250); Font.Size := 10;
-  FGrid := 20;
-  FSelected := -1;
-  FZoom := 1.0;
-  FPanX := 0; FPanY := 0;
-  FShowDimensions := False;
-  FNextGroup := 1;
-  FHistoryUndo := TStringList.Create;
-  FHistoryRedo := TStringList.Create;
-  FMillimetersPerPixel := 50; // grade de 20 pixels equivale a 1 metro
-  TopBar := TPanel.Create(Self); TopBar.Parent := Self; TopBar.Align := alTop;
-  TopBar.Height := 48; TopBar.BevelOuter := bvNone;
-  AddButton('Exportar DXF', @ExportDXF);
-  AddButton('Exportar SVG', @ExportSVG);
-  AddButton('Medir seleção', @MeasureSelected);
-  AddButton('Exibir cotas', @ToggleDimensions);
-  AddButton('Desfazer', @UndoHistory);
-  AddButton('Refazer', @RedoHistory);
-  AddButton('Novo desenho', @NewDrawing);
-  AddButton('Salvar projeto', @SaveDrawing);
-  AddButton('Abrir projeto', @OpenDrawing);
-  AddButton('Editar último', @EditLastObject);
-  AddButton('Excluir seleção', @DeleteSelected);
-  AddButton('Mover seleção', @TransformSelected);
-  B.Tag := 0;
-  AddButton('Copiar seleção', @TransformSelected);
-  B.Tag := 1;
-  AddButton('Girar seleção', @RotateSelected);
-  AddButton('Espelhar X', @MirrorSelected); B.Tag := 0;
-  AddButton('Espelhar Y', @MirrorSelected); B.Tag := 1;
-  AddButton('Offset seleção', @OffsetSelected);
-  AddButton('Estender até linha', @ExtendSelected);
-  AddButton('Aparar (Trim)', @TrimSelected);
-  AddButton('Chanfro', @ChamferSelected);
-  AddButton('Arredondar canto', @FilletSelected);
-  AddButton('Zoom +', @ZoomDrawing); B.Tag := 1;
-  AddButton('Zoom -', @ZoomDrawing); B.Tag := -1;
-  AddButton('Pan esquerda', @PanDrawing); B.Tag := 1;
-  AddButton('Pan direita', @PanDrawing); B.Tag := 2;
-  AddButton('Pan cima', @PanDrawing); B.Tag := 3;
-  AddButton('Pan baixo', @PanDrawing); B.Tag := 4;
-  FLayerSelect := TComboBox.Create(Self); FLayerSelect.Parent := TopBar;
-  FLayerSelect.Align := alRight; FLayerSelect.Width := 150;
-  FLayerSelect.Style := csDropDownList;
-  FLayerSelect.Items.Add('Arquitetura');
-  FLayerSelect.Items.Add('Estrutura');
-  FLayerSelect.Items.Add('Instalações');
-  FLayerSelect.ItemIndex := 0; FLayerSelect.OnChange := @SelectionChanged;
-  FToolSelect := TComboBox.Create(Self); FToolSelect.Parent := TopBar;
-  FToolSelect.Align := alRight; FToolSelect.Width := 135;
-  FToolSelect.Style := csDropDownList;
-  FToolSelect.Items.Add('Linha'); FToolSelect.Items.Add('Retângulo');
-  FToolSelect.Items.Add('Parede'); FToolSelect.Items.Add('Porta');
-  FToolSelect.Items.Add('Janela');
-  FToolSelect.Items.Add('Selecionar');
-  FToolSelect.Items.Add('Círculo');
-  FToolSelect.ItemIndex := 0; FToolSelect.OnChange := @SelectionChanged;
+  Caption := 'CAD 2D | Engenharia e Arquitetura';
+  Width := 1280; Height := 820; Position := poScreenCenter;
+  Constraints.MinWidth := 960; Constraints.MinHeight := 640;
+  Color := RGBToColor(244,246,250); Font.Name := 'Segoe UI'; Font.Size := 10;
+  KeyPreview := True; OnKeyDown := @Shortcut;
+  FGrid := 20; FSelected := -1; FZoom := 1.0;
+  FPanX := 0; FPanY := 0; FShowDimensions := False; FNextGroup := 1;
+  FHistoryUndo := TStringList.Create; FHistoryRedo := TStringList.Create;
+  FMillimetersPerPixel := 50;
+
+  Header := TPanel.Create(Self); Header.Parent := Self; Header.Align := alTop;
+  Header.Height := 72; Header.BevelOuter := bvNone;
+  Header.Color := RGBToColor(15,23,42);
+  LabelAt(Header,'CAD 2D',10); L.Font.Size := 18; L.Font.Style := [fsBold];
+  L.Font.Color := clWhite;
+  LabelAt(Header,'Engenharia e Arquitetura  /  Plantas baixas',43);
+  L.Font.Color := RGBToColor(148,163,184);
+
+  Ribbon := TPageControl.Create(Self); Ribbon.Name := 'CommandRibbon';
+  Ribbon.Parent := Self; Ribbon.Align := alTop; Ribbon.Height := 148;
+  Ribbon.Top := Header.Height;
+  Tab('Início');
+  Section('Projeto',2);
+  Button('Novo',@NewDrawing); Button('Abrir',@OpenDrawing);
+  Button('Salvar',@SaveDrawing); Button('Selecionar',@ChooseTool,5);
+  Section('Desenhar',2);
+  Button('Linha',@ChooseTool,0); Button('Retângulo',@ChooseTool,1);
+  Button('Círculo',@ChooseTool,6); Button('Parede',@ChooseTool,2);
+  Section('Planta baixa',1);
+  Button('Porta',@ChooseTool,3); Button('Janela',@ChooseTool,4);
+  Section('Histórico',1);
+  Button('Desfazer',@UndoHistory); Button('Refazer',@RedoHistory);
+  Tab('Desenhar');
+  Section('Formas',3);
+  Button('Linha',@ChooseTool,0); Button('Polilinha',@ChooseTool,7);
+  Button('Retângulo',@ChooseTool,1); Button('Círculo',@ChooseTool,6);
+  Button('Arco',@ChooseTool,8);
+  Section('Contornos',2); Button('Elipse',@ChooseTool,18);
+  Button('Polígono',@ChooseTool,19); Button('Hachura',@ChooseTool,20);
+  Tab('Modificar');
+  Section('Transformar',3);
+  Button('Mover',@AdvancedEdit,0); Button('Copiar',@AdvancedEdit,1);
+  Button('Girar',@AdvancedEdit,2); Button('Offset',@OffsetSelected);
+  Button('Espelhar X',@AdvancedEdit,5); Button('Espelhar Y',@AdvancedEdit,6);
+  Section('Escala e repetição',2);
+  Button('Escala',@AdvancedEdit,3); Button('Stretch',@ChooseTool,17);
+  Button('Array',@AdvancedEdit,9);
+  Section('Ajustar',2);
+  Button('Aparar',@TrimSelected); Button('Estender',@ExtendSelected);
+  Button('Chanfro',@ChamferSelected); Button('Arredondar',@FilletSelected);
+  Section('Objeto',1);
+  Button('Excluir',@DeleteSelected); Button('Editar dimensão',@EditLastObject);
+  Section('Grupos',1);
+  Button('Agrupar',@AdvancedEdit,7); Button('Desagrupar',@AdvancedEdit,8);
+  Tab('Anotar');
+  Section('Anotações',1);
+  Button('Texto',@ChooseTool,9); Button('Cota alinhada',@ChooseTool,10);
+  Section('Medidas',1);
+  Button('Exibir / ocultar cotas',@ToggleDimensions); Button('Medir seleção',@MeasureSelected);
+  Tab('Visualizar');
+  Section('Enquadramento',2);
+  Button('Zoom +',@ZoomDrawing,1); Button('Zoom -',@ZoomDrawing,-1);
+  Button('Enquadrar tudo',@FitView);
+  Section('Deslocar vista',2);
+  Button('Esquerda',@PanDrawing,1); Button('Direita',@PanDrawing,2);
+  Button('Cima',@PanDrawing,3); Button('Baixo',@PanDrawing,4);
+  Tab('Importar / Exportar');
+  Section('Importar',1);
+  Button('DWG / DXF',@ImportDWGDXF); Button('IFC',@ImportIFCDrawing);
+  Section('Exportar',1);
+  Button('DXF',@ExportDXF); Button('SVG',@ExportSVG);
+  Ribbon.ActivePageIndex := 0;
+
   Footer := TPanel.Create(Self); Footer.Parent := Self; Footer.Align := alBottom;
   Footer.Height := 32; Footer.BevelOuter := bvNone; Footer.Color := clWhite;
   FStatus := TLabel.Create(Self); FStatus.Parent := Footer; FStatus.Align := alClient;
-  FStatus.BorderSpacing.Left := 12; FStatus.BorderSpacing.Top := 7;
+  FStatus.AutoSize := False; FStatus.Layout := tlCenter;
+  FStatus.BorderSpacing.Left := 12;
+  Side := TScrollBox.Create(Self); Side.Parent := Self; Side.Align := alRight;
+  FPropertiesPanel := Side; Side.Name := 'PropertiesPanel'; Side.Visible := False;
+  Side.Width := 248; Side.BorderStyle := bsNone; Side.Color := clWhite;
+  LabelAt(Side,'FERRAMENTA ATIVA',16); L.Font.Style := [fsBold];
+  FToolSelect := TComboBox.Create(Self); FToolSelect.Parent := Side;
+  FToolSelect.Name := 'ActiveTool'; FToolSelect.SetBounds(16,44,216,30);
+  FToolSelect.Style := csDropDownList;
+  FToolSelect.Items.Add('Linha'); FToolSelect.Items.Add('Retângulo');
+  FToolSelect.Items.Add('Parede'); FToolSelect.Items.Add('Porta');
+  FToolSelect.Items.Add('Janela'); FToolSelect.Items.Add('Selecionar');
+  FToolSelect.Items.Add('Círculo');
+  FToolSelect.Items.Add('Polilinha'); FToolSelect.Items.Add('Arco');
+  FToolSelect.Items.Add('Texto'); FToolSelect.Items.Add('Cota alinhada');
+  FToolSelect.Items.Add('Medir'); FToolSelect.Items.Add('Escada');
+  FToolSelect.Items.Add('Pilar'); FToolSelect.Items.Add('Cama');
+  FToolSelect.Items.Add('Sofá'); FToolSelect.Items.Add('Mesa');
+  FToolSelect.Items.Add('Stretch');
+  FToolSelect.Items.Add('Elipse'); FToolSelect.Items.Add('Polígono'); FToolSelect.Items.Add('Hachura');
+  FToolSelect.Items.Add('Vão'); FToolSelect.Items.Add('Vaso sanitário'); FToolSelect.Items.Add('Lavatório');
+  FToolSelect.ItemIndex := 0;
+  FToolSelect.OnChange := @SelectionChanged;
+  LabelAt(Side,'CAMADA ATIVA',96); L.Font.Style := [fsBold];
+  FLayerSelect := TComboBox.Create(Self); FLayerSelect.Parent := Side;
+  FLayerSelect.Name := 'ActiveLayer'; FLayerSelect.SetBounds(16,124,216,30);
+  FLayerSelect.Style := csDropDownList;
+  FLayerSelect.Items.Add('Arquitetura'); FLayerSelect.Items.Add('Estrutura');
+  FLayerSelect.Items.Add('Instalações'); FLayerSelect.ItemIndex := 0;
+  FLayerSelect.OnChange := @SelectionChanged;
+  LabelAt(Side,'PROPRIEDADES DA SELEÇÃO',182); L.Font.Style := [fsBold];
+  FProperties := TLabel.Create(Self); FProperties.Parent := Side;
+  FProperties.Name := 'SelectionProperties'; FProperties.AutoSize := False;
+  FProperties.SetBounds(16,214,216,188); FProperties.WordWrap := True; FProperties.Visible:=False;
+  FPropertyEditor:=TValueListEditor.Create(Self); FPropertyEditor.Parent:=Side;
+  FPropertyEditor.Name:='PropertyEditor'; FPropertyEditor.SetBounds(8,206,214,244);
+  FPropertyEditor.ColWidths[0]:=132; FPropertyEditor.ColWidths[1]:=75;
+  FPropertyEditor.TitleCaptions.Clear; FPropertyEditor.TitleCaptions.Add('Propriedade'); FPropertyEditor.TitleCaptions.Add('Valor');
+  ApplyButton:=TButton.Create(Self); ApplyButton.Parent:=Side;
+  ApplyButton.Name:='ApplyProperties'; ApplyButton.SetBounds(16,458,208,30);
+  ApplyButton.Caption:='Aplicar propriedades'; ApplyButton.OnClick:=@ApplyProperties;
+  LabelAt(Side,'Ctrl+clique: seleção múltipla',732); L.Font.Size := 9;
+  LabelAt(Side,'Dimensão: altura texto / afastamento cota',756); L.Font.Size := 9;
+
+  ModelBar := TPanel.Create(Self); ModelBar.Parent := Self; ModelBar.Align := alBottom;
+  ModelBar.Height := 36; ModelBar.BevelOuter := bvNone;
+  Check(FGridCheck,'Grade',12,True); Check(FSnapCheck,'Snap',108,True);
+  Check(FOrthoCheck,'Orto',204,False);
+  FCoordinates := TLabel.Create(Self); FCoordinates.Parent := ModelBar;
+  FCoordinates.SetBounds(310,10,390,24); FCoordinates.Caption := 'X: 0 mm   Y: 0 mm';
+  FPropertiesToggle := TButton.Create(Self); FPropertiesToggle.Parent := ModelBar;
+  FPropertiesToggle.Name := 'ToggleProperties'; FPropertiesToggle.Align := alRight;
+  FPropertiesToggle.Width := 160; FPropertiesToggle.Caption := 'Propriedades / camadas';
+  FPropertiesToggle.Hint := 'Exibir ou ocultar o painel (Ctrl+I)';
+  FPropertiesToggle.ShowHint := True; FPropertiesToggle.OnClick := @ToggleProperties;
+  FLibrary := TScrollBox.Create(Self); FLibrary.Name := 'PartsLibrary';
+  FLibrary.Parent := Self; FLibrary.Align := alLeft; FLibrary.Width := 132;
+  FLibrary.BorderStyle := bsNone; FLibrary.Color := RGBToColor(47,57,71);
+  FLibrary.HorzScrollBar.Visible := False; FLibrary.VertScrollBar.Tracking := True;
+  LibraryGroup('Formas',0,True);
+  LibraryTool('Selecionar',5); LibraryTool('Linha',0);
+  LibraryTool('Retângulo',1); LibraryTool('Círculo',6);
+  LibraryTool('Polilinha',7); LibraryTool('Arco',8); LibraryTool('Texto',9);
+  LibraryTool('Cota alinhada',10); LibraryTool('Medir',11);
+  LibraryTool('Elipse',18); LibraryTool('Polígono',19); LibraryTool('Hachura',20);
+  LibraryGroup('Peças',1,False);
+  LibraryTool('Parede',2); LibraryTool('Porta',3); LibraryTool('Janela',4);
+  LibraryTool('Escada',12); LibraryTool('Pilar',13); LibraryTool('Cama',14);
+  LibraryTool('Sofá',15); LibraryTool('Mesa',16);
+  LibraryTool('Vão',21); LibraryTool('Vaso sanitário',22); LibraryTool('Lavatório',23);
+  LayoutLibrary;
+  FDocument := TLabel.Create(Self); FDocument.Parent := Self; FDocument.Align := alTop;
+  FDocument.Top := Header.Height+Ribbon.Height; FDocument.AutoSize := False;
+  FDocument.Height := 30; FDocument.Layout := tlCenter; FDocument.BorderSpacing.Left := 12;
   FCanvas := TPaintBox.Create(Self); FCanvas.Parent := Self;
-  FCanvas.Align := alClient;
+  FCanvas.Name := 'DrawingCanvas'; FCanvas.Align := alClient; FCanvas.Cursor := crCross;
   FCanvas.OnPaint := @PaintDrawing; FCanvas.OnMouseDown := @CanvasClick;
   FCanvas.OnMouseMove := @MouseMoveDrawing;
-  RefreshStatus('Clique para começar uma linha. Botão direito cancela.');
+  RefreshStatus('Clique em dois pontos para desenhar.');
 end;
+
+procedure TCADMainForm.ToggleProperties(Sender: TObject);
+begin
+  FPropertiesPanel.Visible := not FPropertiesPanel.Visible;
+  if FPropertiesPanel.Visible then FPropertiesToggle.Caption := 'Ocultar propriedades'
+  else FPropertiesToggle.Caption := 'Propriedades / camadas';
+end;
+
+procedure TCADMainForm.LayoutLibrary;
+const Titles: array[0..1] of string = ('Formas','Peças');
+var I, Y: Integer;
+begin
+  FLibrary.VertScrollBar.Position := 0; Y := 4;
+  for I := 0 to 1 do begin
+    if FLibraryItems[I].Visible then begin
+      FLibraryGroups[I].Height := 32+FLibraryItems[I].Height;
+      FLibraryHeaders[I].Caption := '−  '+Titles[I];
+    end else begin
+      FLibraryGroups[I].Height := 32;
+      FLibraryHeaders[I].Caption := '+  '+Titles[I];
+    end;
+    FLibraryGroups[I].Top := Y;
+    Inc(Y,FLibraryGroups[I].Height+4);
+  end;
+end;
+
+procedure TCADMainForm.ToggleLibraryGroup(Sender: TObject);
+var Index: Integer;
+begin
+  Index := TControl(Sender).Tag;
+  FLibraryItems[Index].Visible := not FLibraryItems[Index].Visible;
+  LayoutLibrary;
+end;
+
+procedure TCADMainForm.ChooseTool(Sender: TObject);
+begin
+  FToolSelect.ItemIndex := TControl(Sender).Tag;
+  SelectionChanged(FToolSelect);
+end;
+
+procedure TCADMainForm.ViewOptionsChanged(Sender: TObject);
+begin
+  if Assigned(FCanvas) then begin
+    FCanvas.Invalidate; RefreshStatus('Precisão atualizada');
+  end;
+end;
+
+procedure TCADMainForm.FitView(Sender: TObject);
+begin
+  FitDrawingToBounds; FCanvas.Invalidate; RefreshStatus('Desenho enquadrado');
+end;
+
+procedure TCADMainForm.Shortcut(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if Key = VK_ESCAPE then begin
+    if FHasStart then Inc(FNextGroup); FHasStart := False; FArcStage:=0; FCanvas.Invalidate; RefreshStatus('Comando cancelado'); Key := 0;
+  end;
+  if Shift <> [ssCtrl] then Exit;
+  case Key of
+    VK_I: ToggleProperties(Self);
+    VK_Z: UndoHistory(Self);
+    VK_Y: RedoHistory(Self);
+    VK_S: SaveDrawing(Self);
+    VK_O: OpenDrawing(Self);
+  else Exit;
+  end;
+  Key := 0;
+end;
+
 destructor TCADMainForm.Destroy;
 begin
   FHistoryRedo.Free;
@@ -158,12 +423,16 @@ begin
 end;
 function TCADMainForm.Snap(P: TPoint): TPoint;
 begin
+  if not FSnapCheck.Checked then begin
+    Result := Point(Round((P.X-FPanX)/FZoom),Round((P.Y-FPanY)/FZoom));
+    Exit;
+  end;
   Result.X := Round((P.X-FPanX) / (FGrid * FZoom)) * FGrid;
   Result.Y := Round((P.Y-FPanY) / (FGrid * FZoom)) * FGrid;
 end;
 procedure TCADMainForm.PanDrawing(Sender: TObject);
 begin
-  case TButton(Sender).Tag of
+  case TControl(Sender).Tag of
     1: Dec(FPanX,40);
     2: Inc(FPanX,40);
     3: Dec(FPanY,40);
@@ -174,7 +443,7 @@ begin
 end;
 procedure TCADMainForm.ZoomDrawing(Sender: TObject);
 begin
-  if TButton(Sender).Tag > 0 then FZoom := Min(4.0, FZoom * 1.25)
+  if TControl(Sender).Tag > 0 then FZoom := Min(4.0, FZoom * 1.25)
   else FZoom := Max(0.5, FZoom / 1.25);
   FCanvas.Invalidate;
   RefreshStatus('Zoom ajustado para ' + IntToStr(Round(FZoom*100)) + '%');
@@ -182,39 +451,18 @@ end;
 function TCADMainForm.Snapshot: string;
 var I: Integer;
 begin
-  Result := IntToStr(FNextGroup) + '|' + IntToStr(Length(FLines));
-  for I := 0 to High(FLines) do
-    Result := Result + '|' + Format('%d,%d,%d,%d,%d,%d,%d,%d',
-      [FLines[I].A.X,FLines[I].A.Y,FLines[I].B.X,FLines[I].B.Y,
-       FLines[I].Layer,FLines[I].Kind,FLines[I].WidthMM,FLines[I].GroupID]);
+  Result:=IntToStr(FNextGroup);
+  for I:=0 to High(FLines) do Result:=Result+LineEnding+EntityRow(FLines[I]);
 end;
 procedure TCADMainForm.RestoreSnapshot(const Value: string);
-var Parts, Fields: TStringList; I, N: Integer;
+var L: TStringList; I: Integer;
 begin
-  Parts := TStringList.Create; Fields := TStringList.Create;
+  L:=TStringList.Create;
   try
-    Parts.Delimiter := '|'; Parts.StrictDelimiter := True;
-    Parts.DelimitedText := Value;
-    if Parts.Count < 2 then Exit;
-    N := StrToInt(Parts[1]);
-    if (N < 0) or (N > 200000) or (Parts.Count <> N+2) then Exit;
-    SetLength(FLines,N);
-    Fields.Delimiter := ','; Fields.StrictDelimiter := True;
-    for I := 0 to N-1 do begin
-      Fields.DelimitedText := Parts[I+2];
-      if Fields.Count <> 8 then Exit;
-      FLines[I].A.X := StrToInt(Fields[0]);
-      FLines[I].A.Y := StrToInt(Fields[1]);
-      FLines[I].B.X := StrToInt(Fields[2]);
-      FLines[I].B.Y := StrToInt(Fields[3]);
-      FLines[I].Layer := StrToInt(Fields[4]);
-      FLines[I].Kind := StrToInt(Fields[5]);
-      FLines[I].WidthMM := StrToInt(Fields[6]);
-      FLines[I].GroupID := StrToInt(Fields[7]);
-    end;
-    FNextGroup := StrToInt(Parts[0]);
-    FSelected := -1; FCanvas.Invalidate;
-  finally Fields.Free; Parts.Free; end;
+    L.Text:=Value; FNextGroup:=StrToInt(L[0]); SetLength(FLines,L.Count-1);
+    for I:=0 to High(FLines) do FLines[I]:=ReadEntity(L[I+1],4,I);
+    FSelected:=-1; SetLength(FPicked,0); FHasStart:=False; FArcStage:=0; FCanvas.Invalidate;
+  finally L.Free; end;
 end;
 procedure TCADMainForm.RecordChange;
 begin
@@ -241,21 +489,28 @@ begin
   RestoreSnapshot(V); RefreshStatus('Alteração refeita');
 end;
 procedure TCADMainForm.SelectionChanged(Sender: TObject);
+var I: Integer;
 begin
-  FHasStart := False;
+  for I := 0 to ComponentCount-1 do
+    if Components[I] is TCADCommandButton then
+      with TCADCommandButton(Components[I]) do
+        Active := (ToolIndex >= 0) and (ToolIndex=FToolSelect.ItemIndex);
+  if FHasStart then Inc(FNextGroup);
+  FHasStart := False; FArcStage:=0;
   FCanvas.Invalidate;
-  RefreshStatus('Ferramenta ou camada alterada');
+  RefreshStatus('Ferramenta: '+FToolSelect.Text+' — botão direito termina/cancela');
 end;
 procedure TCADMainForm.AddSegment(const A, B: TPoint);
 var N: Integer;
 begin
   if (A.X = B.X) and (A.Y = B.Y) then Exit;
   N := Length(FLines); SetLength(FLines, N+1);
+  FLines[N]:=Default(TCADLine);
   FLines[N].A := A; FLines[N].B := B;
   FLines[N].Layer := FLayerSelect.ItemIndex;
   FLines[N].GroupID := FNextGroup;
   FLines[N].Kind := FToolSelect.ItemIndex;
-  if FLines[N].Kind = 1 then FLines[N].Kind := 0;
+  if not (FLines[N].Kind in [2,3,4]) then FLines[N].Kind := 0;
   case FLines[N].Kind of
     2: FLines[N].WidthMM := 150;
     3: FLines[N].WidthMM := 900;
@@ -284,56 +539,86 @@ begin
 end;
 procedure TCADMainForm.RefreshStatus(const S: string);
 begin
-  FStatus.Caption := Format('%s   |   %d segmentos   |   grade %d mm   |   camada: %s',
-    [S, Length(FLines), FGrid * FMillimetersPerPixel, FLayerSelect.Text]);
+  FStatus.Caption := Format('%s   |   %d segmentos   |   Zoom %d%%   |   Grade %d mm',
+    [S, Length(FLines), Round(FZoom*100), FGrid * FMillimetersPerPixel]);
+  if FPath = '' then FDocument.Caption := 'MODELO  /  Sem título'
+  else FDocument.Caption := 'MODELO  /  ' + ExtractFileName(FPath);
+  if (FSelected >= 0) and (FSelected < Length(FLines)) then
+    with FLines[FSelected] do
+      FProperties.Caption := Format('Segmento %d • Grupo %d'+LineEnding+
+        'Camada: %s'+LineEnding+'Início: %d, %d mm'+LineEnding+
+        'Fim: %d, %d mm'+LineEnding+'Comprimento: %.2f m'+LineEnding+
+        'Dimensão nominal: %d mm', [FSelected+1,GroupID,
+        FLayerSelect.Items[EnsureRange(Layer,0,FLayerSelect.Items.Count-1)],
+        A.X*FMillimetersPerPixel,A.Y*FMillimetersPerPixel,
+        B.X*FMillimetersPerPixel,B.Y*FMillimetersPerPixel,
+        Hypot(B.X-A.X,B.Y-A.Y)*FMillimetersPerPixel/1000,WidthMM])
+  else FProperties.Caption := 'Nenhum objeto selecionado.'+LineEnding+LineEnding+
+    'Use Selecionar e clique em um segmento para consultar suas propriedades.';
+  UpdatePropertyEditor;
 end;
 procedure TCADMainForm.PaintDrawing(Sender: TObject);
-var X, Y, I, MX, MY: Integer; R: TRect; MM: Double;
+var X, Y, I, J, MX, MY: Integer; R: TRect; MM, Step: Double; Symbol:TCADPoints;
 begin
   R := FCanvas.ClientRect;
-  FCanvas.Canvas.Brush.Color := clWhite;
+  FCanvas.Canvas.Brush.Color := RGBToColor(33,40,48);
   FCanvas.Canvas.FillRect(R);
-  FCanvas.Canvas.Pen.Color := RGBToColor(232,236,244);
+  FCanvas.Canvas.Pen.Color := RGBToColor(49,59,70);
   FCanvas.Canvas.Pen.Width := 1;
-  for X := 0 to Round(FCanvas.Width / (FGrid * FZoom)) do begin
-    FCanvas.Canvas.MoveTo(Round(X*FGrid*FZoom)+FPanX,0);
-    FCanvas.Canvas.LineTo(Round(X*FGrid*FZoom)+FPanX,FCanvas.Height);
+  Step := FGrid * FZoom;
+  if FGridCheck.Checked then begin
+    for X := Floor(-FPanX/Step) to Ceil((FCanvas.Width-FPanX)/Step) do begin
+      FCanvas.Canvas.MoveTo(Round(X*Step)+FPanX,0);
+      FCanvas.Canvas.LineTo(Round(X*Step)+FPanX,FCanvas.Height);
+    end;
+    for Y := Floor(-FPanY/Step) to Ceil((FCanvas.Height-FPanY)/Step) do begin
+      FCanvas.Canvas.MoveTo(0,Round(Y*Step)+FPanY);
+      FCanvas.Canvas.LineTo(FCanvas.Width,Round(Y*Step)+FPanY);
+    end;
   end;
-  for Y := 0 to Round(FCanvas.Height / (FGrid * FZoom)) do begin
-    FCanvas.Canvas.MoveTo(0,Round(Y*FGrid*FZoom)+FPanY);
-    FCanvas.Canvas.LineTo(FCanvas.Width,Round(Y*FGrid*FZoom)+FPanY);
-  end;
-  FCanvas.Canvas.Pen.Color := RGBToColor(28,70,150);
+  FCanvas.Canvas.Pen.Color := RGBToColor(96,165,250);
   FCanvas.Canvas.Pen.Width := 2;
   for I := 0 to High(FLines) do begin
     case FLines[I].Layer of
-      1: FCanvas.Canvas.Pen.Color := RGBToColor(180,80,40);
-      2: FCanvas.Canvas.Pen.Color := RGBToColor(25,120,90);
-    else FCanvas.Canvas.Pen.Color := RGBToColor(28,70,150);
+      1: FCanvas.Canvas.Pen.Color := RGBToColor(251,191,36);
+      2: FCanvas.Canvas.Pen.Color := RGBToColor(52,211,153);
+    else FCanvas.Canvas.Pen.Color := RGBToColor(96,165,250);
     end;
     case FLines[I].Kind of
       2: begin
         FCanvas.Canvas.Pen.Width := Max(1, Round(FLines[I].WidthMM * FZoom / FMillimetersPerPixel));
-        FCanvas.Canvas.Pen.Color := RGBToColor(70,78,88);
+        FCanvas.Canvas.Pen.Color := RGBToColor(226,232,240);
       end;
       3: begin FCanvas.Canvas.Pen.Width := 3; FCanvas.Canvas.Pen.Color := clRed; end;
       4: begin FCanvas.Canvas.Pen.Width := 3; FCanvas.Canvas.Pen.Color := clAqua; end;
     else FCanvas.Canvas.Pen.Width := 2;
     end;
-    if I = FSelected then begin
+    if FLines[I].Ink<>0 then FCanvas.Canvas.Pen.Color:=RGBToColor((FLines[I].Ink shr 16) and 255,(FLines[I].Ink shr 8) and 255,FLines[I].Ink and 255);
+    if FLines[I].Weight>0 then FCanvas.Canvas.Pen.Width:=Max(1,Round(FLines[I].Weight*FZoom/FMillimetersPerPixel));
+    if IsPicked(I) then begin
       FCanvas.Canvas.Pen.Color := clFuchsia;
       FCanvas.Canvas.Pen.Width := Max(3, FCanvas.Canvas.Pen.Width);
     end;
+    if FLines[I].Kind in [5,6] then begin PaintAnnotation(FLines[I]); Continue; end;
     // Portas e janelas ganham uma faixa de abertura visual sobre a parede,
     // mas ainda não modificam a topologia da geometria arquitetônica.
     if FLines[I].Kind in [3,4] then begin
       FCanvas.Canvas.Pen.Width := Max(4,Round(180*FZoom/FMillimetersPerPixel));
-      FCanvas.Canvas.Pen.Color := clWhite;
+      FCanvas.Canvas.Pen.Color := RGBToColor(33,40,48);
       FCanvas.Canvas.MoveTo(Round(FLines[I].A.X*FZoom)+FPanX,Round(FLines[I].A.Y*FZoom)+FPanY);
       FCanvas.Canvas.LineTo(Round(FLines[I].B.X*FZoom)+FPanX,Round(FLines[I].B.Y*FZoom)+FPanY);
       if FLines[I].Kind=3 then FCanvas.Canvas.Pen.Color := clRed
       else FCanvas.Canvas.Pen.Color := clAqua;
       FCanvas.Canvas.Pen.Width := 2;
+    end;
+    if FLines[I].Kind in [3,4] then begin
+      if IsPicked(I) then FCanvas.Canvas.Pen.Color:=clFuchsia;
+      Symbol:=PlanSymbol(FLines[I]);
+      for J:=0 to Length(Symbol) div 2-1 do begin
+        FCanvas.Canvas.MoveTo(Round(Symbol[J*2].X*FZoom)+FPanX,Round(Symbol[J*2].Y*FZoom)+FPanY);
+        FCanvas.Canvas.LineTo(Round(Symbol[J*2+1].X*FZoom)+FPanX,Round(Symbol[J*2+1].Y*FZoom)+FPanY);
+      end;
+      Continue;
     end;
     FCanvas.Canvas.MoveTo(Round(FLines[I].A.X*FZoom)+FPanX, Round(FLines[I].A.Y*FZoom)+FPanY);
     FCanvas.Canvas.LineTo(Round(FLines[I].B.X*FZoom)+FPanX, Round(FLines[I].B.Y*FZoom)+FPanY);
@@ -342,7 +627,7 @@ begin
         FLines[I].B.Y-FLines[I].A.Y)*FMillimetersPerPixel;
       MX := Round((FLines[I].A.X+FLines[I].B.X)*FZoom/2)+FPanX;
       MY := Round((FLines[I].A.Y+FLines[I].B.Y)*FZoom/2)+FPanY;
-      FCanvas.Canvas.Font.Color := clBlack;
+      FCanvas.Canvas.Font.Color := RGBToColor(251,191,36);
       FCanvas.Canvas.Brush.Style := bsClear;
       FCanvas.Canvas.TextOut(MX+5,MY-14,FormatFloat('0.00',MM/1000)+' m');
       FCanvas.Canvas.Brush.Style := bsSolid;
@@ -356,45 +641,79 @@ begin
   end;
 end;
 procedure TCADMainForm.CanvasClick(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer);
-var P: TPoint;
+  Shift: TShiftState; X,Y: Integer);
+var P:TPoint; AText,SX,SY:string; Old,I,DX,DY:Integer;
 begin
-  if Button = mbRight then begin
-    FHasStart := False; FCanvas.Invalidate; RefreshStatus('Linha cancelada'); Exit;
+  if Button=mbRight then begin
+    if FHasStart then Inc(FNextGroup); FHasStart:=False; FArcStage:=0;
+    FCanvas.Invalidate; RefreshStatus('Comando encerrado'); Exit;
   end;
-  if Button <> mbLeft then Exit;
-  P := Snap(Point(X,Y));
-  if FToolSelect.ItemIndex = 5 then begin
-    SelectObjectAt(Point(Round((X-FPanX)/FZoom),Round((Y-FPanY)/FZoom))); Exit;
-  end;
-  if not FHasStart then begin
-    FStart := P; FHasStart := True;
-    RefreshStatus('Selecione o segundo ponto');
-  end else begin
-    RecordChange;
-    if (ssShift in Shift) and (FToolSelect.ItemIndex in [0,2,3,4]) then begin
-      if Abs(P.X-FStart.X) >= Abs(P.Y-FStart.Y) then P.Y := FStart.Y
-      else P.X := FStart.X;
+  if Button<>mbLeft then Exit;
+  P:=Snap(Point(X,Y));
+  if FToolSelect.ItemIndex=5 then begin
+    Old:=FSelected;
+    if not (ssCtrl in Shift) then SetLength(FPicked,0)
+    else if (Length(FPicked)=0) and (Old>=0) then begin SetLength(FPicked,1); FPicked[0]:=Old; end;
+    SelectObjectAt(Point(Round((X-FPanX)/FZoom),Round((Y-FPanY)/FZoom)));
+    if (ssCtrl in Shift) and (FSelected>=0) then begin
+      I:=Length(FPicked); SetLength(FPicked,I+1); FPicked[I]:=FSelected;
+      FCanvas.Invalidate;
     end;
-    if FToolSelect.ItemIndex = 6 then AddCircle(FStart,P)
-    else if FToolSelect.ItemIndex = 1 then begin
-      AddSegment(FStart, Point(P.X,FStart.Y));
-      AddSegment(Point(P.X,FStart.Y), P);
-      AddSegment(P, Point(FStart.X,P.Y));
-      AddSegment(Point(FStart.X,P.Y),FStart);
-    end else AddSegment(FStart,P);
-    Inc(FNextGroup);
+    Exit;
+  end;
+  if FToolSelect.ItemIndex=9 then begin
+    AText:='Ambiente'; if not InputQuery('Texto','Conteúdo:',AText) or (AText='') then Exit;
+    RecordChange; AddAnnotation(P,Point(P.X+Max(10,Length(AText)*4),P.Y),AText,False);
+    Inc(FNextGroup); FCanvas.Invalidate; RefreshStatus('Texto inserido'); Exit;
+  end;
+  if FToolSelect.ItemIndex=8 then begin
+    case FArcStage of
+      0: begin FArcCenter:=P; FArcStage:=1; RefreshStatus('Arco: indique o início (raio)'); end;
+      1: begin FStart:=P; FArcStage:=2; RefreshStatus('Arco: indique o fim, sentido horário'); end;
+      2: begin RecordChange; AddArc(FArcCenter,FStart,P); Inc(FNextGroup); FArcStage:=0; RefreshStatus('Arco criado'); end;
+    end;
+    FCanvas.Invalidate; Exit;
+  end;
+  if not FHasStart then begin FStart:=P; FHasStart:=True; RefreshStatus('Indique o próximo ponto'); end
+  else begin
+    if ((ssShift in Shift) or FOrthoCheck.Checked) and (FToolSelect.ItemIndex in [0,2,3,4,7]) then
+      if Abs(P.X-FStart.X)>=Abs(P.Y-FStart.Y) then P.Y:=FStart.Y else P.X:=FStart.X;
+    if FToolSelect.ItemIndex=11 then begin
+      RefreshStatus('Distância: '+FormatFloat('0.00',Hypot(P.X-FStart.X,P.Y-FStart.Y)*FMillimetersPerPixel/1000)+' m');
+      FHasStart:=False; Exit;
+    end;
+    if (P.X=FStart.X) and (P.Y=FStart.Y) then Exit;
+    if FToolSelect.ItemIndex=17 then begin
+      FHasStart:=False; SX:='1000'; SY:='0';
+      if not InputQuery('Stretch','Deslocamento X em mm:',SX) then Exit;
+      if not InputQuery('Stretch','Deslocamento Y em mm (positivo para cima):',SY) then Exit;
+      if not TryStrToInt(SX,DX) or not TryStrToInt(SY,DY) then begin ShowMessage('Valor inválido'); Exit; end;
+      try StretchWindow(Rect(Min(FStart.X,P.X),Min(FStart.Y,P.Y),Max(FStart.X,P.X),Max(FStart.Y,P.Y)),DX,DY);
+      except on E:Exception do ShowMessage(E.Message); end;
+      Exit;
+    end;
+    RecordChange;
+    case FToolSelect.ItemIndex of
+      6: AddCircle(FStart,P);
+      10: AddAnnotation(FStart,P,'',True);
+      1: begin AddSegment(FStart,Point(P.X,FStart.Y)); AddSegment(Point(P.X,FStart.Y),P);
+        AddSegment(P,Point(FStart.X,P.Y)); AddSegment(Point(FStart.X,P.Y),FStart); end;
+      12..16,18..23: AddPlanComponent(FToolSelect.ItemIndex,FStart,P);
+    else AddSegment(FStart,P);
+    end;
+    if FToolSelect.ItemIndex=7 then begin FStart:=P; RefreshStatus('Polilinha: próximo ponto; botão direito termina'); end
+    else begin Inc(FNextGroup); FHasStart:=False; RefreshStatus('Elemento criado'); end;
     SetLength(FUndo,0);
-    FHasStart := False;
-    RefreshStatus('Desenho criado');
   end;
   FCanvas.Invalidate;
 end;
 procedure TCADMainForm.MouseMoveDrawing(Sender: TObject; Shift: TShiftState; X, Y: Integer);
 var P: TPoint;
 begin
-  if not FHasStart then Exit;
   P := Snap(Point(X,Y));
+  FCoordinates.Caption := Format('X: %d mm   Y: %d mm',
+    [P.X*FMillimetersPerPixel,P.Y*FMillimetersPerPixel]);
+  if not FHasStart then Exit;
   RefreshStatus(Format('Início (%d,%d) — próximo (%d,%d)',
     [FStart.X,FStart.Y,P.X,P.Y]));
 end;
@@ -405,7 +724,7 @@ begin
      mtConfirmation,[mbYes,mbNo],0) <> mrYes) then Exit;
   RecordChange;
   SetLength(FLines,0); SetLength(FUndo,0);
-  FNextGroup := 1; FHasStart := False; FSelected := -1; FPath := '';
+  FNextGroup := 1; FHasStart := False; FArcStage:=0; SetLength(FPicked,0); FSelected := -1; FPath := '';
   FCanvas.Invalidate; RefreshStatus('Novo desenho');
 end;
 procedure TCADMainForm.UndoLine(Sender: TObject);
@@ -450,15 +769,14 @@ begin
   if FSelected >= 0 then RefreshStatus('Objeto selecionado')
   else RefreshStatus('Nenhum objeto próximo');
 end;
-procedure TCADMainForm.DeleteSelected(Sender: TObject);
-var I: Integer;
+procedure TCADMainForm.DeleteSelected(Sender:TObject);
+var I,N:Integer; Temp:array of TCADLine;
 begin
-  if FSelected < 0 then begin ShowMessage('Selecione um objeto antes de excluir.'); Exit; end;
-  RecordChange;
-  for I := FSelected to High(FLines)-1 do FLines[I] := FLines[I+1];
-  SetLength(FLines,Length(FLines)-1);
-  FSelected := -1; FCanvas.Invalidate;
-  RefreshStatus('Objeto excluído');
+  if FSelected<0 then Exit;
+  RecordChange; SetLength(Temp,Length(FLines)); N:=0;
+  for I:=0 to High(FLines) do if not IsPicked(I) then begin Temp[N]:=FLines[I]; Inc(N); end;
+  SetLength(Temp,N); FLines:=Temp; SetLength(FPicked,0); FSelected:=-1;
+  FCanvas.Invalidate; RefreshStatus('Seleção excluída');
 end;
 procedure TCADMainForm.TransformSelected(Sender: TObject);
 var SX, SY: string; DX, DY, Id, N: Integer; IsCopy: Boolean;
@@ -466,7 +784,7 @@ begin
   if (FSelected < 0) or (FSelected >= Length(FLines)) then begin
     ShowMessage('Primeiro selecione um objeto.'); Exit;
   end;
-  IsCopy := TButton(Sender).Tag = 1;
+  IsCopy := TControl(Sender).Tag = 1;
   SX := '1000'; SY := '0';
   if not InputQuery('Deslocamento em milímetros',
     'Deslocamento horizontal (mm):', SX) then Exit;
@@ -535,7 +853,7 @@ begin
   CX := (FLines[Id].A.X+FLines[Id].B.X)/2;
   CY := (FLines[Id].A.Y+FLines[Id].B.Y)/2;
   RecordChange;
-  if TButton(Sender).Tag=0 then begin
+  if TControl(Sender).Tag=0 then begin
     FLines[Id].A.Y := Round(2*CY-FLines[Id].A.Y);
     FLines[Id].B.Y := Round(2*CY-FLines[Id].B.Y);
   end else begin
@@ -878,178 +1196,193 @@ begin
   else RefreshStatus('Cotas ocultas');
 end;
 procedure TCADMainForm.MeasureSelected(Sender: TObject);
-var A, B: TPoint; MM: Double; V: string;
+var A, B: TPoint; MM: Double; V: string; I:Integer;
 begin
   if (FSelected < 0) or (FSelected >= Length(FLines)) then begin
     ShowMessage('Selecione um segmento antes de medir.'); Exit;
   end;
   A := FLines[FSelected].A; B := FLines[FSelected].B;
-  MM := Hypot(B.X-A.X,B.Y-A.Y)*FMillimetersPerPixel;
+  MM:=0;
+  for I:=0 to High(FLines) do if IsPicked(I) then MM:=MM+Hypot(FLines[I].B.X-FLines[I].A.X,FLines[I].B.Y-FLines[I].A.Y)*FMillimetersPerPixel;
   V := FormatFloat('0.00',MM/1000);
   ShowMessage('Comprimento: ' + V + ' m (' +
     IntToStr(Round(MM)) + ' mm)');
 end;
 procedure TCADMainForm.ExportSVG(Sender: TObject);
-var D: TSaveDialog; L: TStringList; I, MinX, MaxX, MinY, MaxY: Integer;
-  function Num(V: Integer): string;
-  begin Result := IntToStr(V*FMillimetersPerPixel); end;
-  function Stroke(K: Integer): string;
-  begin
-    case K of
-      2: Result := '#304c83';
-      3: Result := '#c44331';
-      4: Result := '#158f91';
-    else Result := '#204878';
-    end;
-  end;
+var D:TSaveDialog;
 begin
-  D := TSaveDialog.Create(Self); L := TStringList.Create;
+  D:=TSaveDialog.Create(Self);
   try
-    D.Filter := 'Scalable Vector Graphics (*.svg)|*.svg';
-    D.DefaultExt := 'svg'; D.FileName := 'planta.svg';
-    D.Options := D.Options + [ofOverwritePrompt];
-    if not D.Execute then Exit;
-    MinX := 0; MinY := 0; MaxX := 1000; MaxY := 1000;
-    if Length(FLines)>0 then begin
-      MinX := FLines[0].A.X; MaxX := MinX;
-      MinY := FLines[0].A.Y; MaxY := MinY;
-      for I := 0 to High(FLines) do begin
-        MinX := Min(MinX,Min(FLines[I].A.X,FLines[I].B.X));
-        MinY := Min(MinY,Min(FLines[I].A.Y,FLines[I].B.Y));
-        MaxX := Max(MaxX,Max(FLines[I].A.X,FLines[I].B.X));
-        MaxY := Max(MaxY,Max(FLines[I].A.Y,FLines[I].B.Y));
-      end;
-    end;
-    L.Add('<?xml version="1.0" encoding="UTF-8"?>');
-    L.Add('<svg xmlns="http://www.w3.org/2000/svg" viewBox="' +
-      Num(MinX-10) + ' ' + Num(MinY-10) + ' ' +
-      Num(Max(20,MaxX-MinX+20)) + ' ' + Num(Max(20,MaxY-MinY+20)) + '">');
-    for I := 0 to High(FLines) do
-      L.Add('<line x1="' + Num(FLines[I].A.X) + '" y1="' +
-        Num(FLines[I].A.Y) + '" x2="' + Num(FLines[I].B.X) +
-        '" y2="' + Num(FLines[I].B.Y) + '" stroke="' +
-        Stroke(FLines[I].Kind) + '" stroke-width="' +
-        IntToStr(Max(10,FLines[I].WidthMM)) + '"/>');
-    L.Add('</svg>');
-    L.SaveToFile(D.FileName);
-    RefreshStatus('SVG exportado: ' + ExtractFileName(D.FileName));
-  finally L.Free; D.Free; end;
+    D.Filter:='SVG (*.svg)|*.svg'; D.DefaultExt:='svg'; D.Options:=D.Options+[ofOverwritePrompt];
+    if D.Execute then begin ExportProject(D.FileName,True); RefreshStatus('SVG exportado'); end;
+  finally D.Free; end;
 end;
 procedure TCADMainForm.ExportDXF(Sender: TObject);
-var D: TSaveDialog; L: TStringList; I: Integer;
-  function DXFCoord(V: Integer): string;
-  begin Result := IntToStr(V * FMillimetersPerPixel); end;
-  function LayerName(Index: Integer): string;
-  begin
-    case Index of
-      1: Result := 'ESTRUTURA';
-      2: Result := 'INSTALACOES';
-    else Result := 'ARQUITETURA';
-    end;
-  end;
+var D:TSaveDialog;
 begin
-  D := TSaveDialog.Create(Self);
-  L := TStringList.Create;
+  D:=TSaveDialog.Create(Self);
   try
-    D.Filter := 'AutoCAD DXF R12 (*.dxf)|*.dxf'; D.DefaultExt := 'dxf';
-    D.FileName := 'planta.dxf'; D.Options := D.Options + [ofOverwritePrompt];
-    if not D.Execute then Exit;
-    L.Add('0');L.Add('SECTION');L.Add('2');L.Add('HEADER');
-    L.Add('9');L.Add('$INSUNITS');L.Add('70');L.Add('4');
-    L.Add('0');L.Add('ENDSEC');
-    L.Add('0');L.Add('SECTION');L.Add('2');L.Add('ENTITIES');
-    for I := 0 to High(FLines) do begin
-      L.Add('0'); L.Add('LINE');L.Add('8');L.Add(LayerName(FLines[I].Layer));
-      L.Add('10');L.Add(DXFCoord(FLines[I].A.X));
-      L.Add('20');L.Add(DXFCoord(-FLines[I].A.Y));
-      L.Add('30');L.Add('0');
-      L.Add('11');L.Add(DXFCoord(FLines[I].B.X));
-      L.Add('21');L.Add(DXFCoord(-FLines[I].B.Y));
-      L.Add('31');L.Add('0');
-    end;
-    L.Add('0');L.Add('ENDSEC');L.Add('0');L.Add('EOF');
-    L.SaveToFile(D.FileName);
-    RefreshStatus('DXF exportado: '+ExtractFileName(D.FileName));
-  finally
-    L.Free; D.Free;
-  end;
+    D.Filter:='DXF 2007 (*.dxf)|*.dxf'; D.DefaultExt:='dxf'; D.Options:=D.Options+[ofOverwritePrompt];
+    if D.Execute then begin ExportProject(D.FileName,False); RefreshStatus('DXF exportado'); end;
+  finally D.Free; end;
 end;
 procedure TCADMainForm.SaveDrawing(Sender: TObject);
-var D: TSaveDialog; L: TStringList; I: Integer;
+var D:TSaveDialog;
 begin
-  D := TSaveDialog.Create(Self);
-  L := TStringList.Create;
+  D:=TSaveDialog.Create(Self);
   try
-    D.Filter := 'Projeto CAD 2D (*.eacad)|*.eacad';
-    D.DefaultExt := 'eacad'; D.Options := D.Options + [ofOverwritePrompt];
-    if FPath <> '' then D.FileName := FPath else D.FileName := 'planta.eacad';
-    if not D.Execute then Exit;
-    L.Add('EACAD3');
-    L.Add(IntToStr(FMillimetersPerPixel));
-    for I := 0 to High(FLines) do
-      L.Add(Format('%d;%d;%d;%d;%d;%d;%d;%d', [FLines[I].A.X,FLines[I].A.Y,
-        FLines[I].B.X,FLines[I].B.Y,FLines[I].Layer,FLines[I].Kind,
-        FLines[I].WidthMM,FLines[I].GroupID]));
-    L.SaveToFile(D.FileName);
-    FPath := D.FileName; RefreshStatus('Projeto salvo: '+ExtractFileName(FPath));
-  finally L.Free; D.Free; end;
+    D.Filter:='Projeto CAD 2D (*.eacad)|*.eacad'; D.DefaultExt:='eacad'; D.Options:=D.Options+[ofOverwritePrompt];
+    if FPath<>'' then D.FileName:=FPath else D.FileName:='planta.eacad';
+    if D.Execute then begin SaveProject(D.FileName); RefreshStatus('Projeto salvo'); end;
+  finally D.Free; end;
 end;
 procedure TCADMainForm.OpenDrawing(Sender: TObject);
-var D: TOpenDialog; L, Fields: TStringList; I, N: Integer; Temp: array of TCADLine;
-  Scale, MaxGroup: Integer; Legacy, Grouped: Boolean;
+var D:TOpenDialog;
+begin
+  D:=TOpenDialog.Create(Self);
+  try
+    D.Filter:='Projeto CAD 2D (*.eacad)|*.eacad';
+    if D.Execute then try LoadProject(D.FileName); except on E:Exception do ShowMessage(E.Message); end;
+  finally D.Free; end;
+end;
+
+procedure TCADMainForm.FitDrawingToBounds;
+var
+  I, MinX, MaxX, MinY, MaxY, SpanX, SpanY: Integer;
+  ScaleX, ScaleY: Double;
+begin
+  if Length(FLines) = 0 then Exit;
+  MinX := FLines[0].A.X; MaxX := FLines[0].A.X;
+  MinY := FLines[0].A.Y; MaxY := FLines[0].A.Y;
+  for I := 0 to High(FLines) do
+  begin
+    MinX := Min(MinX, Min(FLines[I].A.X, FLines[I].B.X));
+    MaxX := Max(MaxX, Max(FLines[I].A.X, FLines[I].B.X));
+    MinY := Min(MinY, Min(FLines[I].A.Y, FLines[I].B.Y));
+    MaxY := Max(MaxY, Max(FLines[I].A.Y, FLines[I].B.Y));
+  end;
+  SpanX := MaxX - MinX;
+  SpanY := MaxY - MinY;
+  if (SpanX <= 0) or (SpanY <= 0) then Exit;
+
+  ScaleX := (FCanvas.Width - 80) / SpanX;
+  ScaleY := (FCanvas.Height - 80) / SpanY;
+  FZoom := Max(0.05, Min(3.0, Min(ScaleX, ScaleY)));
+  FPanX := Round(40 - MinX * FZoom);
+  FPanY := Round(40 - MinY * FZoom);
+  FCanvas.Invalidate;
+end;
+
+procedure TCADMainForm.ApplyImportedEntities(const AEntities: array of TImportedEntity; ACount: Integer);
+var
+  I, BaseIdx, OffsetGroup: Integer;
+begin
+  if ACount <= 0 then Exit;
+  RecordChange;
+  OffsetGroup := FNextGroup;
+  BaseIdx := Length(FLines);
+  SetLength(FLines, BaseIdx + ACount);
+  for I := 0 to ACount - 1 do
+  begin
+    FLines[BaseIdx + I].A := AEntities[I].A;
+    FLines[BaseIdx + I].B := AEntities[I].B;
+    FLines[BaseIdx + I].Layer := AEntities[I].Layer;
+    FLines[BaseIdx + I].Kind := AEntities[I].Kind;
+    FLines[BaseIdx + I].WidthMM := AEntities[I].WidthMM;
+    FLines[BaseIdx + I].GroupID := OffsetGroup + AEntities[I].GroupID;
+    FNextGroup := Max(FNextGroup, FLines[BaseIdx + I].GroupID + 1);
+  end;
+  FSelected := -1;
+  FHasStart := False;
+  FitDrawingToBounds;
+end;
+
+procedure TCADMainForm.ImportDWGDXF(Sender: TObject);
+var
+  D: TOpenDialog;
+  Buffer: array[0..32767] of TImportedEntity;
+  Count: Integer;
+  Report: TImportReport;
+  Ext, Ver: string;
+  Fmt: TFileFormat;
+  Ok: Boolean;
 begin
   D := TOpenDialog.Create(Self);
-  L := TStringList.Create; Fields := TStringList.Create;
   try
-    D.Filter := 'Projeto CAD 2D (*.eacad)|*.eacad';
+    D.Title := 'Importar Desenho Técnico (DWG / DXF)';
+    D.Filter := 'Desenhos CAD (*.dwg;*.dxf)|*.dwg;*.dxf|AutoCAD DXF (*.dxf)|*.dxf|AutoCAD DWG (*.dwg)|*.dwg|Todos os arquivos (*.*)|*.*';
     if not D.Execute then Exit;
-    L.LoadFromFile(D.FileName);
-    if (L.Count < 2) or ((L[0] <> 'EACAD1') and (L[0] <> 'EACAD2') and (L[0] <> 'EACAD3')) then
-      raise Exception.Create('Formato de projeto não reconhecido');
-    Legacy := L[0] = 'EACAD1';
-    Grouped := L[0] = 'EACAD3';
-    MaxGroup := 0;
-    Scale := StrToInt(L[1]);
-    if (Scale < 1) or (Scale > 100000) then
-      raise Exception.Create('Escala inválida');
-    SetLength(Temp,L.Count-2);
-    Fields.StrictDelimiter := True; Fields.Delimiter := ';';
-    for I := 2 to L.Count-1 do begin
-      Fields.DelimitedText := L[I];
-      if (Legacy and (Fields.Count <> 6)) or
-         ((not Legacy) and (not Grouped) and (Fields.Count <> 7)) or
-         (Grouped and (Fields.Count <> 8)) then
-        raise Exception.CreateFmt('Linha %d inválida',[I+1]);
-      N := I-2;
-      if Grouped then Temp[N].GroupID := StrToInt(Fields[7])
-      else Temp[N].GroupID := N + 1;
-      if (Temp[N].GroupID < 1) or (Temp[N].GroupID > 100000000) then
-        raise Exception.CreateFmt('Grupo inválido na linha %d',[I+1]);
-      MaxGroup := Max(MaxGroup,Temp[N].GroupID);
-      Temp[N].A.X := StrToInt(Fields[0]); Temp[N].A.Y := StrToInt(Fields[1]);
-      Temp[N].B.X := StrToInt(Fields[2]); Temp[N].B.Y := StrToInt(Fields[3]);
-      Temp[N].Layer := StrToInt(Fields[4]); Temp[N].Kind := StrToInt(Fields[5]);
-      if Legacy then begin
-        case Temp[N].Kind of
-          2: Temp[N].WidthMM := 150;
-          3: Temp[N].WidthMM := 900;
-          4: Temp[N].WidthMM := 1200;
-        else Temp[N].WidthMM := 0;
-        end;
-      end else Temp[N].WidthMM := StrToInt(Fields[6]);
-      if (Temp[N].Layer < 0) or (Temp[N].Layer > 2) or
-         (Temp[N].Kind < 0) or (Temp[N].Kind > 4) then
-        raise Exception.CreateFmt('Objeto inválido na linha %d',[I+1]);
+
+    InitReport(Report, D.FileName);
+    try
+      Fmt := DetectFormat(D.FileName, Ver);
+      Ext := LowerCase(ExtractFileExt(D.FileName));
+
+      if (Fmt = fmtDWG) or (Ext = '.dwg') then
+        Ok := ImportDWG(D.FileName, Buffer, Count, Report, FMillimetersPerPixel)
+      else
+        Ok := ImportDXF(D.FileName, Buffer, Count, Report, FMillimetersPerPixel);
+
+      if Ok and (Count > 0) then
+      begin
+        ApplyImportedEntities(Buffer, Count);
+        RefreshStatus(Format('Importado: %s (%d objetos)', [ExtractFileName(D.FileName), Count]));
+        MessageDlg('Importação Concluída', FormatReportSummary(Report), mtInformation, [mbOK], 0);
+      end
+      else
+      begin
+        MessageDlg('Resultado da Importação', FormatReportSummary(Report), mtWarning, [mbOK], 0);
+      end;
+    finally
+      FreeReport(Report);
     end;
-    FHistoryUndo.Clear; FHistoryRedo.Clear;
-    FLines := Temp; SetLength(FUndo,0); FNextGroup := MaxGroup+1;
-    FSelected := -1; FMillimetersPerPixel := Scale;
-    FHasStart := False; FPath := D.FileName;
-    FCanvas.Invalidate; RefreshStatus('Projeto aberto: '+ExtractFileName(FPath));
-  except on E: Exception do
-    MessageDlg('Erro ao abrir projeto', E.Message, mtError, [mbOK], 0);
+  finally
+    D.Free;
   end;
-  Fields.Free; L.Free; D.Free;
+end;
+
+procedure TCADMainForm.ImportIFCDrawing(Sender: TObject);
+var
+  D: TOpenDialog;
+  Buffer: array[0..32767] of TImportedEntity;
+  Count: Integer;
+  Report: TImportReport;
+  Floors: TStringList;
+  TargetFloor: string;
+  Ok: Boolean;
+begin
+  D := TOpenDialog.Create(Self);
+  Floors := TStringList.Create;
+  try
+    D.Title := 'Importar Modelo BIM IFC (Vistas 2D de Pavimentos)';
+    D.Filter := 'Modelos BIM IFC (*.ifc;*.ifczip)|*.ifc;*.ifczip|Todos os arquivos (*.*)|*.*';
+    if not D.Execute then Exit;
+
+    InitReport(Report, D.FileName);
+    try
+      TargetFloor := '';
+      if GetIFCFloors(D.FileName, Floors) and (Floors.Count > 0) then
+        TargetFloor := Floors[0];
+
+      Ok := ImportIFC(D.FileName, TargetFloor, Buffer, Count, Report, FMillimetersPerPixel);
+
+      if Ok and (Count > 0) then
+      begin
+        ApplyImportedEntities(Buffer, Count);
+        RefreshStatus(Format('Modelo IFC extraído: %s (%d elementos)', [ExtractFileName(D.FileName), Count]));
+        MessageDlg('Extração 2D de Modelo BIM IFC', FormatReportSummary(Report), mtInformation, [mbOK], 0);
+      end
+      else
+      begin
+        MessageDlg('Resultado da Importação IFC', FormatReportSummary(Report), mtWarning, [mbOK], 0);
+      end;
+    finally
+      FreeReport(Report);
+    end;
+  finally
+    Floors.Free;
+    D.Free;
+  end;
 end;
 
 end.

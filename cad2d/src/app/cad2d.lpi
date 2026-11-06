@@ -3,16 +3,20 @@
  <ProjectOptions>
   <Version Value="12"/>
   <General><Title Value="CAD Arquitetônico 2D"/><UseAppBundle Value="False"/><ResourceType Value="res"/></General>
-  <Units Count="2">
+  <Units Count="3">
    <Unit0><Filename Value="cad2d.lpr"/><IsPartOfProject Value="True"/></Unit0>
    <Unit1><Filename Value="cad2d_main.pas"/><IsPartOfProject Value="True"/></Unit1>
+   <Unit2><Filename Value="../io/cad2d_importador.pas"/><IsPartOfProject Value="True"/></Unit2>
   </Units>
   <RequiredPackages Count="1"><Item1><PackageName Value="LCL"/></Item1></RequiredPackages>
  </ProjectOptions>
  <CompilerOptions>
   <Version Value="11"/>
   <Target><Filename Value="../../../bin/cad2d"/></Target>
-  <SearchPaths><UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/></SearchPaths>
+  <SearchPaths>
+   <OtherUnitFiles Value="../io"/>
+   <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+  </SearchPaths>
   <Parsing><SyntaxOptions><SyntaxMode Value="ObjFPC"/></SyntaxOptions></Parsing>
   <Linking><Options><Win32><GraphicApplication Value="True"/></Win32></Options></Linking>
  </CompilerOptions>

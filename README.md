@@ -39,9 +39,13 @@ O instalador para Windows 64 bits e os executáveis ficam em [`bin/`](bin/), com
 
 | Arquivo | Conteúdo |
 |---|---|
-| `bin/setup_engenhariaarquitetura_002.exe` | Instalador da plataforma (versão 0.02) |
+| `bin/setup_engenhariaarquitetura_003.exe` | Instalador da plataforma com CAD 2D (versão 0.03) |
 | `bin/planejador.exe` | Planejador para Windows 64 bits |
 
 Como gerar o instalador: [installer/windows](installer/windows/README.md).
 
 > **Estado:** o **Planejador** tem a etapa P1 implementada (tarefas, dependências, caminho crítico, Gantt e gravação); os demais aplicativos estão em especificação.
+
+## Modelos de hospital
+
+A pasta [samples/files](samples/README.md) inclui o mesmo hospital demonstrativo em IFC4, DWG, DXF e formato nativo CAD2D. O instalador 003 inclui os modelos no componente CAD2D.
