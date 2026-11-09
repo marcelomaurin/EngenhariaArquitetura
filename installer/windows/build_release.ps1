@@ -70,7 +70,11 @@ $Tests = @(
   @{ Source = "planejador\tests\test_planejador_core"; Paths = @("planejador\src\core", "planejador\src\io") },
   @{ Source = "cad2d\tests\test_cad_document"; Paths = @("cad2d\src\app", "shared") },
   @{ Source = "cad2d\tests\test_cad_dxf"; Paths = @("cad2d\src\app", "shared") },
-  @{ Source = "cad2d\tests\test_cad_catalog"; Paths = @("cad2d\src\app", "shared") }
+  @{ Source = "cad2d\tests\test_cad_catalog"; Paths = @("cad2d\src\app", "shared") },
+  @{ Source = "shared\tests\test_config"; Paths = @("shared") },
+  @{ Source = "planejador\tests\test_recursos"; Paths = @("planejador\src\core", "planejador\src\io", "shared") },
+  @{ Source = "planejador\tests\test_sprints"; Paths = @("planejador\src\core", "planejador\src\io", "shared") },
+  @{ Source = "planejador\tests\test_relatorios_sprint"; Paths = @("planejador\src\core", "planejador\src\io", "shared") }
 )
 $qa = @()
 foreach ($t in $Tests) {
@@ -97,6 +101,33 @@ Write-Host "  test_cad2d: $cadSummary"
 $qa += [ordered]@{ test = "test_cad2d"; passed = $cadOK; summary = $cadSummary }
 if (-not $cadOK) { $cadRun; throw "Testes CAD 2D falharam" }
 
+& $Lazbuild -B --cpu=x86_64 --os=win64 --ws=win32 "planejador\tests\test_recursos_ui.lpi" *> (Join-Path $Dist "build-logs\test_recursos_ui.log")
+if ($LASTEXITCODE -ne 0) { Get-Content (Join-Path $Dist "build-logs\test_recursos_ui.log") -Tail 25; throw "Falha ao compilar interface de recursos" }
+$resourceRun = & (Join-Path $Dist "tests\test_recursos_ui.exe") 2>&1
+$resourceOK = $LASTEXITCODE -eq 0
+$resourceSummary = "$($resourceRun | Select-Object -Last 1)"
+Write-Host "  test_recursos_ui: $resourceSummary"
+$qa += [ordered]@{ test = "test_recursos_ui"; passed = $resourceOK; summary = $resourceSummary }
+if (-not $resourceOK) { $resourceRun; throw "Testes da interface de recursos falharam" }
+
+& $Lazbuild -B --cpu=x86_64 --os=win64 --ws=win32 "planejador\tests\test_acompanhamento_ui.lpi" *> (Join-Path $Dist "build-logs\test_acompanhamento_ui.log")
+if ($LASTEXITCODE -ne 0) { Get-Content (Join-Path $Dist "build-logs\test_acompanhamento_ui.log") -Tail 25; throw "Falha ao compilar interface de acompanhamento" }
+$followRun = & (Join-Path $Dist "tests\test_acompanhamento_ui.exe") 2>&1
+$followOK = $LASTEXITCODE -eq 0
+$followSummary = "$($followRun | Select-Object -Last 1)"
+Write-Host "  test_acompanhamento_ui: $followSummary"
+$qa += [ordered]@{ test = "test_acompanhamento_ui"; passed = $followOK; summary = $followSummary }
+if (-not $followOK) { $followRun; throw "Testes de acompanhamento falharam" }
+
+& $Lazbuild -B --cpu=x86_64 --os=win64 --ws=win32 "planejador\tests\test_relatorios_sprint_ui.lpi" *> (Join-Path $Dist "build-logs\test_relatorios_sprint_ui.log")
+if ($LASTEXITCODE -ne 0) { Get-Content (Join-Path $Dist "build-logs\test_relatorios_sprint_ui.log") -Tail 25; throw "Falha ao compilar interface de relatórios de sprint" }
+$sprintReportRun = & (Join-Path $Dist "tests\test_relatorios_sprint_ui.exe") 2>&1
+$sprintReportOK = $LASTEXITCODE -eq 0
+$sprintReportSummary = "$($sprintReportRun | Select-Object -Last 1)"
+Write-Host "  test_relatorios_sprint_ui: $sprintReportSummary"
+$qa += [ordered]@{ test = "test_relatorios_sprint_ui"; passed = $sprintReportOK; summary = $sprintReportSummary }
+if (-not $sprintReportOK) { $sprintReportRun; throw "Testes de relatórios de sprint falharam" }
+
 $wfOut = Join-Path $Dist "tests\workflow-units"
 New-Item -ItemType Directory -Force $wfOut | Out-Null
 $wfArgs = @("-Px86_64", "-Twin64", "-Mobjfpc", "-Sh", "-Fu$Root\shared", "-FU$wfOut", "-o$Dist\tests\test_workflow.exe", "shared\tests\test_workflow.lpr")
@@ -119,6 +150,8 @@ Copy-Item docs\*.md (Join-Path $App "documentation\docs")
 Copy-Item planejador\README.md (Join-Path $App "documentation\Planejador_README.md")
 Copy-Item cad2d\README.md (Join-Path $App "documentation\CAD2D_README.md")
 Copy-Item planejador\examples\*.plan.json (Join-Path $App "exemplos")
+Copy-Item planejador\examples\*.html (Join-Path $App "exemplos")
+Copy-Item planejador\examples\*.csv (Join-Path $App "exemplos")
 Copy-Item cad2d\examples\*.eacad (Join-Path $App "exemplos")
 New-Item -ItemType Directory -Force (Join-Path $App "bibliotecas") | Out-Null
 Copy-Item libraries\catalogo_2d.json (Join-Path $App "bibliotecas")

@@ -14,7 +14,7 @@ uses
   ExtCtrls, Menus, Dialogs, Buttons, Spin, EditBtn, LCLType,
   aiprojectduration, aicpmscheduler, aitaskgraph, aiganttview, ainetworkview,
   fpjson, jsonparser, plan_tipos, plan_documento, plan_cronograma, plan_json,
-  plan_exemplos, plan_estilo, plan_pg_store, plan_pg_picker, ea_workflow, ea_workflow_ui;
+  plan_sprints, plan_acompanhamento, plan_acompanhamento_ui, ea_money, plan_recursos, plan_recursos_ui, ea_config, ea_config_ui, plan_executor, plan_exemplos, plan_estilo, plan_pg_store, plan_pg_picker, ea_workflow, ea_workflow_ui;
 
 type
   TPLJanelaPrincipal = class(TForm)
@@ -25,6 +25,18 @@ type
     FLegacyHost: TPanel;
     FWorkflowToken: string;
     FWorkflowReady: Boolean;
+    FResourcesPanel: TPLRecursosPanel;
+    FTodoPanel: TPLSprintPanel;
+    FCostsPanel: TPLCustosPanel;
+    procedure TodoTaskSelected(Sender: TObject);
+    procedure AoVistaTODO(Sender: TObject);
+    procedure AoVistaCustos(Sender: TObject);
+    procedure AoVistaRecursos(Sender: TObject);
+    procedure ResourcesChanged(Sender: TObject);
+    procedure ResourceTaskSelected(Sender: TObject);
+    procedure RefreshResources;
+    procedure TaskResourcesClick(Sender: TObject);
+    procedure TaskCostsClick(Sender: TObject);
     procedure BuildWorkflow;
     procedure WorkflowShow(Sender: TObject);
     procedure PlanningShow(Sender: TObject);
@@ -33,6 +45,8 @@ type
     procedure SendSelectedTask(Sender: TObject);
     procedure ApplyTaskReturn(Sender: TObject);
     procedure LoadResponsaveis;
+    procedure ResolveExecutors;
+    procedure ApplyExecutor(T: TPLTarefa; const Display: string);
     function PlanningAllowed: Boolean;
   private
     FCrono: TPLCronograma;
@@ -61,6 +75,7 @@ type
     FTarId: TLabel;
     FTarNome, FTarDuracao, FTarPred: TEdit;
     FTarResp: TComboBox;
+    FTarInicio: TDateEdit;
     FTarApp, FTarSituacao: TComboBox;
     FTarProgresso: TSpinEdit;
     FTarNotas: TMemo;
@@ -69,6 +84,9 @@ type
     FAbrir: TOpenDialog;
     FSalvar: TSaveDialog;
     procedure MontarMenu;
+    procedure SetupClick(Sender: TObject);
+    procedure OpenLastProject(Sender: TObject);
+    procedure RememberProject;
     procedure MontarNavegacao(P: TPanel);
     procedure MontarBarra(P: TPanel);
     procedure ExibirEtapa(ANumero: Integer);
@@ -145,11 +163,11 @@ implementation
 
 const
   COL_ID = 0; COL_NOME = 1; COL_DURACAO = 2; COL_INICIO = 3; COL_TERMINO = 4;
-  COL_PRED = 5; COL_APP = 6; COL_FOLGA = 7;
+  COL_PRED = 5; COL_APP = 6; COL_FOLGA = 7; COL_EXECUTOR = 8; COL_CUSTO = 9;
   TITULO = 'Planejador';
   PL_ETAPAS: array[1..7] of string = (
     '1  Objetivo', '2  Tarefas', '3  Relações', '4  Recursos',
-    '5  Cronograma', '6  Acompanhar', '7  Relatórios');
+    '5  Cronograma', '6  TO-DO / Sprints', '7  Custos / relatórios');
 
 function FmtData(D: TDateTime): string;
 begin
@@ -218,6 +236,11 @@ begin
   MontarBarra(Centro);
   MontarGantt(Centro);
   MontarRede(Centro);
+  FResourcesPanel:=TPLRecursosPanel.Create(Self); FResourcesPanel.Parent:=Centro; FResourcesPanel.Align:=alClient; FResourcesPanel.Visible:=False;
+  FResourcesPanel.OnChanged:=@ResourcesChanged; FResourcesPanel.OnSelectTask:=@ResourceTaskSelected;
+  FTodoPanel:=TPLSprintPanel.Create(Self); FTodoPanel.Parent:=Centro; FTodoPanel.Align:=alClient; FTodoPanel.Visible:=False;
+  FTodoPanel.OnChanged:=@ResourcesChanged; FTodoPanel.OnOpenTask:=@TodoTaskSelected;
+  FCostsPanel:=TPLCustosPanel.Create(Self); FCostsPanel.Parent:=Centro; FCostsPanel.Align:=alClient; FCostsPanel.Visible:=False; FCostsPanel.OnChanged:=@ResourcesChanged;
   ExibirEtapa(1);
 
   if (ParamCount >= 1) and FileExists(ParamStr(1)) then
@@ -238,6 +261,65 @@ begin
   FCrono.Free;
   FDoc.Free;
   inherited Destroy;
+end;
+
+procedure TPLJanelaPrincipal.TodoTaskSelected(Sender: TObject);
+begin ExibirEtapa(2); Selecionar(FTodoPanel.SelectedTask); end;
+procedure TPLJanelaPrincipal.AoVistaTODO(Sender: TObject);
+begin ExibirEtapa(6); end;
+procedure TPLJanelaPrincipal.AoVistaCustos(Sender: TObject);
+begin ExibirEtapa(7); end;
+procedure TPLJanelaPrincipal.AoVistaRecursos(Sender: TObject);
+begin ExibirEtapa(4); end;
+
+procedure TPLJanelaPrincipal.ResourcesChanged(Sender: TObject);
+begin if not PlanningAllowed then Exit; Recalcular; end;
+procedure TPLJanelaPrincipal.ResourceTaskSelected(Sender: TObject);
+begin ExibirEtapa(2); Selecionar(FResourcesPanel.SelectedTask); end;
+procedure TPLJanelaPrincipal.RefreshResources;
+var Users: TJSONArray;
+begin
+ if FResourcesPanel=nil then Exit; Users:=nil;
+ try
+  if FWorkflowReady and PlanningAllowed then Users:=FWorkflow.Users(FWorkflowToken);
+  FResourcesPanel.Setup(FDoc,FCrono,Users);
+  if FTodoPanel<>nil then FTodoPanel.Setup(FDoc,FCrono);
+  if FCostsPanel<>nil then FCostsPanel.Setup(FDoc);
+ finally Users.Free; end;
+end;
+procedure TPLJanelaPrincipal.TaskResourcesClick(Sender: TObject);
+var T: TPLTarefa; Users: TJSONArray;
+begin
+ if not PlanningAllowed then Exit; T:=Selecionada; if T=nil then Exit;
+ Users:=FWorkflow.Users(FWorkflowToken);
+ try
+  if PLEditTaskResources(Self,FDoc,T,Users,FArquivo) then Recalcular(T.ID);
+ finally Users.Free; end;
+end;
+procedure TPLJanelaPrincipal.TaskCostsClick(Sender: TObject);
+var T: TPLTarefa;
+begin
+ if not PlanningAllowed then Exit; T:=Selecionada; if T=nil then Exit;
+ if PLEditTaskCosts(Self,FDoc,T) then Recalcular(T.ID);
+end;
+
+procedure TPLJanelaPrincipal.SetupClick(Sender: TObject);
+begin EAShowSetup(Self); end;
+procedure TPLJanelaPrincipal.RememberProject;
+begin
+  try EARememberProject('planner',FArquivo);
+  except on E: Exception do Mensagem('Projeto disponível; falha ao atualizar Setup: '+E.Message,True); end;
+end;
+procedure TPLJanelaPrincipal.OpenLastProject(Sender: TObject);
+var Path: string;
+begin
+  if not PlanningAllowed then begin ShowMessage('Este perfil acessa apenas a gestão de tarefas.'); Exit; end;
+  try
+    Path:=EALastProject('planner');
+    if Path='' then begin ShowMessage('Nenhum projeto anterior do Planejador.'); Exit; end;
+    if not FileExists(Path) then begin ShowMessage('O último projeto não foi encontrado: '+Path); Exit; end;
+    if ConfirmarDescartar then AbrirArquivo(Path);
+  except on E: Exception do ShowMessage(E.Message); end;
 end;
 
 procedure TPLJanelaPrincipal.MontarMenu;
@@ -288,8 +370,14 @@ begin
   Add(Item, '-', nil);
   Add(Item, '&Gráfico de Gantt', @AoVistaGantt, ShortCut(VK_1, [ssCtrl]));
   Add(Item, '&Diagrama de rede', @AoVistaRede, ShortCut(VK_2, [ssCtrl]));
+  Add(Item, 'TO-DO e &sprints', @AoVistaTODO);
+  Add(Item, 'Relatório semanal de &custos', @AoVistaCustos);
   Add(Item, 'Detalhes da &tarefa', @AoDetalhesTarefa, ShortCut(VK_F2, [ssShift]));
   Add(Item, '&Recalcular cronograma', @AoValidar, ShortCut(VK_F9, []));
+  Item := TMenuItem.Create(M); Item.Caption := '&Setup'; M.Items.Add(Item);
+  Add(Item,'Configurações compartilhadas...',@SetupClick);
+  with Add(Item,'Abrir último projeto do Planejador',@OpenLastProject) do
+    try Hint:=EALastProject('planner'); except on E: Exception do ShowMessage('Falha ao ler Setup: '+E.Message); end;
   Item := TMenuItem.Create(M); Item.Caption := 'A&juda'; M.Items.Add(Item);
   Add(Item, '&Sobre o Planejador', @AoSobre);
 end;
@@ -321,7 +409,7 @@ begin
     FPassos[I].Tag := I;
     FPassos[I].GroupIndex := 1;
     FPassos[I].AllowAllUp := False;
-    if not (I in [1, 2, 3, 5]) then
+    if not (I in [1, 2, 3, 4, 5, 6, 7]) then
     begin
       FPassos[I].Enabled := False;
       FPassos[I].Hint := 'Etapa em desenvolvimento; ainda nao disponivel';
@@ -338,17 +426,22 @@ end;
 
 procedure TPLJanelaPrincipal.ExibirEtapa(ANumero: Integer);
 begin
-  if not (ANumero in [1, 2, 3, 5]) then Exit;
+  if not (ANumero in [1, 2, 3, 4, 5, 6, 7]) then Exit;
   FEtapa := ANumero;
   FPassos[ANumero].Down := True;
-  FProjetoPainel.Visible := ANumero = 1;
-  FTarefaPainel.Visible := ANumero <> 1;
+  FResourcesPanel.Visible:=ANumero=4; FTodoPanel.Visible:=ANumero=6; FCostsPanel.Visible:=ANumero=7;
+  if not (ANumero in [4,6,7]) then begin FRede.Visible:=FVistaRede; FGantt.Visible:=not FVistaRede; end;
+  FProjetoPainel.Visible := ANumero in [1,4,6,7];
+  FTarefaPainel.Visible := not (ANumero in [1,4,6,7]);
   if ANumero = 1 then FProjetoPainel.BringToFront
   else FTarefaPainel.BringToFront;
   { A etapa Objetivo preserva a vista escolhida, como no MultiProject. }
   case ANumero of
     2, 5: MostrarVista(False);
     3: MostrarVista(True);
+    4: begin FGantt.Visible:=False; FRede.Visible:=False; FResourcesPanel.BringToFront; end;
+    6: begin FGantt.Visible:=False; FRede.Visible:=False; FTodoPanel.BringToFront; end;
+    7: begin FGantt.Visible:=False; FRede.Visible:=False; FCostsPanel.BringToFront; end;
   end;
 end;
 
@@ -396,10 +489,8 @@ begin
   Btn := PLBotao(Vistas, 'Calendário', 'Vista planejada (ainda indisponivel)', nil);
   Btn.Enabled := False;
   Btn.Visible := False;
-  Btn := PLBotao(Vistas, 'Equipe', 'Vista planejada (ainda indisponivel)', nil);
-  Btn.Enabled := False;
-  Btn := PLBotao(Vistas, 'Quadro', 'Vista planejada (ainda indisponivel)', nil);
-  Btn.Enabled := False;
+  Btn := PLBotao(Vistas, 'Equipe', 'Recursos e alocações', @AoVistaRecursos);
+  Btn := PLBotao(Vistas, 'TO-DO', 'Sprints e quadro de tarefas por usuário/recurso', @AoVistaTODO);
   FBotaoRede := PLBotao(Vistas, 'Rede', 'Diagrama de rede (Ctrl+2)', @AoVistaRede);
   FBotaoRede.GroupIndex := 2;
   FBotaoRede.AllowAllUp := False;
@@ -514,7 +605,13 @@ begin
   FTarPred := Campo('Predecessoras (ex.: T-0001; T-0002II+1d)');
   FTarApp := Lista('Aplicativo responsável');
   for A := Low(A) to High(A) do FTarApp.Items.Add(PL_APLICATIVO_NOME[A]);
-  FTarResp := Lista('Responsável (usuário)');
+  PLRotulo(P,'Início solicitado (vazio = automático)').Top:=Y; Inc(Y);
+  FTarInicio:=TDateEdit.Create(Self); FTarInicio.Parent:=P; FTarInicio.Align:=alTop;
+  FTarInicio.Top:=Y; Inc(Y); FTarInicio.DateOrder:=doDMY;
+  FTarInicio.BorderSpacing.Left:=12; FTarInicio.BorderSpacing.Right:=12;
+  FTarInicio.OnEditingDone:=@AoAplicarTarefa;
+  FTarResp := Lista('Executor (usuário; vazio = administrador)');
+  FTarResp.Style:=csDropDownList;
   FTarSituacao := Lista('Situação');
   for S := Low(S) to High(S) do FTarSituacao.Items.Add(PL_SITUACAO_NOME[S]);
   PLRotulo(P, 'Progresso (%)').Top := Y; Inc(Y);
@@ -529,6 +626,10 @@ begin
   FTarNotas.Height := 80; FTarNotas.ScrollBars := ssAutoVertical;
   FTarNotas.BorderSpacing.Left := 12; FTarNotas.BorderSpacing.Right := 12;
   FTarNotas.OnEditingDone := @AoAplicarTarefa;
+  Bt:=TButton.Create(Self); Bt.Parent:=P; Bt.Align:=alTop; Bt.Top:=Y; Inc(Y); Bt.Height:=34;
+  Bt.Caption:='Recursos / arquivos de entrada e saída'; Bt.OnClick:=@TaskResourcesClick;
+  Bt:=TButton.Create(Self); Bt.Parent:=P; Bt.Align:=alTop; Bt.Top:=Y; Inc(Y); Bt.Height:=34;
+  Bt.Caption:='Compor custos da tarefa'; Bt.OnClick:=@TaskCostsClick;
   FTarDatas := PLRotulo(P, ''); FTarDatas.Top := Y; Inc(Y);
   FTarDatas.WordWrap := True; FTarDatas.AutoSize := True;
   Bt := TButton.Create(Self);
@@ -606,6 +707,8 @@ begin
   FGantt.AddColumn('Predecessoras', 100, True);
   FGantt.AddColumn('Aplicativo', 110);
   FGantt.AddColumn('Folga', 48, False, taRightJustify);
+  FGantt.AddColumn('Executor',150);
+  FGantt.AddColumn('Custo computado',130,False,taRightJustify);
   FGantt.OnSelectRow := @AoSelecionarLinha;
   FGantt.OnCellEdited := @AoEditarCelula;
   FGantt.OnIsWorkingDay := @AoDiaUtil;
@@ -699,7 +802,10 @@ var
 begin
   Id := AManterId;
   if (Id = '') and (Selecionada <> nil) then Id := Selecionada.Id;
+  ResolveExecutors;
   FCrono.Calcular(FDoc);
+  if FCrono.Valido then PLAtualizarSprints(FDoc,FCrono);
+  if FWorkflowReady and PlanningAllowed then FDoc.RegistrarCustos(Date);
   FGantt.BeginUpdate;
   try
     FGantt.Clear;
@@ -712,9 +818,13 @@ begin
         Row := AIGanttRow(T.Id, 0, Res.Start, Res.Start, agbMilestone)
       else
         Row := AIGanttRow(T.Id, 0, Res.Start, Res.Finish, agbTask);
-      SetLength(Row.Cells, 8);
+      SetLength(Row.Cells, 10);
       Row.Cells[COL_ID] := T.Id;
+      Row.Cells[COL_CUSTO]:=EAMoneyText(FDoc.CustoTarefa(T));
       Row.Cells[COL_NOME] := T.Nome;
+      if FCrono.Conflito[I] then Row.Cells[COL_NOME]:='⚠ CONFLITO — '+T.Nome;
+      Row.Cells[COL_EXECUTOR]:=T.ExecutorNome;
+      if Row.Cells[COL_EXECUTOR]='' then Row.Cells[COL_EXECUTOR]:=T.Responsavel;
       Row.Cells[COL_DURACAO] := FDoc.TextoDuracao(T);
       Row.Cells[COL_INICIO] := FmtData(Res.Start);
       Row.Cells[COL_TERMINO] := FmtData(Res.Finish);
@@ -722,7 +832,7 @@ begin
       if T.Aplicativo = plaNenhum then Row.Cells[COL_APP] := ''
       else Row.Cells[COL_APP] := PL_APLICATIVO_NOME[T.Aplicativo];
       if FCrono.Valido then Row.Cells[COL_FOLGA] := FmtFolga(Res.TotalSlack);
-      Row.Critical := FCrono.Valido and Res.Critical;
+      Row.Critical := FCrono.Valido and (Res.Critical or FCrono.Conflito[I]);
       Row.Progress := T.Progresso;
       Row.Tag := I;
       FGantt.AddRow(Row);
@@ -739,6 +849,7 @@ begin
     FGantt.EndUpdate;
   end;
   PreencherRede;
+  RefreshResources;
   if FGantt.Origin <= 0 then
   begin
     FGantt.FitToRows;
@@ -766,6 +877,7 @@ begin
        Round(FDoc.Calendario.WorkingMinutesBetween(FCrono.Inicio, FCrono.Termino) / PL_MINUTOS_POR_DIA),
        FCrono.Criticas]);
   end;
+  FResumo.Caption:=FResumo.Caption+#10+'Custo previsto: '+EAMoneyText(FDoc.CustoPrevistoProjeto)+#10+'Custo computado: '+EAMoneyText(FDoc.CustoComputadoProjeto);
   MostrarTarefa;
   AtualizarTitulo;
 end;
@@ -802,7 +914,7 @@ begin
     begin
       FTarId.Caption := 'Nenhuma tarefa selecionada';
       FTarNome.Text := ''; FTarDuracao.Text := ''; FTarPred.Text := '';
-      FTarResp.Text := ''; FTarNotas.Text := ''; FTarApp.ItemIndex := -1;
+      FTarInicio.Clear; FTarResp.ItemIndex := -1; FTarNotas.Text := ''; FTarApp.ItemIndex := -1;
       FTarSituacao.ItemIndex := -1; FTarProgresso.Value := 0; FTarDatas.Caption := '';
       FVincLista.Items.Clear;
       FVincSucessora.Items.Clear;
@@ -813,7 +925,8 @@ begin
     FTarDuracao.Text := FDoc.TextoDuracao(T);
     FTarPred.Text := FDoc.TextoPredecessoras(T);
     FTarApp.ItemIndex := Ord(T.Aplicativo);
-    FTarResp.Text := T.Responsavel;
+    if T.InicioSolicitado>0 then FTarInicio.Date:=T.InicioSolicitado else FTarInicio.Clear;
+    FTarResp.ItemIndex:=FTarResp.Items.IndexOf(T.ExecutorNome+' ('+T.Responsavel+')');
     FTarSituacao.ItemIndex := Ord(T.Situacao);
     FTarProgresso.Value := T.Progresso;
     FTarNotas.Text := T.Notas;
@@ -826,6 +939,12 @@ begin
     end
     else
       FTarDatas.Caption := '';
+    FTarDatas.Caption:=FTarDatas.Caption+#10+'Custo previsto: '+EAMoneyText(FDoc.CustoTarefa(T,False))+#10+'Custo de saída: '+EAMoneyText(FDoc.CustoTarefa(T))+#10+'Recursos vinculados: '+IntToStr(Length(T.Alocacoes));
+    FTarDatas.Font.Color:=clPLTexto;
+    if FCrono.Conflito[FDoc.IndiceDe(T.Id)] then begin
+      FTarDatas.Caption:=FTarDatas.Caption+#10+'CONFLITO: recurso sobrecarregado ou indisponível';
+      FTarDatas.Font.Color:=clPLPerigo;
+    end;
   finally
     FAtualizando := False;
   end;
@@ -865,6 +984,7 @@ begin
       Exit;
     end;
   end;
+  RememberProject;
   MostrarProjeto;
   FGantt.Origin := 0;
   Recalcular;
@@ -883,6 +1003,7 @@ begin
     if not AnsiEndsText(PL_EXTENSAO, A) then A := ChangeFileExt(A, '') + PL_EXTENSAO;
   end;
   try
+    FDoc.RegistrarCustos(Date);
     PLSalvarProjeto(FDoc, A);
     FArquivo := A;
     FDBProjectId := '';
@@ -892,6 +1013,7 @@ begin
   except
     on E: Exception do Mensagem('Erro ao salvar: ' + E.Message, True);
   end;
+  if Result then RememberProject;
   AtualizarTitulo;
 end;
 
@@ -1223,11 +1345,17 @@ var
   Err: string;
   App: TPLAplicativo;
   Sit: TPLSituacao;
+  Requested: TDateTime;
 begin
   if FWorkflowReady and not PlanningAllowed then Exit;
   if FAtualizando then Exit;
   T := Selecionada;
   if T = nil then Exit;
+  Requested:=0;
+  if Trim(FTarInicio.Text)<>'' then begin
+    try Requested:=FTarInicio.Date; except on E: Exception do begin Mensagem('Data de início inválida',True); Exit; end; end;
+    if Requested<=0 then begin Mensagem('Data de início inválida',True); Exit; end;
+  end;
   App := T.Aplicativo;
   Sit := T.Situacao;
   if FTarApp.ItemIndex >= 0 then App := TPLAplicativo(FTarApp.ItemIndex);
@@ -1235,12 +1363,14 @@ begin
   { Validar nome, duracao, dependencias e progresso antes de aplicar qualquer
     alteracao. Campos validos nao podem sobreviver a uma edicao invalida. }
   if not FDoc.AplicarEdicaoTarefa(T, FTarNome.Text, FTarDuracao.Text,
-    FTarPred.Text, FTarResp.Text, FTarNotas.Text, App, Sit,
+    FTarPred.Text, T.Responsavel, FTarNotas.Text, App, Sit,
     FTarProgresso.Value, Err) then
   begin
     Mensagem(T.Id + ' — ' + Err, True);
     Exit;
   end;
+  T.InicioSolicitado:=Requested;
+  ApplyExecutor(T,FTarResp.Text);
   Mensagem('');
   Recalcular(T.Id);
 end;
@@ -1271,7 +1401,10 @@ begin
       if FWorkflowToken = '' then
         if not WFLoginDialog(FWorkflow,FWorkflowToken) then begin Close; Exit; end;
       WorkflowIdentityChanged(nil);
-      if WFArg('--task') <> '' then FWorkflowView.SelectTask(WFArg('--task'));
+      if WFArg('--task') <> '' then begin
+        WorkflowShow(nil);
+        FWorkflowView.SelectTask(WFArg('--task'));
+      end;
     except on E: Exception do begin ShowMessage(E.Message); FWorkflowToken := ''; Close; Exit; end; end;
   end;
   { a escala de tempo depende da largura final do grafico }
@@ -1323,7 +1456,8 @@ begin
         R := FCrono.Resultado[I];
         N.Lines[1] := FmtData(R.Start) + '  ->  ' + FmtData(R.Finish);
         N.Lines[2] := 'Duração ' + FDoc.TextoDuracao(T) + '   Folga ' + FmtFolga(R.TotalSlack);
-        N.Critical := R.Critical;
+        N.Critical := R.Critical or FCrono.Conflito[I];
+        if FCrono.Conflito[I] then N.Lines[2]:=N.Lines[2]+' — CONFLITO DE RECURSOS';
       end;
       N.AccentColor := IfThen(T.Marco, clPLMarinho, clPLPrimaria);
       N.Tag := I;
@@ -1481,11 +1615,13 @@ end;
 
 procedure TPLJanelaPrincipal.AoVistaGantt(Sender: TObject);
 begin
+  ExibirEtapa(2);
   MostrarVista(False);
 end;
 
 procedure TPLJanelaPrincipal.AoVistaRede(Sender: TObject);
 begin
+  ExibirEtapa(3);
   MostrarVista(True);
 end;
 
@@ -1536,12 +1672,12 @@ begin
   FWorkflowView.OnIdentityChanged := @WorkflowIdentityChanged;
   Bar := TPanel.Create(Self); Bar.Parent := Self; Bar.Align := alTop; Bar.Height := 40;
   Bar.Color := RGBToColor(30,64,145);
-  B := TButton.Create(Self); B.Parent := Bar; B.SetBounds(10,4,160,32); B.Caption := 'Gestão de tarefas'; B.OnClick := @WorkflowShow;
-  B := TButton.Create(Self); B.Parent := Bar; B.SetBounds(180,4,160,32); B.Caption := 'Planejamento'; B.OnClick := @PlanningShow;
+  B := TButton.Create(Self); B.Parent := Bar; B.SetBounds(10,4,160,32); B.Caption := 'Planejador'; B.OnClick := @PlanningShow;
+  B := TButton.Create(Self); B.Parent := Bar; B.SetBounds(180,4,160,32); B.Caption := 'Gestão de tarefas'; B.OnClick := @WorkflowShow;
   B := TButton.Create(Self); B.Parent := Bar; B.SetBounds(350,4,240,32); B.Caption := 'Enviar tarefa selecionada ao CAD'; B.OnClick := @SendSelectedTask;
   B := TButton.Create(Self); B.Parent := Bar; B.SetBounds(600,4,220,32); B.Caption := 'Aplicar retorno ao planejamento'; B.OnClick := @ApplyTaskReturn;
   G := TMenuItem.Create(Menu); G.Caption := 'Gestão'; Menu.Items.Add(G);
-  Entry('Tarefas e usuários',@WorkflowShow); Entry('Planejamento',@PlanningShow);
+  Entry('Planejador',@PlanningShow); Entry('Tarefas e usuários',@WorkflowShow);
   Entry('Enviar tarefa selecionada ao CAD',@SendSelectedTask); Entry('Aplicar retorno ao planejamento',@ApplyTaskReturn);
 end;
 
@@ -1559,10 +1695,9 @@ var I: Integer; Allowed: Boolean;
 begin
   if Sender <> nil then FWorkflowToken := FWorkflowView.Token;
   Allowed := PlanningAllowed;
-  for I := 0 to Menu.Items.Count-1 do Menu.Items[I].Visible := Allowed or (Menu.Items[I].Caption='Gestão') or (Menu.Items[I].Caption='A&juda');
+  for I := 0 to Menu.Items.Count-1 do Menu.Items[I].Visible := Allowed or (Menu.Items[I].Caption='Gestão') or (Menu.Items[I].Caption='A&juda') or (Menu.Items[I].Caption='&Setup');
   FLegacyHost.Enabled := Allowed;
-  if Allowed then LoadResponsaveis;
-  WorkflowShow(nil);
+  if Allowed then PlanningShow(nil) else WorkflowShow(nil);
 end;
 
 procedure TPLJanelaPrincipal.WorkflowShow(Sender: TObject);
@@ -1576,8 +1711,30 @@ end;
 procedure TPLJanelaPrincipal.PlanningShow(Sender: TObject);
 begin
   if not PlanningAllowed then begin ShowMessage('Este perfil acessa a gestão de tarefas, sem editar o planejamento completo.'); Exit; end;
-  LoadResponsaveis; FWorkflowView.Visible := False; FLegacyHost.Visible := True;
+  LoadResponsaveis; Recalcular; FWorkflowView.Visible := False; FLegacyHost.Visible := True;
   FLegacyHost.BringToFront;
+end;
+
+procedure TPLJanelaPrincipal.ApplyExecutor(T: TPLTarefa; const Display: string);
+var A: TJSONArray;
+begin
+  if (FTarResp.ItemIndex<0) and (T.Responsavel<>'') then Exit;
+  A:=FWorkflow.Users(FWorkflowToken);
+  try
+    T.ExecutorID:=''; T.Responsavel:=Display;
+    PLResolverExecutor(T,A);
+  finally A.Free; end;
+end;
+
+procedure TPLJanelaPrincipal.ResolveExecutors;
+var A: TJSONArray; I: Integer;
+begin
+  if not FWorkflowReady or not PlanningAllowed then Exit;
+  A:=FWorkflow.Users(FWorkflowToken);
+  try
+    for I:=0 to FDoc.Count-1 do
+      if PLResolverExecutor(FDoc[I],A) then FDoc.MarcarModificado;
+  finally A.Free; end;
 end;
 
 procedure TPLJanelaPrincipal.LoadResponsaveis;
@@ -1588,7 +1745,7 @@ begin
     A := FWorkflow.Users(FWorkflowToken);
     try
       FTarResp.Items.Clear; FTarResp.Items.Add('');
-      for I := 0 to A.Count-1 do if A.Objects[I].Get('active',False) and (A.Objects[I].Get('role','') <> 'viewer') then FTarResp.Items.Add(A.Objects[I].Get('login',''));
+      for I := 0 to A.Count-1 do if A.Objects[I].Get('active',False) and (A.Objects[I].Get('role','') <> 'viewer') then FTarResp.Items.Add(PLRotuloExecutor(A.Objects[I]));
       FTarResp.ItemIndex := FTarResp.Items.IndexOf(Prev);
     finally A.Free; end;
   finally FAtualizando := WasUpdating; end;
@@ -1603,7 +1760,7 @@ begin
 end;
 
 procedure TPLJanelaPrincipal.SendSelectedTask(Sender: TObject);
-var T: TPLTarefa; A,Tasks: TJSONArray; I: Integer; Assignee,ID,Artifact: string;
+var T: TPLTarefa; A,Tasks,Files: TJSONArray; I: Integer; Assignee,ID,Artifact: string;
 begin
   if not PlanningAllowed then Exit;
   T := Selecionada;
@@ -1619,6 +1776,8 @@ begin
     Tasks := FWorkflow.Tasks(FWorkflowToken);
     try for I := 0 to Tasks.Count-1 do if SameFileName(Tasks.Objects[I].Get('source',''),ExpandFileName(FArquivo)) and (Tasks.Objects[I].Get('source_id','')=T.Id) then begin ID := Tasks.Objects[I].Get('id',''); Artifact := Tasks.Objects[I].Get('artifact',''); Break; end; finally Tasks.Free; end;
     ID := FWorkflow.SaveTask(FWorkflowToken,ID,T.Nome,T.Notas,Assignee,Artifact,ExpandFileName(FArquivo),T.Id);
+    Files:=FDoc.ArquivosTarefa(T,FArquivo);
+    try FWorkflow.SetPlanningData(FWorkflowToken,ID,Files,FDoc.CustoTarefa(T),FDoc.CustoTarefa(T,False)); finally Files.Free; end;
     WorkflowShow(nil); FWorkflowView.SelectTask(ID); WorkflowOpenCAD(nil);
   except on E: Exception do ShowMessage(E.Message); end;
 end;
@@ -1635,7 +1794,9 @@ begin
       I := FDoc.IndiceDe(T.Get('source_id',''));
       if I < 0 then raise EWorkflow.Create('Tarefa de origem não encontrada');
       if MessageDlg('Aplicar retorno','Atualizar progresso, situação e notas da tarefa selecionada?',mtConfirmation,[mbYes,mbNo],0) <> mrYes then Exit;
-      Tar := FDoc[I]; Tar.Progresso := T.Get('progress',0);
+      Tar := FDoc[I];
+      if T.Find('files')<>nil then FDoc.DefinirArquivos(Tar,T.Arrays['files']);
+      Tar.Progresso := T.Get('progress',0);
       if T.Get('state','')='concluida' then Tar.Situacao := plsConcluida
       else if T.Get('state','')='pendente' then Tar.Situacao := plsAFazer else Tar.Situacao := plsEmAndamento;
       Tar.Notas := Tar.Notas + LineEnding + 'Retorno CAD — arquivo: '+T.Get('artifact','');

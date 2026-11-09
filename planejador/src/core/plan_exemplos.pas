@@ -8,7 +8,7 @@ unit plan_exemplos;
 interface
 
 uses
-  SysUtils, plan_tipos, plan_documento;
+  SysUtils, fpjson, plan_tipos, plan_documento, plan_recursos;
 
 procedure PLCarregarExemploResidencia(Doc: TPLProjeto; AInicio: TDateTime);
 
@@ -49,6 +49,7 @@ end;
 
 
 procedure PLCarregarExemploSaude(Doc: TPLProjeto; AInicio: TDateTime; Hospital: Boolean);
+var R: TPLRecurso; Items: TPLAlocacoes; Files: TJSONArray; O: TJSONObject;
   procedure Task(const Name,Duration,Pred,Notes: string; App: TPLAplicativo; Milestone: Boolean=False);
   var T: TPLTarefa; Err: string;
   begin
@@ -74,6 +75,21 @@ begin
   Task('Consolidação do projeto e documentação','3d','T-0010; T-0011','Consolidar desenhos, memoriais, inventário de equipamentos, respostas e pendências.',plaCAD2D);
   Task('Revisão com a gestão e equipe assistencial','2d','T-0012','Validar requisitos do empreendimento e registrar decisões do contratante.',plaNenhum);
   Task('Entrega e registro de pendências','','T-0013','Registrar arquivos entregues e pendências que impedem a próxima etapa.',plaNenhum,True);
+  R:=Doc.NovoRecurso; R.Nome:='Estação CAD — exemplo'; R.Tipo:=prtEquipamento; R.PrecoCentavos:=500; R.Notas:='Preço fictício por hora, apenas para demonstrar custos.'; Doc.AdicionarRecurso(R);
+  SetLength(Items,1); Items[0].RecursoID:=R.ID; Items[0].Unidades:=1; Items[0].Direcao:=prdUso; Items[0].CustoUnitarioCentavos:=500; Items[0].Contabilizado:=False; Doc.DefinirAlocacoes(Doc[4],Items);
+  R:=Doc.NovoRecurso; R.Nome:='Papel A3 — exemplo'; R.Tipo:=prtMaterial; R.PrecoCentavos:=150; R.Notas:='Preço fictício por folha.'; Doc.AdicionarRecurso(R);
+  Items[0].RecursoID:=R.ID; Items[0].Unidades:=10; Items[0].Direcao:=prdEntrada; Items[0].CustoUnitarioCentavos:=150; Items[0].Contabilizado:=True;
+  R:=Doc.NovoRecurso; R.Nome:='Toner — exemplo'; R.Tipo:=prtMaterial; R.PrecoCentavos:=10000; R.Notas:='Preço fictício por unidade; consumo fracionado ilustrativo.'; Doc.AdicionarRecurso(R);
+  SetLength(Items,2); Items[1].RecursoID:=R.ID; Items[1].Unidades:=0.1; Items[1].Direcao:=prdEntrada; Items[1].CustoUnitarioCentavos:=10000; Items[1].Contabilizado:=True; Doc.DefinirAlocacoes(Doc[11],Items);
+  SetLength(Doc[11].Custos,1); Doc[11].Custos[0].Nome:='Acabamento de prancha — valor fictício'; Doc[11].Custos[0].Quantidade:=1; Doc[11].Custos[0].ValorUnitarioCentavos:=2500; Doc[11].Custos[0].Contabilizado:=True;
+  Files:=TJSONArray.Create;
+  try
+    O:=TJSONObject.Create; O.Add('name','Programa de necessidades — preencher'); O.Add('link','entradas/programa_necessidades.pdf'); O.Add('direction','input'); Files.Add(O);
+    O:=TJSONObject.Create; O.Add('name','Planta de estudo — saída prevista'); O.Add('link','entregas/planta_estudo.eacad'); O.Add('direction','output'); Files.Add(O);
+    Doc.ImportarArquivos(Doc[4],Files);
+  finally Files.Free; end;
+  Doc.NovaSprint('Sprint 1 — estudo preliminar',Trunc(AInicio),Trunc(AInicio)+13);
+  Doc.NovaSprint('Sprint 2 — desenvolvimento',Trunc(AInicio)+14,Trunc(AInicio)+27);
   Doc.Modificado:=False;
 end;
 end.

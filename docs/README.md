@@ -113,3 +113,20 @@ flowchart LR
 | 30/10/2026 | Auditoria de lacunas na branch `fila`: status do código, prioridades e validações pendentes; manter MultiCNC externo |
 
 | 30/10/2026 | Versão 0.04 / instalador 004: CAD 2D com barra lateral e Gestão; integração local de tarefas, login, usuários, quatro perfis e testes de permissões |
+
+- [Setup e configuração compartilhada](Setup_Configuracao_Compartilhada.md): preferências comuns, último projeto e login lembrado.
+
+## Recursos e custos — entrega 007
+
+Etapa Recursos habilitada, arquivos opcionais de entrada/saída e custos compostos.
+Consulte [Recursos, arquivos e custos](Recursos_Arquivos_Custos.md) e [Notas da versão 007](Notas_Versao_007.md).
+
+## Acompanhamento — entrega 008
+
+Sprints, quadro TO-DO filtrado por usuário/recurso e evolução semanal do custo previsto e computado.
+Veja [o guia de acompanhamento](Sprints_TODO_Custos_Semanais.md) e [as notas 008](Notas_Versao_008.md).
+
+## Relatórios por sprint — entrega 009
+
+Pendências e carga por usuário, com horas apontadas, estimativas separadas e exportação HTML/CSV.
+Veja [o guia de relatórios de sprint](Relatorios_Sprint_Carga_Usuarios.md) e [as notas 009](Notas_Versao_009.md).

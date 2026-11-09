@@ -4,7 +4,7 @@ Windows 64 bits, Git, Python 3.9+ com Pillow, Lazarus/Free Pascal 64 bits e Inno
 
 ## Gerar no Windows
 
-    installer\windows\build_release.bat -Version 0.06 -SetupSeq 006
+    installer\windows\build_release.bat -Version 0.09 -SetupSeq 009
 
 Sem parâmetros, a versão e a sequência vêm de [installer/VERSION.ini](../VERSION.ini). O script procura as ferramentas nas pastas usuais; os caminhos podem ser definidos pelas variáveis LAZBUILD, FPC, PYTHON e ISCC. EA_CHATGPT_DIR aponta para o repositório CHATGPT quando ele não estiver ao lado deste (padrão: `..\CHATGPT`).
 

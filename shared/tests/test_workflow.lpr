@@ -2,7 +2,7 @@ program test_workflow;
 {$mode objfpc}{$H+}{$codepage utf8}
 uses Classes, SysUtils, fpjson, ea_workflow, ea_reports;
 var W,W2: TWorkflow; Root,Admin,UserToken,Restricted,Viewer,UID,RID,VID,T1,T2,Temp,ID: string;
-  CSVStream: TFileStream; CSVBytes: RawByteString; U,T: TJSONObject; A: TJSONArray; L: TStringList; Checks: Integer; Denied: Boolean; G: TGUID;
+  CSVStream: TFileStream; CSVBytes: RawByteString; U,T: TJSONObject; A,Files: TJSONArray; L: TStringList; Checks: Integer; Denied: Boolean; G: TGUID;
 procedure Check(OK: Boolean; const Msg: string);
 begin Inc(Checks); if not OK then raise Exception.Create(Msg); end;
 begin
@@ -60,6 +60,20 @@ begin
     Denied:=False; try W.Reply(Restricted,T1,'Inválida','em_andamento',101,'',False); except on E: EWorkflow do Denied:=True; end; Check(Denied,'progresso invalido recusado');
     W.Reply(Admin,T1,'Revisão aceita. Sem pendências.','concluida',80,'',False);
     T:=W.Task(Admin,T1); try Check(T.Get('progress',0)=100,'conclusao em 100%'); Check(T.Get('state','')='concluida','conclusao revisada'); Check(T.Arrays['history'].Count=3,'falhas nao gravaram respostas'); finally T.Free; end;
+    Files:=TJSONArray.Create;
+    try
+      U:=TJSONObject.Create; U.Add('name','Entrada de referência'); U.Add('link','https://exemplo.org/entrada.pdf'); U.Add('direction','input'); Files.Add(U);
+      U:=TJSONObject.Create; U.Add('name','Saída prevista'); U.Add('link','C:\Projetos\entrega.eacad'); U.Add('direction','output'); Files.Add(U);
+      W.SetPlanningData(Admin,T1,Files,25000,30000);
+      T:=W2.Task(Restricted,T1);
+      try Check(T.Arrays['files'].Count=2,'arquivos de entrada e saída chegam ao executor'); Check(T.Get('cost_output_cents',Int64(0))=25000,'custo de saída compartilhado'); finally T.Free; end;
+      W.SetTaskFiles(Restricted,T1,Files); Check(True,'executor edita arquivos da própria tarefa');
+      Denied:=False; try W.SetTaskFiles(Restricted,T2,Files); except on E: EWorkflow do Denied:=True; end; Check(Denied,'restrito não altera arquivos de outra tarefa');
+      Denied:=False; try W.SetTaskFiles(Viewer,T1,Files); except on E: EWorkflow do Denied:=True; end; Check(Denied,'visualizador não altera arquivos');
+      Denied:=False; try W.SetPlanningData(Restricted,T1,Files,1,2); except on E: EWorkflow do Denied:=True; end; Check(Denied,'executor restrito não altera custos do planejamento');
+      Denied:=False; try W.SetPlanningData(Admin,T1,Files,30000,25000); except on E: EWorkflow do Denied:=True; end; Check(Denied,'contabilizado não supera custo previsto');
+      Files.Clear; W.SetTaskFiles(Restricted,T1,Files); T:=W2.Task(Admin,T1); try Check(T.Arrays['files'].Count=0,'arquivos opcionais podem ser removidos'); finally T.Free; end;
+    finally Files.Free; end;
     W.SaveUser(Admin,RID,'restrito','Restrito','','viewer',True);
     Denied:=False; try W.Reply(Restricted,T1,'Antiga permissão','concluida',100,'',False); except on E: EWorkflow do Denied:=True; end; Check(Denied,'alteracao de perfil imediata');
     W.SaveUser(Admin,VID,'leitor','Leitor','','viewer',False);

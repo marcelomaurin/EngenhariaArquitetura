@@ -32,6 +32,8 @@ type
     function Tasks(const Token: string): TJSONArray;
     function Task(const Token, ID: string): TJSONObject;
     function SaveTask(const Token, ID, Title, Details, Assignee, Artifact, Source, SourceID: string): string;
+    procedure SetTaskFiles(const Token,ID: string; Files: TJSONArray);
+    procedure SetPlanningData(const Token,ID: string; Files: TJSONArray; Cost,PlannedCost: Int64);
     procedure Reply(const Token, ID, Text, State: string; Progress: Integer; const Artifact: string; Returned: Boolean);
     property Path: string read FPath;
   end;
@@ -42,7 +44,7 @@ procedure WFSet(O: TJSONObject; const Key: string; Value: Int64); overload;
 procedure WFSet(O: TJSONObject; const Key: string; Value: Boolean); overload;
 function WFManager(U: TJSONObject): Boolean;
 implementation
-{$IFDEF WINDOWS}uses Windows;{$ENDIF}
+uses ea_links{$IFDEF WINDOWS}, Windows{$ENDIF};
 {$IFDEF WINDOWS}
 function BCryptOpenAlgorithmProvider(out H: Pointer; Alg, Provider: PWideChar; Flags: LongWord): LongInt; stdcall; external 'bcrypt.dll';
 function BCryptCloseAlgorithmProvider(H: Pointer; Flags: LongWord): LongInt; stdcall; external 'bcrypt.dll';
@@ -282,6 +284,31 @@ begin
     Result:=T.Get('id',''); OK:=True;
   finally Finish(OK); end;
 end;
+procedure TWorkflow.SetTaskFiles(const Token,ID: string; Files: TJSONArray);
+var U,T,E: TJSONObject; OK: Boolean;
+begin
+ EAValidateFiles(Files); Open; OK:=False;
+ try
+  U:=Actor(Token); T:=Find(FData.Arrays['tasks'],ID);
+  if (T=nil) or not Visible(U,T) then raise EWorkflow.Create('Tarefa indisponível');
+  if (U.Get('role','')='viewer') or ((not WFManager(U)) and (T.Get('assignee','')<>U.Get('id',''))) then raise EWorkflow.Create('Sem permissão para alterar arquivos desta tarefa');
+  T.Delete('files'); T.Add('files',Files.Clone); WFSet(T,'updated_at',Stamp);
+  E:=TJSONObject.Create; E.Add('at',Stamp); E.Add('user_id',U.Get('id','')); E.Add('user_name',U.Get('name',''));
+  E.Add('text','Vínculos de entrada/saída atualizados: '+IntToStr(Files.Count)); E.Add('state',T.Get('state','')); E.Add('progress',T.Get('progress',0)); T.Arrays['history'].Add(E);
+  OK:=True;
+ finally Finish(OK); end;
+end;
+procedure TWorkflow.SetPlanningData(const Token,ID: string; Files: TJSONArray; Cost,PlannedCost: Int64);
+var U,T: TJSONObject; OK: Boolean;
+begin
+ EAValidateFiles(Files); if (Cost<0) or (PlannedCost<Cost) or (PlannedCost>9000000000000000) then raise EWorkflow.Create('Custo da tarefa inválido');
+ Open; OK:=False;
+ try
+  U:=Actor(Token); RequireManager(U); T:=Find(FData.Arrays['tasks'],ID); if T=nil then raise EWorkflow.Create('Tarefa não encontrada');
+  T.Delete('files'); T.Add('files',Files.Clone); WFSet(T,'cost_output_cents',Cost); WFSet(T,'cost_planned_cents',PlannedCost); WFSet(T,'updated_at',Stamp); OK:=True;
+ finally Finish(OK); end;
+end;
+
 procedure TWorkflow.Reply(const Token,ID,Text,State: string; Progress: Integer; const Artifact: string; Returned: Boolean);
 var U,T,E: TJSONObject; OK: Boolean;
 begin

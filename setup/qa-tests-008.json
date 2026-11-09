@@ -1,0 +1,57 @@
+[
+    {
+        "test":  "test_planejador_core",
+        "passed":  true,
+        "summary":  "95 verificações, 0 falhas"
+    },
+    {
+        "test":  "test_cad_document",
+        "passed":  true,
+        "summary":  "33 verificacoes de persistencia CAD e gravacao segura, 0 falhas"
+    },
+    {
+        "test":  "test_cad_dxf",
+        "passed":  true,
+        "summary":  "15 verificacoes DXF 2D, 0 falhas"
+    },
+    {
+        "test":  "test_cad_catalog",
+        "passed":  true,
+        "summary":  "59 verificacoes de biblioteca e exemplos de saude, 0 falhas"
+    },
+    {
+        "test":  "test_config",
+        "passed":  true,
+        "summary":  "26 verificacoes de configuracao compartilhada, 0 falhas"
+    },
+    {
+        "test":  "test_recursos",
+        "passed":  true,
+        "summary":  "57 verificacoes de recursos, arquivos e custos, 0 falhas"
+    },
+    {
+        "test":  "test_sprints",
+        "passed":  true,
+        "summary":  "61 verificacoes de sprints, TO-DO e custos semanais, 0 falhas"
+    },
+    {
+        "test":  "test_cad2d",
+        "passed":  true,
+        "summary":  "68 verificacoes CAD 2D, 0 falhas"
+    },
+    {
+        "test":  "test_recursos_ui",
+        "passed":  true,
+        "summary":  "15 verificacoes da interface de recursos e custos, 0 falhas"
+    },
+    {
+        "test":  "test_acompanhamento_ui",
+        "passed":  true,
+        "summary":  "37 verificacoes da interface TO-DO, sprints e custos semanais, 0 falhas"
+    },
+    {
+        "test":  "test_workflow",
+        "passed":  true,
+        "summary":  "49 verificacoes de gestao, usuarios e permissoes, 0 falhas"
+    }
+]

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG><ProjectOptions><Version Value="12"/><General><ResourceType Value="res"/></General>
+<Units Count="1"><Unit0><Filename Value="test_acompanhamento_ui.lpr"/><IsPartOfProject Value="True"/></Unit0></Units>
+<RequiredPackages Count="1"><Item1><PackageName Value="LCL"/></Item1></RequiredPackages></ProjectOptions>
+<CompilerOptions><Version Value="11"/><Target><Filename Value="../../dist/tests/test_acompanhamento_ui"/></Target>
+<SearchPaths><OtherUnitFiles Value="../../shared;../src/app;../src/core;../src/io;../src/view;../../../CHATGPT/pacote/AI Project Core;../../../CHATGPT/pacote/AI Project;../../third_party/chatgpt/AIProjectCore;../../third_party/chatgpt/AIProject"/><UnitOutputDirectory Value="lib/acompanhamento-ui/$(TargetCPU)-$(TargetOS)"/></SearchPaths>
+</CompilerOptions></CONFIG>

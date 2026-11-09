@@ -4,6 +4,7 @@ interface
 uses Classes, SysUtils, fpjson, ea_workflow, ea_fileio;
 procedure WFExportTasksCSV(Store: TWorkflow; const Token,FileName: string);
 implementation
+uses ea_money;
 function QuoteField(const S: string): string;
 var Safe: string; I: Integer;
 begin
@@ -16,11 +17,11 @@ var A: TJSONArray; T: TJSONObject; L: TStringList; I: Integer;
 begin
   A:=Store.Tasks(Token); L:=TStringList.Create;
   try
-    L.Add('Tarefa;Responsável;Situação;Progresso;Detalhes;Arquivo;Atualização');
+    L.Add('Tarefa;Responsável;Situação;Progresso;Detalhes;Arquivo;Atualização;Custo previsto;Custo de saída');
     for I:=0 to A.Count-1 do begin
       T:=A.Objects[I];
       L.Add(QuoteField(T.Get('title',''))+';'+QuoteField(T.Get('assignee_name',''))+';'+QuoteField(T.Get('state',''))+';'+
-        IntToStr(T.Get('progress',0))+';'+QuoteField(T.Get('details',''))+';'+QuoteField(T.Get('artifact',''))+';'+QuoteField(T.Get('updated_at','')));
+        IntToStr(T.Get('progress',0))+';'+QuoteField(T.Get('details',''))+';'+QuoteField(T.Get('artifact',''))+';'+QuoteField(T.Get('updated_at',''))+';'+QuoteField(EAMoneyText(T.Get('cost_planned_cents',Int64(0))))+';'+QuoteField(EAMoneyText(T.Get('cost_output_cents',Int64(0)))));
     end;
     EAAtomicWriteText(FileName,#$EF#$BB#$BF+L.Text);
   finally L.Free; A.Free; end;

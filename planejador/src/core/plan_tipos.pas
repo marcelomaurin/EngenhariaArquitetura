@@ -8,7 +8,7 @@ unit plan_tipos;
 interface
 
 uses
-  SysUtils, aiprojectduration, aitaskgraph;
+  SysUtils, aiprojectduration, aitaskgraph, plan_recursos;
 
 type
   { aplicativo da plataforma que executa a tarefa (RFP-004) }
@@ -21,8 +21,12 @@ type
   public
     Id: string;
     Nome: string;
-    Responsavel: string;
+    Responsavel: string; // login do executor (compatibilidade)
+    ExecutorID, ExecutorNome: string;
+    InicioSolicitado: TDateTime; // 0 = automático; início não anterior à data
     Notas: string;
+    Alocacoes: TPLAlocacoes;
+    Custos: TPLCustos;
     Duracao: TAIDuration;
     Marco: Boolean;
     Aplicativo: TPLAplicativo;
@@ -89,7 +93,11 @@ begin
   Id := Source.Id;
   Nome := Source.Nome;
   Responsavel := Source.Responsavel;
+  ExecutorID := Source.ExecutorID; ExecutorNome := Source.ExecutorNome;
+  InicioSolicitado := Source.InicioSolicitado;
   Notas := Source.Notas;
+  Alocacoes := Copy(Source.Alocacoes);
+  Custos := Copy(Source.Custos);
   Duracao := Source.Duracao;
   Marco := Source.Marco;
   Aplicativo := Source.Aplicativo;

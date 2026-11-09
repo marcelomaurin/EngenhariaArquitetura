@@ -1,0 +1,5 @@
+﻿Semana início;Semana fim;Custo previsto;Custo computado;Desvio computado-previsto;Variação semanal previsto;Variação semanal computado;Variação computado %;Observação
+"2026-10-05";"2026-10-11";"R$ 100,00";"R$ 20,00";"-R$ 80,00";"";"";"";"Base inicial"
+"2026-10-12";"2026-10-18";"R$ 100,00";"R$ 120,00";"R$ 20,00";"R$ 0,00";"R$ 100,00";"500,00%";""
+"2026-10-19";"2026-10-25";"R$ 100,00";"R$ 120,00";"R$ 20,00";"R$ 0,00";"R$ 0,00";"0,00%";"Sem nova apuração; valores mantidos"
+"2026-10-26";"2026-11-01";"R$ 150,00";"R$ 100,00";"-R$ 50,00";"R$ 50,00";"-R$ 20,00";"-16,67%";""

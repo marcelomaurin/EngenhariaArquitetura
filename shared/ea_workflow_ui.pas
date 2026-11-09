@@ -17,6 +17,7 @@ type
     FNew,FEdit,FUsers,FRespond: TButton;
     procedure RefreshClick(Sender: TObject);
     procedure ExportClick(Sender: TObject);
+    procedure FilesClick(Sender: TObject);
     procedure Selection(Sender: TObject; ACol,ARow: Integer);
     procedure NewClick(Sender: TObject);
     procedure EditClick(Sender: TObject);
@@ -41,7 +42,7 @@ type
 function WFLoginDialog(Store: TWorkflow; var Token: string): Boolean;
 procedure WFLaunch(const Executable: string; const Args: array of string);
 implementation
-uses Process, ea_reports;
+uses Process, ea_reports, ea_config, ea_money, ea_links_ui;
 const STATES: array[0..3] of string = ('pendente','em_andamento','devolvida','concluida');
 function RoleName(const Code: string): string;
 var I: Integer;
@@ -83,6 +84,7 @@ begin
     if First then LabelAt(F,'Crie o primeiro Administrador',24,16,410)
     else LabelAt(F,'Entre para acessar suas tarefas',24,16,410);
     LabelAt(F,'Login',24,52,410); L:=EditAt(F,'',24,76,410);
+    try L.Text:=EAConfigGet('last_login'); except on E: Exception do ShowMessage('Não foi possível ler o login do Setup: '+E.Message); end;
     LabelAt(F,'Senha (mínimo de 8 caracteres para nova conta)',24,112,410);
     P:=EditAt(F,'',24,136,410); P.PasswordChar:='*';
     N:=nil;
@@ -90,6 +92,7 @@ begin
     B:=ButtonAt(F,'Entrar',220,252,100,nil); B.ModalResult:=mrOK; B.Default:=True;
     B:=ButtonAt(F,'Cancelar',330,252,104,nil); B.ModalResult:=mrCancel; B.Cancel:=True;
     while F.ShowModal=mrOK do begin
+      try EAConfigSet('last_login',Trim(L.Text)); except on E: Exception do ShowMessage('Não foi possível lembrar o login: '+E.Message); end;
       try
         if First then NewToken:=Store.Bootstrap(L.Text,N.Text,P.Text) else NewToken:=Store.Login(L.Text,P.Text);
         Token:=NewToken; Exit(True);
@@ -167,6 +170,7 @@ begin
   ButtonAt(TopBar,'Exportar CSV',752,40,116,@ExportClick);
   FSummary:=LabelAt(TopBar,'',16,80,950); FSummary.Font.Color:=clWhite;
   Right:=TPanel.Create(Self); Right.Parent:=Self; Right.Align:=alRight; Right.Width:=360; Right.BevelOuter:=bvNone;
+  B:=ButtonAt(Right,'Arquivos de entrada / saída',0,0,300,@FilesClick); B.Align:=alTop;
   FInfo:=TMemo.Create(Self); FInfo.Parent:=Right; FInfo.Align:=alTop; FInfo.Height:=140; FInfo.ReadOnly:=True; FInfo.ScrollBars:=ssAutoVertical;
   FHistory:=TMemo.Create(Self); FHistory.Parent:=Right; FHistory.Align:=alClient; FHistory.ReadOnly:=True; FHistory.ScrollBars:=ssAutoVertical;
   FReply:=TMemo.Create(Self); FReply.Parent:=Right; FReply.Align:=alBottom; FReply.Height:=80; FReply.TextHint:='O que foi feito? O que falta?';
@@ -223,6 +227,9 @@ begin
     try
       FInfo.Lines.Add(T.Get('title','')); FInfo.Lines.Add('Responsável: '+T.Get('assignee_name',''));
       FInfo.Lines.Add('Arquivo: '+T.Get('artifact','')); FInfo.Lines.Add('Origem: '+T.Get('source','')); FInfo.Lines.Add(''); FInfo.Lines.Add(T.Get('details',''));
+      FInfo.Lines.Add('Custo previsto: '+EAMoneyText(T.Get('cost_planned_cents',Int64(0))));
+      FInfo.Lines.Add('Custo de saída: '+EAMoneyText(T.Get('cost_output_cents',Int64(0))));
+      if T.Find('files')<>nil then for I:=0 to T.Arrays['files'].Count-1 do FInfo.Lines.Add(T.Arrays['files'].Objects[I].Get('direction','')+': '+T.Arrays['files'].Objects[I].Get('name',''));
       FProgress.Value:=T.Get('progress',0); FState.ItemIndex:=0;
       for I:=0 to 3 do if T.Get('state','')=STATES[I] then FState.ItemIndex:=I;
       for I:=0 to T.Arrays['history'].Count-1 do begin E:=T.Arrays['history'].Objects[I]; FHistory.Lines.Add(E.Get('at','')+' — '+E.Get('user_name','')+' ['+StateName(E.Get('state',''))+']'); FHistory.Lines.Add(E.Get('text','')); FHistory.Lines.Add(''); end;
@@ -287,6 +294,20 @@ function TWorkflowPanel.ReplyState: string;
 begin Result:=STATES[FState.ItemIndex]; end;
 function TWorkflowPanel.ReplyProgress: Integer;
 begin Result:=FProgress.Value; end;
+
+procedure TWorkflowPanel.FilesClick(Sender: TObject);
+var T,U: TJSONObject; Files: TJSONArray; CanEdit: Boolean;
+begin
+ if SelectedID='' then begin ShowMessage('Selecione uma tarefa'); Exit; end;
+ try
+  T:=FStore.Task(FToken,SelectedID); U:=nil; Files:=nil;
+  try
+   U:=FStore.User(FToken); CanEdit:=(U.Get('role','')<>'viewer') and (WFManager(U) or (T.Get('assignee','')=U.Get('id','')));
+   if T.Find('files')<>nil then Files:=TJSONArray(T.Arrays['files'].Clone) else Files:=TJSONArray.Create;
+   if EAEditFiles(TForm(GetParentForm(Self)),Files,T.Get('source',''),not CanEdit) then begin FStore.SetTaskFiles(FToken,SelectedID,Files); Refresh; end;
+  finally Files.Free; U.Free; T.Free; end;
+ except on E: Exception do ShowMessage(E.Message); end;
+end;
 
 procedure TWorkflowPanel.ExportClick(Sender: TObject);
 var D: TSaveDialog;

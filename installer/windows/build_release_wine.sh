@@ -64,6 +64,10 @@ TESTS=(
   "cad2d/tests/test_cad_document|cad2d/src/app;shared"
   "cad2d/tests/test_cad_dxf|cad2d/src/app;shared"
   "cad2d/tests/test_cad_catalog|cad2d/src/app;shared"
+  "shared/tests/test_config|shared"
+  "planejador/tests/test_recursos|planejador/src/core;planejador/src/io;shared"
+  "planejador/tests/test_sprints|planejador/src/core;planejador/src/io;shared"
+  "planejador/tests/test_relatorios_sprint|planejador/src/core;planejador/src/io;shared"
 )
 QA="$DIST/qa-tests.json"; echo "[" > "$QA"; first=1
 mkdir -p "$DIST/tests"
@@ -89,6 +93,24 @@ resumo=$(tail -1 "$DIST/build-logs/test_cad2d.run.log" | tr -d '\r')
 echo "," >> "$QA"
 printf '  {"test": "test_cad2d", "passed": true, "summary": "%s"}' "$resumo" >> "$QA"
 echo "  test_cad2d: $resumo"
+"$LAZBUILD" -B --cpu=x86_64 --os=win64 --ws=win32 planejador/tests/test_recursos_ui.lpi > "$DIST/build-logs/test_recursos_ui.log" 2>&1
+"$WINE" "$DIST/tests/test_recursos_ui.exe" > "$DIST/build-logs/test_recursos_ui.run.log" 2>&1
+resumo=$(tail -1 "$DIST/build-logs/test_recursos_ui.run.log" | tr -d '\r')
+echo "," >> "$QA"
+printf '  {"test": "test_recursos_ui", "passed": true, "summary": "%s"}' "$resumo" >> "$QA"
+echo "  test_recursos_ui: $resumo"
+"$LAZBUILD" -B --cpu=x86_64 --os=win64 --ws=win32 planejador/tests/test_acompanhamento_ui.lpi > "$DIST/build-logs/test_acompanhamento_ui.log" 2>&1
+"$WINE" "$DIST/tests/test_acompanhamento_ui.exe" > "$DIST/build-logs/test_acompanhamento_ui.run.log" 2>&1
+resumo=$(tail -1 "$DIST/build-logs/test_acompanhamento_ui.run.log" | tr -d '\r')
+echo "," >> "$QA"
+printf '  {"test": "test_acompanhamento_ui", "passed": true, "summary": "%s"}' "$resumo" >> "$QA"
+echo "  test_acompanhamento_ui: $resumo"
+"$LAZBUILD" -B --cpu=x86_64 --os=win64 --ws=win32 planejador/tests/test_relatorios_sprint_ui.lpi > "$DIST/build-logs/test_relatorios_sprint_ui.log" 2>&1
+"$WINE" "$DIST/tests/test_relatorios_sprint_ui.exe" > "$DIST/build-logs/test_relatorios_sprint_ui.run.log" 2>&1
+resumo=$(tail -1 "$DIST/build-logs/test_relatorios_sprint_ui.run.log" | tr -d '\r')
+echo "," >> "$QA"
+printf '  {"test": "test_relatorios_sprint_ui", "passed": true, "summary": "%s"}' "$resumo" >> "$QA"
+echo "  test_relatorios_sprint_ui: $resumo"
 mkdir -p "$DIST/tests/workflow-units"
 "$FPC_BIN" -Px86_64 -Twin64 -Mobjfpc -Sh -Fu"$ROOT/shared" -FU"$DIST/tests/workflow-units" -o"$DIST/tests/test_workflow.exe" shared/tests/test_workflow.lpr > "$DIST/build-logs/test_workflow.log" 2>&1
 "$WINE" "$DIST/tests/test_workflow.exe" > "$DIST/build-logs/test_workflow.run.log" 2>&1
@@ -108,6 +130,7 @@ cp docs/*.md "$APP/documentation/docs/"
 cp planejador/README.md "$APP/documentation/Planejador_README.md"
 cp cad2d/README.md "$APP/documentation/CAD2D_README.md"
 cp planejador/examples/*.plan.json "$APP/exemplos/"
+cp planejador/examples/*.html planejador/examples/*.csv "$APP/exemplos/"
 cp cad2d/examples/*.eacad "$APP/exemplos/"
 mkdir -p "$APP/bibliotecas"
 cp libraries/catalogo_2d.json "$APP/bibliotecas/"

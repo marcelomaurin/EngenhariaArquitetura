@@ -73,3 +73,34 @@ com acesso irrestrito ao mesmo arquivo ou à mesma conta do Windows.
 - A inspeção visual manual do fluxo completo continua necessária.
 
 Na versão 0.05, Exportar CSV respeita a visão de tarefas do perfil. A persistência do CAD e do Planejador foi reforçada; consulte [Notas da versão 005](Notas_Versao_005.md).
+
+## Navegação inicial
+
+O primeiro botão da barra superior é **Planejador**, seguido de **Gestão de tarefas**.
+Após a identificação, os perfis com permissão de planejamento abrem no Planejador.
+Perfis limitados à gestão continuam na visão permitida de tarefas. Ao receber
+uma tarefa pelo CAD, o Planejador abre a gestão com essa tarefa selecionada.
+
+## Início por tarefa, executor e conflitos
+
+No painel da tarefa do Planejador, indique **Início solicitado**. Vazio mantém
+cálculo automático; preenchido significa iniciar nessa data ou depois,
+respeitando dependências e o calendário de trabalho. Datas posteriores são aceitas.
+O início efetivo e o término calculados aparecem na tabela e nos detalhes.
+
+O campo **Executor** apresenta nome e login dos usuários cadastrados. A identidade,
+o nome e o login ficam associados à tarefa. Na ausência de indicação, é escolhido
+o primeiro Administrador ativo cadastrado. Projetos legados com responsável já
+preenchido preservam essa informação; usuários reconhecidos recebem identificação.
+
+Tarefas com o mesmo executor e períodos calculados sobrepostos são aceitas,
+mas ambas recebem barra vermelha e a indicação **CONFLITO** no Gantt. Os detalhes
+e os avisos identificam a sobreposição; a rede também indica o conflito.
+O caminho crítico já utilizava vermelho, portanto o texto CONFLITO distingue o alerta.
+Término de uma tarefa exatamente no início da outra não representa sobreposição.
+Marcos de duração zero não consomem intervalo de execução. Não há remanejamento
+automático por disponibilidade: ajuste datas, duração, vínculos ou executor.
+A verificação considera tarefas do projeto aberto, sem agregar outros projetos.
+
+O último login confirmado é lembrado para o próximo acesso. Ele pode ser editado
+em **Setup**; a senha continua sendo solicitada. Veja [Configuração compartilhada](Setup_Configuracao_Compartilhada.md).

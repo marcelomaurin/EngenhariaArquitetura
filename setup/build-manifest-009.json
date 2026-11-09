@@ -1,0 +1,338 @@
+{
+  "schema_version": "1.0",
+  "package_type": "build_manifest",
+  "product": "EngenhariaArquitetura",
+  "version": "0.09",
+  "binary_version": "0.9.0.0",
+  "setup_seq": "009",
+  "os": "windows",
+  "arch": "amd64",
+  "built_at": "2026-10-31T19:20:03+00:00",
+  "source_commit": "322c85951dc440acaa5856c2af5d314dfe1e169a",
+  "source_branch": "fila",
+  "source_dirty": true,
+  "tests": [
+    {
+      "test": "test_planejador_core",
+      "passed": true,
+      "summary": "95 verificações, 0 falhas"
+    },
+    {
+      "test": "test_cad_document",
+      "passed": true,
+      "summary": "33 verificacoes de persistencia CAD e gravacao segura, 0 falhas"
+    },
+    {
+      "test": "test_cad_dxf",
+      "passed": true,
+      "summary": "15 verificacoes DXF 2D, 0 falhas"
+    },
+    {
+      "test": "test_cad_catalog",
+      "passed": true,
+      "summary": "59 verificacoes de biblioteca e exemplos de saude, 0 falhas"
+    },
+    {
+      "test": "test_config",
+      "passed": true,
+      "summary": "26 verificacoes de configuracao compartilhada, 0 falhas"
+    },
+    {
+      "test": "test_recursos",
+      "passed": true,
+      "summary": "57 verificacoes de recursos, arquivos e custos, 0 falhas"
+    },
+    {
+      "test": "test_sprints",
+      "passed": true,
+      "summary": "61 verificacoes de sprints, TO-DO e custos semanais, 0 falhas"
+    },
+    {
+      "test": "test_relatorios_sprint",
+      "passed": true,
+      "summary": "58 verificacoes de relatorios de sprint e apontamentos, 0 falhas"
+    },
+    {
+      "test": "test_cad2d",
+      "passed": true,
+      "summary": "68 verificacoes CAD 2D, 0 falhas"
+    },
+    {
+      "test": "test_recursos_ui",
+      "passed": true,
+      "summary": "15 verificacoes da interface de recursos e custos, 0 falhas"
+    },
+    {
+      "test": "test_acompanhamento_ui",
+      "passed": true,
+      "summary": "41 verificacoes da interface TO-DO, sprints e custos semanais, 0 falhas"
+    },
+    {
+      "test": "test_relatorios_sprint_ui",
+      "passed": true,
+      "summary": "33 verificacoes da interface de relatorios de sprint, 0 falhas"
+    },
+    {
+      "test": "test_workflow",
+      "passed": true,
+      "summary": "49 verificacoes de gestao, usuarios e permissoes, 0 falhas"
+    }
+  ],
+  "files": [
+    {
+      "path": "bibliotecas/catalogo_2d.json",
+      "bytes": 47907,
+      "sha256": "1b2582edcb8d3f148fec7a19c4c5e1a28bec86de1703b39682d7c905fd86a575"
+    },
+    {
+      "path": "cad2d.exe",
+      "bytes": 3599872,
+      "sha256": "ebcaf395577b81d97b5f0b1ab37bc60a9c616301fa6aa299e3af72d91084ca7f"
+    },
+    {
+      "path": "documentation/CAD2D_README.md",
+      "bytes": 20636,
+      "sha256": "c22cf2f4e9fb6566a4386fcf59d2addd0be90de67188c152e95ecaea5808bfc5"
+    },
+    {
+      "path": "documentation/Planejador_README.md",
+      "bytes": 11033,
+      "sha256": "b737747ba6351fb6640135f699fb2dcd77b5fff29d08a08807c3976bd8af7e06"
+    },
+    {
+      "path": "documentation/README.md",
+      "bytes": 6174,
+      "sha256": "5c128b6304a03cad5f17cf0ee199cd8741934ebebfd2b3bb43130791a4f1d18c"
+    },
+    {
+      "path": "documentation/docs/Auditoria_Lacunas_2026-10-30.md",
+      "bytes": 17777,
+      "sha256": "1c60c17dba973c04c746ecb0dbe919aac7d50292097ae8eb942f18288f17c37c"
+    },
+    {
+      "path": "documentation/docs/CAD_Arquitetonico_2D.md",
+      "bytes": 16444,
+      "sha256": "d22aa7ebe657ee49eb423f49506d84f753daff96276dbda98dfccac3a6beb568"
+    },
+    {
+      "path": "documentation/docs/Criador_Cenas.md",
+      "bytes": 8293,
+      "sha256": "61496a4d54ec832409ceefee1a33916988848c36d3648ceee5cc3aa6b06b0479"
+    },
+    {
+      "path": "documentation/docs/Decisoes.md",
+      "bytes": 5326,
+      "sha256": "218b0b8b23141907454776c4dadfed5a099e8b54214552b10896684203018f04"
+    },
+    {
+      "path": "documentation/docs/Direcionamento_Saude_SUS.md",
+      "bytes": 3571,
+      "sha256": "a9761c6c8ed80356cd154f4569f8427c13f3850c16a8958f5a559d6d4dc0b476"
+    },
+    {
+      "path": "documentation/docs/Editor_Objetos_3D.md",
+      "bytes": 22518,
+      "sha256": "5af7eaff7c3515f85c5df337e1fb5650ce619a54adcf2586c5472b2d2a53a827"
+    },
+    {
+      "path": "documentation/docs/Eletrica_3D.md",
+      "bytes": 9990,
+      "sha256": "a1583fa036a5a005564252bb247544aae52ef9b4ca9a5530692585f607e18879"
+    },
+    {
+      "path": "documentation/docs/Gerador_Texturas.md",
+      "bytes": 11005,
+      "sha256": "33d99ac8b7acc37349376d8a9b989fc74881511ce6211c4f91327af18648985c"
+    },
+    {
+      "path": "documentation/docs/Gestao_Tarefas_Usuarios.md",
+      "bytes": 6881,
+      "sha256": "f8b0301f2065155637198b7d1bd5d741b0d78f8428bb68e69c1f84c470474bbc"
+    },
+    {
+      "path": "documentation/docs/Integracoes.md",
+      "bytes": 19590,
+      "sha256": "a976ae5f3c8d76a5fd651bc24cc1701677911ac3b9d6ac2c726f12242ff494a5"
+    },
+    {
+      "path": "documentation/docs/Maquete_3D.md",
+      "bytes": 7426,
+      "sha256": "2d44e56b18cc020fe08c7b18dde6db91c79102d48c2abb2eb331512d943b3c37"
+    },
+    {
+      "path": "documentation/docs/Motor_Importacao.md",
+      "bytes": 11572,
+      "sha256": "a591e0f90cf7caf4f990d5dd516b70852b5da180ceeb035f225fc177800b2574"
+    },
+    {
+      "path": "documentation/docs/Notas_Versao_004.md",
+      "bytes": 2867,
+      "sha256": "b69d37cb2559c98be65724b596a21d1755dbfcdf582c390e76474154727cda9d"
+    },
+    {
+      "path": "documentation/docs/Notas_Versao_005.md",
+      "bytes": 4381,
+      "sha256": "e062cbf0f885fdbe504e078162096399a74c179e2b89d05015719d2a730914fe"
+    },
+    {
+      "path": "documentation/docs/Notas_Versao_006.md",
+      "bytes": 3422,
+      "sha256": "63537d3d4a12a02b544b8bebe5d16cbd638cc032f583b69a895dc2fb9fe2feee"
+    },
+    {
+      "path": "documentation/docs/Notas_Versao_007.md",
+      "bytes": 2002,
+      "sha256": "3684bebbeca8a8c7307ca0a4a9f6ca4dcaf865de46de8ccf8044e5fa1c5b08c3"
+    },
+    {
+      "path": "documentation/docs/Notas_Versao_008.md",
+      "bytes": 2127,
+      "sha256": "d3e9fdbd5e3ac8622cb3ffa4006aae0ba7ee1898e02cf2df091f58d27926ca00"
+    },
+    {
+      "path": "documentation/docs/Notas_Versao_009.md",
+      "bytes": 2202,
+      "sha256": "8ae9fbab03ed413d5f4ffb87b4b2e3235ed44b8c8a53bec41c2fa51174be6f24"
+    },
+    {
+      "path": "documentation/docs/Nucleo_Comum.md",
+      "bytes": 5332,
+      "sha256": "cdf7c889bbb12a1fe8872e8d123468ffe02ffb10f0e77178aca4b77a6ea52e12"
+    },
+    {
+      "path": "documentation/docs/Pendencias_Planejador_2026-10-30.md",
+      "bytes": 20518,
+      "sha256": "5464b25ae725ba95a804aa0956c729e7845f8835a05fbee2a6399538a27cf6e6"
+    },
+    {
+      "path": "documentation/docs/Planejador.md",
+      "bytes": 9153,
+      "sha256": "a7c3d121b32dd86c2fddfa7beba4b464e9f58fc4c68ce1647169a1e1b09dee4a"
+    },
+    {
+      "path": "documentation/docs/Plano_Desenvolvimento.md",
+      "bytes": 13657,
+      "sha256": "7bb322b77dec9b02100a95265ae3fd89a0b2b5b697d7d7b1cb35344d8a4b8584"
+    },
+    {
+      "path": "documentation/docs/README.md",
+      "bytes": 8779,
+      "sha256": "aa4490a7162c6daae0ee9e166335eca6d3c8e8591fa3cd6aeb8be08b60c3b9da"
+    },
+    {
+      "path": "documentation/docs/Recursos_Arquivos_Custos.md",
+      "bytes": 6848,
+      "sha256": "a871000af9d769813119897105894584fc323c06ba2969c6bc950befb487f6e3"
+    },
+    {
+      "path": "documentation/docs/Relatorios_Sprint_Carga_Usuarios.md",
+      "bytes": 6728,
+      "sha256": "a5e01bd9bce66d4fe3d3bd1fe7ef82e5466aa8a45b42d42ff9b2f3689b98def8"
+    },
+    {
+      "path": "documentation/docs/Setup_Configuracao_Compartilhada.md",
+      "bytes": 3625,
+      "sha256": "7a14d1efcf0868c5711e2e1599e7c29616ffcfad6965bbcdb6459839ff5f2e45"
+    },
+    {
+      "path": "documentation/docs/SimuEletrica.md",
+      "bytes": 20119,
+      "sha256": "4e2cf793beb2e43e93d27096726277566fc40eca93928534ba47967b965b1367"
+    },
+    {
+      "path": "documentation/docs/SimuTubulacoes.md",
+      "bytes": 29683,
+      "sha256": "8150cbc19b8bcaecd2d7937dc46abd824e1a0ebe54b348487872783e96f413f1"
+    },
+    {
+      "path": "documentation/docs/Sprints_TODO_Custos_Semanais.md",
+      "bytes": 6885,
+      "sha256": "c891f8ae95bd8c44a9b20590b4fb2a266fe797c2c888cb993795e554ee41d70a"
+    },
+    {
+      "path": "documentation/docs/Visao_Geral_Plataforma.md",
+      "bytes": 13421,
+      "sha256": "0e3e988e62a8affc259798b3be3ff7c51901a6493a167be24c966a3f44a8d230"
+    },
+    {
+      "path": "documentation/libraries/README.md",
+      "bytes": 2157,
+      "sha256": "1d9897138ee6d6ea7b242d32ab77efe41219f761c4919528566ac00552059485"
+    },
+    {
+      "path": "engenhariaarquitetura.exe",
+      "bytes": 2833920,
+      "sha256": "3a0373ebcb75f255dfe7d28663925f344f61f57d54f835ab4a2b6cb146fdf09a"
+    },
+    {
+      "path": "exemplos/ala_hospitalar.plan.json",
+      "bytes": 32194,
+      "sha256": "93323723b5caaea563fae148980ec220393c044f12d616773123bbd33ea876c1"
+    },
+    {
+      "path": "exemplos/ala_hospitalar_estudo.eacad",
+      "bytes": 38796,
+      "sha256": "fa1a6db8e1affa94125f21611358ec1e644b95d6faa495816c36e1c04faeb6e7"
+    },
+    {
+      "path": "exemplos/relatorio_custos_exemplo.csv",
+      "bytes": 592,
+      "sha256": "5c7b54e2a502b16a7e7a62a8797ca0d14b4f6d1dc5a8acd2a9e2753deb7ff8a1"
+    },
+    {
+      "path": "exemplos/relatorio_custos_exemplo.html",
+      "bytes": 2678,
+      "sha256": "dbd43e87a8195184e32de36e5baa8655b3b6a1bbaac2750751365d5e6baefb44"
+    },
+    {
+      "path": "exemplos/relatorio_sprint_exemplo.html",
+      "bytes": 5122,
+      "sha256": "fa1279cc88c9f0904510e197cb238a0c6028f0915560eeb8baf277969e3564d6"
+    },
+    {
+      "path": "exemplos/residencia.plan.json",
+      "bytes": 16748,
+      "sha256": "47bce26a25301f09972fb0ebd23a64033982c490e7da5636cf89dd56f5bfeabd"
+    },
+    {
+      "path": "exemplos/sprint_horas_exemplo.csv",
+      "bytes": 1092,
+      "sha256": "78594d5e01fa1e8500c2a7b887afda8e48c5cd68aa7f99e47d313eec7b361aa3"
+    },
+    {
+      "path": "exemplos/sprint_pendencias_exemplo.csv",
+      "bytes": 895,
+      "sha256": "2c337feb7c4645d36bc15547dde6c766b990f8aa67a377ee6cce504664d0006f"
+    },
+    {
+      "path": "exemplos/sprint_usuarios_exemplo.csv",
+      "bytes": 859,
+      "sha256": "341397258d22f1af7f26b19663bc02ea917d62a3a36142463684e20ebb525f3e"
+    },
+    {
+      "path": "exemplos/ubs.plan.json",
+      "bytes": 32170,
+      "sha256": "ff28a5dd3a0f6f928a9be0161c123a5c4aff5719ab87035033ee0cd949326eef"
+    },
+    {
+      "path": "exemplos/ubs_estudo.eacad",
+      "bytes": 30223,
+      "sha256": "7f7e589eeb0273b757a08cfa66e1a9dd8e304ef9ac2efd6dafa829dd0b29f721"
+    },
+    {
+      "path": "licencas/CHATGPT_LICENSE.txt",
+      "bytes": 35823,
+      "sha256": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809"
+    },
+    {
+      "path": "planejador.exe",
+      "bytes": 4560384,
+      "sha256": "e8b2d9cee37250457ffaddb5cfd45803cad3dae707a4f326a1420da5fbc9041c"
+    },
+    {
+      "path": "qa-tests.json",
+      "bytes": 2042,
+      "sha256": "c9232b614218753a32b417772299565b0ea9d6b716a06ed7ea7809bc18300488"
+    }
+  ]
+}

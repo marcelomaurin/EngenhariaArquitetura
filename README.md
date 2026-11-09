@@ -33,7 +33,7 @@ O instalador para Windows 64 bits e os executáveis ficam em [`bin/`](bin/), com
 
 | Arquivo | Conteúdo |
 |---|---|
-| `bin/setup_engenhariaarquitetura_006.exe` | Instalador da plataforma (versão 0.06) |
+| `bin/setup_engenhariaarquitetura_009.exe` | Instalador da plataforma (versão 0.09) |
 | `bin/planejador.exe` | Planejador para Windows 64 bits |
 | `bin/cad2d.exe` | CAD Arquitetônico 2D para Windows 64 bits |
 | `bin/engenhariaarquitetura.exe` | Central de Aplicativos (lançador) |
@@ -74,3 +74,20 @@ Veja [as notas da versão 005](docs/Notas_Versao_005.md) para limites, testes e 
 ## Bibliotecas e exemplos de saúde
 
 A versão 0.06 inclui 48 itens em biblioteca 2D, estudos esquemáticos de UBS e ala hospitalar e exemplos de planejamento correspondentes. As medidas são iniciais e editáveis; o exemplo residencial e os recursos gerais permanecem disponíveis. Consulte [Direcionamento para saúde e SUS](docs/Direcionamento_Saude_SUS.md) e [Notas da versão 006](docs/Notas_Versao_006.md).
+
+- [Setup e configuração compartilhada](docs/Setup_Configuracao_Compartilhada.md): preferências comuns, último projeto e login lembrado.
+
+## Recursos e custos — entrega 007
+
+Etapa Recursos habilitada, arquivos opcionais de entrada/saída e custos compostos.
+Consulte [Recursos, arquivos e custos](docs/Recursos_Arquivos_Custos.md) e [Notas da versão 007](docs/Notas_Versao_007.md).
+
+## Acompanhamento — entrega 008
+
+Sprints, quadro TO-DO filtrado por usuário/recurso e evolução semanal do custo previsto e computado.
+Veja [o guia de acompanhamento](docs/Sprints_TODO_Custos_Semanais.md) e [as notas 008](docs/Notas_Versao_008.md).
+
+## Relatórios por sprint — entrega 009
+
+Pendências e carga por usuário, com horas apontadas, estimativas separadas e exportação HTML/CSV.
+Veja [o guia de relatórios de sprint](docs/Relatorios_Sprint_Carga_Usuarios.md) e [as notas 009](docs/Notas_Versao_009.md).

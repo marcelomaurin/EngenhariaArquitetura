@@ -3,7 +3,7 @@ unit ea_launcher_main;
 {$codepage utf8}
 interface
 uses Classes, SysUtils, Forms, Controls, Graphics, StdCtrls, ExtCtrls, Buttons,
-     Dialogs, Process;
+     Dialogs, Process, Menus, ea_config, ea_config_ui;
 type
   TEALauncherForm = class(TForm)
   private
@@ -12,6 +12,8 @@ type
     FSection: Integer;
     FNavButtons: array[0..3] of TSpeedButton;
     procedure BuildInterface;
+    procedure SetupClick(Sender: TObject);
+    procedure OpenLastProject(Sender: TObject);
     procedure Navigate(Sender: TObject);
     procedure ShowSection(AIndex: Integer);
     procedure RefreshCatalog(Sender: TObject);
@@ -86,8 +88,13 @@ begin
   end;
 end;
 procedure TEALauncherForm.BuildInterface;
-var I: Integer; B: TSpeedButton; L: TLabel;
+var I: Integer; B: TSpeedButton; L: TLabel; Main: TMainMenu; SetupItem,Entry: TMenuItem;
 begin
+  Main:=TMainMenu.Create(Self); Menu:=Main;
+  SetupItem:=TMenuItem.Create(Main); SetupItem.Caption:='&Setup'; Main.Items.Add(SetupItem);
+  Entry:=TMenuItem.Create(Main); Entry.Caption:='Configurações compartilhadas...'; Entry.OnClick:=@SetupClick; SetupItem.Add(Entry);
+  Entry:=TMenuItem.Create(Main); Entry.Caption:='Abrir último projeto'; Entry.OnClick:=@OpenLastProject; SetupItem.Add(Entry);
+  try Entry.Hint:=EALastProject(''); except on E: Exception do ShowMessage('Falha ao ler Setup: '+E.Message); end;
   FHeader := TPanel.Create(Self); FHeader.Parent := Self; FHeader.Align := alTop;
   FHeader.Height := 84; FHeader.BevelOuter := bvNone; FHeader.Color := ColorRGB(25,45,89);
   FTitle := TLabel.Create(Self); FTitle.Parent := FHeader;
@@ -201,6 +208,28 @@ begin
   end;
   SetStatus(IntToStr(N) + ' aplicativos listados. Apenas programas instalados podem ser abertos.');
 end;
+procedure TEALauncherForm.SetupClick(Sender: TObject);
+begin EAShowSetup(Self); end;
+procedure TEALauncherForm.OpenLastProject(Sender: TObject);
+var Path,Exe: string; P: TProcess; App: Integer;
+begin
+  try
+    Path:=EALastProject('');
+    if Path='' then begin ShowMessage('Nenhum projeto aberto anteriormente.'); Exit; end;
+    if not FileExists(Path) then begin ShowMessage('O último projeto não foi encontrado: '+Path); Exit; end;
+    if SameText(ExtractFileExt(Path),'.eacad') then App:=1
+    else if SameText(Copy(Path,Length(Path)-9,10),'.plan.json') then App:=0
+    else begin ShowMessage('Formato de projeto não reconhecido: '+Path); Exit; end;
+    Exe:=ExecutableFor(App); if Exe='' then begin ShowMessage('Aplicativo do projeto não encontrado.'); Exit; end;
+    P:=TProcess.Create(nil);
+    try
+      P.Executable:=Exe; P.CurrentDirectory:=ExtractFilePath(Exe);
+      if App=1 then P.Parameters.Add('--open');
+      P.Parameters.Add(Path); P.Execute;
+    finally P.Free; end;
+  except on E: Exception do ShowMessage(E.Message); end;
+end;
+
 procedure TEALauncherForm.OpenApp(Sender: TObject);
 var Id: Integer; Path: string; P: TProcess;
 begin

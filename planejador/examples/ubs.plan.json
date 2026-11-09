@@ -1,15 +1,17 @@
 {
-  "schema_version" : "1.0",
+  "schema_version" : "1.3",
   "package_type" : "projeto_planejador",
   "created_by" : {
     "application" : "Planejador",
-    "version" : "0.6.0"
+    "version" : "0.9.0"
   },
   "units" : "mm",
   "projeto" : {
     "nome" : "UBS — exemplo de planejamento",
     "objetivo" : "Estudo de projeto para estabelecimento de saúde. Confirmar programa assistencial, equipamentos, fluxos, acessibilidade e requisitos técnicos com a equipe responsável. Cronograma ilustrativo; não é projeto referencial oficial.",
     "inicio" : "2026-11-03",
+    "orcamento_fixado" : false,
+    "orcamento_centavos" : 0,
     "calendario" : {
       "name" : "Padrão",
       "week" : [
@@ -492,6 +494,452 @@
       ]
     }
   },
+  "recursos" : [
+    {
+      "id" : "R-{C8230437-9DE6-42E2-9035-26299903BE9B}",
+      "name" : "Estação CAD — exemplo",
+      "kind" : "equipment",
+      "user_id" : "",
+      "link" : "",
+      "notes" : "Preço fictício por hora, apenas para demonstrar custos.",
+      "capacity" : 1.0000000000000000E+000,
+      "unit_cost_cents" : 500,
+      "project_calendar" : true,
+      "calendar" : {
+        "name" : "padrao",
+        "week" : [
+          [
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+          ]
+        ],
+        "exceptions" : [
+        ]
+      },
+      "available_from" : "",
+      "available_until" : "",
+      "absences" : [
+      ]
+    },
+    {
+      "id" : "R-{8D30484A-42A1-46B9-A8D8-AB1CC44DD36B}",
+      "name" : "Papel A3 — exemplo",
+      "kind" : "material",
+      "user_id" : "",
+      "link" : "",
+      "notes" : "Preço fictício por folha.",
+      "capacity" : 1.0000000000000000E+000,
+      "unit_cost_cents" : 150,
+      "project_calendar" : true,
+      "calendar" : {
+        "name" : "padrao",
+        "week" : [
+          [
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+          ]
+        ],
+        "exceptions" : [
+        ]
+      },
+      "available_from" : "",
+      "available_until" : "",
+      "absences" : [
+      ]
+    },
+    {
+      "id" : "R-{31461502-4D63-4617-9B68-476577F13D0F}",
+      "name" : "Toner — exemplo",
+      "kind" : "material",
+      "user_id" : "",
+      "link" : "",
+      "notes" : "Preço fictício por unidade; consumo fracionado ilustrativo.",
+      "capacity" : 1.0000000000000000E+000,
+      "unit_cost_cents" : 10000,
+      "project_calendar" : true,
+      "calendar" : {
+        "name" : "padrao",
+        "week" : [
+          [
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+          ]
+        ],
+        "exceptions" : [
+        ]
+      },
+      "available_from" : "",
+      "available_until" : "",
+      "absences" : [
+      ]
+    },
+    {
+      "id" : "R-{A9CA404A-8593-4529-A632-A4B7663F38CF}",
+      "name" : "Programa de necessidades â preencher",
+      "kind" : "file",
+      "user_id" : "",
+      "link" : "entradas/programa_necessidades.pdf",
+      "notes" : "",
+      "capacity" : 1.0000000000000000E+000,
+      "unit_cost_cents" : 0,
+      "project_calendar" : true,
+      "calendar" : {
+        "name" : "padrao",
+        "week" : [
+          [
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+          ]
+        ],
+        "exceptions" : [
+        ]
+      },
+      "available_from" : "",
+      "available_until" : "",
+      "absences" : [
+      ]
+    },
+    {
+      "id" : "R-{3E749868-A515-4DF9-ADAA-1D829A50C82C}",
+      "name" : "Planta de estudo â saÃ­da prevista",
+      "kind" : "file",
+      "user_id" : "",
+      "link" : "entregas/planta_estudo.eacad",
+      "notes" : "",
+      "capacity" : 1.0000000000000000E+000,
+      "unit_cost_cents" : 0,
+      "project_calendar" : true,
+      "calendar" : {
+        "name" : "padrao",
+        "week" : [
+          [
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+            [
+              480,
+              720
+            ],
+            [
+              780,
+              1020
+            ]
+          ],
+          [
+          ]
+        ],
+        "exceptions" : [
+        ]
+      },
+      "available_from" : "",
+      "available_until" : "",
+      "absences" : [
+      ]
+    }
+  ],
+  "apontamentos" : [
+  ],
+  "sprints" : [
+    {
+      "id" : "SP-{34D99E8B-6B7A-437A-85AA-A462C7DFD7C4}",
+      "name" : "Sprint 1 — estudo preliminar",
+      "start" : "2026-11-03",
+      "end" : "2026-11-16",
+      "tasks" : [
+        {
+          "task_id" : "T-0001",
+          "carryover" : false
+        },
+        {
+          "task_id" : "T-0002",
+          "carryover" : false
+        },
+        {
+          "task_id" : "T-0003",
+          "carryover" : false
+        },
+        {
+          "task_id" : "T-0004",
+          "carryover" : false
+        }
+      ]
+    },
+    {
+      "id" : "SP-{2F254830-D39E-4735-B8AB-2EC6CD70CD90}",
+      "name" : "Sprint 2 — desenvolvimento",
+      "start" : "2026-11-17",
+      "end" : "2026-11-30",
+      "tasks" : [
+        {
+          "task_id" : "T-0001",
+          "carryover" : true
+        },
+        {
+          "task_id" : "T-0002",
+          "carryover" : true
+        },
+        {
+          "task_id" : "T-0003",
+          "carryover" : true
+        },
+        {
+          "task_id" : "T-0004",
+          "carryover" : false
+        },
+        {
+          "task_id" : "T-0005",
+          "carryover" : false
+        },
+        {
+          "task_id" : "T-0006",
+          "carryover" : false
+        }
+      ]
+    }
+  ],
+  "historico_custos" : [
+  ],
+  "custo_previsto_centavos" : 25000,
+  "custo_computado_centavos" : 5000,
   "tarefas" : [
     {
       "task_id" : "T-0001",
@@ -504,7 +952,14 @@
       "situacao" : "a_fazer",
       "progresso" : 0,
       "responsavel" : "",
+      "executor_id" : "",
+      "executor_nome" : "",
       "notas" : "Registrar implantação, restrições locais e condições existentes.",
+      "alocacoes" : [
+      ],
+      "custos" : [
+      ],
+      "custo_saida_centavos" : 0,
       "depende_de" : [
       ]
     },
@@ -519,7 +974,14 @@
       "situacao" : "a_fazer",
       "progresso" : 0,
       "responsavel" : "",
+      "executor_id" : "",
+      "executor_nome" : "",
       "notas" : "Definir atividades, público atendido, ambientes e capacidade com a gestão de saúde.",
+      "alocacoes" : [
+      ],
+      "custos" : [
+      ],
+      "custo_saida_centavos" : 0,
       "depende_de" : [
         {
           "task_id" : "T-0001",
@@ -539,7 +1001,14 @@
       "situacao" : "a_fazer",
       "progresso" : 0,
       "responsavel" : "",
+      "executor_id" : "",
+      "executor_nome" : "",
       "notas" : "Consultar SOMASUS, equipamentos efetivos e fichas dos fabricantes; confirmar dimensões e infraestrutura.",
+      "alocacoes" : [
+      ],
+      "custos" : [
+      ],
+      "custo_saida_centavos" : 0,
       "depende_de" : [
         {
           "task_id" : "T-0002",
@@ -559,7 +1028,14 @@
       "situacao" : "a_fazer",
       "progresso" : 0,
       "responsavel" : "",
+      "executor_id" : "",
+      "executor_nome" : "",
       "notas" : "Representar fluxos assistenciais e de apoio para revisão da equipe técnica.",
+      "alocacoes" : [
+      ],
+      "custos" : [
+      ],
+      "custo_saida_centavos" : 0,
       "depende_de" : [
         {
           "task_id" : "T-0002",
@@ -579,7 +1055,35 @@
       "situacao" : "a_fazer",
       "progresso" : 0,
       "responsavel" : "",
+      "executor_id" : "",
+      "executor_nome" : "",
       "notas" : "Desenvolver o desenho em milímetros; identificar ambientes e acessos.",
+      "alocacoes" : [
+        {
+          "resource_id" : "R-{C8230437-9DE6-42E2-9035-26299903BE9B}",
+          "units" : 1.0000000000000000E+000,
+          "unit_cost_cents" : 500,
+          "accounted" : false,
+          "direction" : "use"
+        },
+        {
+          "resource_id" : "R-{A9CA404A-8593-4529-A632-A4B7663F38CF}",
+          "units" : 1.0000000000000000E+000,
+          "unit_cost_cents" : 0,
+          "accounted" : false,
+          "direction" : "input"
+        },
+        {
+          "resource_id" : "R-{3E749868-A515-4DF9-ADAA-1D829A50C82C}",
+          "units" : 1.0000000000000000E+000,
+          "unit_cost_cents" : 0,
+          "accounted" : false,
+          "direction" : "output"
+        }
+      ],
+      "custos" : [
+      ],
+      "custo_saida_centavos" : 0,
       "depende_de" : [
         {
           "task_id" : "T-0004",
@@ -599,7 +1103,14 @@
       "situacao" : "a_fazer",
       "progresso" : 0,
       "responsavel" : "",
+      "executor_id" : "",
+      "executor_nome" : "",
       "notas" : "Usar a biblioteca de saúde como base editável; ajustar envelopes e áreas operacionais ao projeto.",
+      "alocacoes" : [
+      ],
+      "custos" : [
+      ],
+      "custo_saida_centavos" : 0,
       "depende_de" : [
         {
           "task_id" : "T-0003",
@@ -624,7 +1135,14 @@
       "situacao" : "a_fazer",
       "progresso" : 0,
       "responsavel" : "",
+      "executor_id" : "",
+      "executor_nome" : "",
       "notas" : "Análise técnica das rotas, sanitários, atendimento e circulação; não é verificação automática do software.",
+      "alocacoes" : [
+      ],
+      "custos" : [
+      ],
+      "custo_saida_centavos" : 0,
       "depende_de" : [
         {
           "task_id" : "T-0006",
@@ -644,7 +1162,14 @@
       "situacao" : "a_fazer",
       "progresso" : 0,
       "responsavel" : "",
+      "executor_id" : "",
+      "executor_nome" : "",
       "notas" : "Levantar necessidades de elétrica, hidráulica, climatização e outros sistemas compatíveis com o programa assistencial.",
+      "alocacoes" : [
+      ],
+      "custos" : [
+      ],
+      "custo_saida_centavos" : 0,
       "depende_de" : [
         {
           "task_id" : "T-0006",
@@ -664,7 +1189,14 @@
       "situacao" : "a_fazer",
       "progresso" : 0,
       "responsavel" : "",
+      "executor_id" : "",
+      "executor_nome" : "",
       "notas" : "Registrar interferências e pendências para a equipe de projeto.",
+      "alocacoes" : [
+      ],
+      "custos" : [
+      ],
+      "custo_saida_centavos" : 0,
       "depende_de" : [
         {
           "task_id" : "T-0007",
@@ -689,7 +1221,14 @@
       "situacao" : "a_fazer",
       "progresso" : 0,
       "responsavel" : "",
+      "executor_id" : "",
+      "executor_nome" : "",
       "notas" : "Consolidar levantamento e bases orçamentárias aplicáveis ao empreendimento; conferência profissional.",
+      "alocacoes" : [
+      ],
+      "custos" : [
+      ],
+      "custo_saida_centavos" : 0,
       "depende_de" : [
         {
           "task_id" : "T-0009",
@@ -709,7 +1248,14 @@
       "situacao" : "a_fazer",
       "progresso" : 0,
       "responsavel" : "",
+      "executor_id" : "",
+      "executor_nome" : "",
       "notas" : "Conferir referências sanitárias, acessibilidade e exigências pertinentes ao serviço, local e data.",
+      "alocacoes" : [
+      ],
+      "custos" : [
+      ],
+      "custo_saida_centavos" : 0,
       "depende_de" : [
         {
           "task_id" : "T-0009",
@@ -729,7 +1275,34 @@
       "situacao" : "a_fazer",
       "progresso" : 0,
       "responsavel" : "",
+      "executor_id" : "",
+      "executor_nome" : "",
       "notas" : "Consolidar desenhos, memoriais, inventário de equipamentos, respostas e pendências.",
+      "alocacoes" : [
+        {
+          "resource_id" : "R-{8D30484A-42A1-46B9-A8D8-AB1CC44DD36B}",
+          "units" : 1.0000000000000000E+001,
+          "unit_cost_cents" : 150,
+          "accounted" : true,
+          "direction" : "input"
+        },
+        {
+          "resource_id" : "R-{31461502-4D63-4617-9B68-476577F13D0F}",
+          "units" : 1.0000000000000001E-001,
+          "unit_cost_cents" : 10000,
+          "accounted" : true,
+          "direction" : "input"
+        }
+      ],
+      "custos" : [
+        {
+          "name" : "Acabamento de prancha — valor fictício",
+          "quantity" : 1.0000000000000000E+000,
+          "unit_cost_cents" : 2500,
+          "accounted" : true
+        }
+      ],
+      "custo_saida_centavos" : 5000,
       "depende_de" : [
         {
           "task_id" : "T-0010",
@@ -754,7 +1327,14 @@
       "situacao" : "a_fazer",
       "progresso" : 0,
       "responsavel" : "",
+      "executor_id" : "",
+      "executor_nome" : "",
       "notas" : "Validar requisitos do empreendimento e registrar decisões do contratante.",
+      "alocacoes" : [
+      ],
+      "custos" : [
+      ],
+      "custo_saida_centavos" : 0,
       "depende_de" : [
         {
           "task_id" : "T-0012",
@@ -774,7 +1354,14 @@
       "situacao" : "a_fazer",
       "progresso" : 0,
       "responsavel" : "",
+      "executor_id" : "",
+      "executor_nome" : "",
       "notas" : "Registrar arquivos entregues e pendências que impedem a próxima etapa.",
+      "alocacoes" : [
+      ],
+      "custos" : [
+      ],
+      "custo_saida_centavos" : 0,
       "depende_de" : [
         {
           "task_id" : "T-0013",
@@ -783,5 +1370,6 @@
         }
       ]
     }
-  ]
+  ],
+  "custo_saida_centavos" : 5000
 }

@@ -1,19 +1,23 @@
 program test_cad2d;
 {$mode objfpc}{$H+}{$codepage utf8}
-uses Interfaces, Forms, Classes, SysUtils, Types, Math, LCLType, Menus, fpjson, ea_workflow, cad2d_main;
+uses {$IFDEF WINDOWS}Windows,{$ENDIF} Interfaces, Forms, Classes, SysUtils, Types, Math, LCLType, Menus, fpjson, ea_config, ea_workflow, cad2d_main;
 var W: TWorkflow; G: TGUID; DrawingPath, TestPath, Admin, Restricted, Viewer, RID, VID, Own, Other: string; Members: TCADIndices; PreviousCount,BlockCount,PreviousGroup: Integer; OriginalPoint: TPoint; TaskData: TJSONObject;
+  ConfigPath: string;
   F: TCADMainForm; Checks: Integer; P, S: TPoint; Before: string; K: Word; I: Integer;
 procedure Check(OK: Boolean; const Msg: string);
 begin Inc(Checks); if not OK then raise Exception.Create(Msg); end;
 begin
   Application.Initialize;
+  CreateGUID(G); ConfigPath:=GetTempDir(False)+'ea-cad-config-'+GUIDToString(G)+'.json';
+  {$IFDEF WINDOWS}Windows.SetEnvironmentVariableW('EA_CONFIG_FILE',PWideChar(UTF8Decode(ConfigPath)));{$ENDIF}
   try
     F := TCADMainForm.Create(nil);
     try
       Check(F.Menu is TMainMenu, 'menu principal nativo no topo da janela');
       Check(F.Menu = F.FMainMenu, 'menu associado ao formulario');
-      Check(F.Menu.Items.Count = 10, 'dez menus superiores');
+      Check(F.Menu.Items.Count = 11, 'onze menus superiores com Setup');
       Check(F.Menu.Items[0].Count = 8, 'comandos de arquivo');
+      Check(F.Menu.Items[9].Caption='&Setup','menu Setup disponível');
       Check(F.Menu.Items[0].Items[0].Hint = 'NEW', 'comando do submenu');
       Check(Assigned(F.Menu.Items[0].Items[0].OnClick), 'acao do submenu');
       Check(Length(F.FLines) > 0, 'exemplo 2D');
@@ -130,6 +134,6 @@ begin
       F.UndoHistory(nil); Check(F.Snapshot = Before, 'visualizador nao altera pelo historico');
       F.FWorkflowToken := ''; F.FTaskID := ''; F.FDirty := False;
       WriteLn(Checks, ' verificacoes CAD 2D, 0 falhas');
-    finally F.Free; if TestPath <> '' then begin DeleteFile(TestPath); DeleteFile(TestPath+'.lock'); end; end;
+    finally F.Free; DeleteFile(ConfigPath); DeleteFile(ConfigPath+'.lock'); if TestPath <> '' then begin DeleteFile(TestPath); DeleteFile(TestPath+'.lock'); end; end;
   except on E: Exception do begin WriteLn('FALHA: ',E.Message); Halt(1); end; end;
 end.

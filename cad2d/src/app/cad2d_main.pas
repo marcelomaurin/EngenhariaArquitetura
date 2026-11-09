@@ -3,7 +3,7 @@ unit cad2d_main;
 {$codepage utf8}
 interface
 uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils, Forms, Controls, ExtCtrls, StdCtrls, Menus,
-  Graphics, Types, Math, Dialogs, LCLType, CheckLst, aiundohistory, fpjson, ea_workflow, ea_workflow_ui, cad_document, cad_dxf, cad_catalog, cad_catalog_ui, cad_health_examples;
+  Graphics, Types, Math, Dialogs, LCLType, CheckLst, aiundohistory, fpjson, ea_workflow, ea_workflow_ui, ea_config, ea_config_ui, cad_document, cad_dxf, cad_catalog, cad_catalog_ui, cad_health_examples;
 type
   TCADIndices = array of Integer;
   TCADMainForm = class(TForm)
@@ -108,6 +108,9 @@ type
     // Construção da interface AutoCAD
     procedure BuildAutoCADInterface;
     procedure BuildDropMenus;
+    procedure SetupClick(Sender: TObject);
+    procedure OpenLastProject(Sender: TObject);
+    procedure RememberProject;
     procedure MenuCommand(Sender: TObject);
     procedure DrawDropMenu(Sender: TObject; ACanvas: TCanvas;
       ARect: TRect; AState: TOwnerDrawState);
@@ -2037,6 +2040,8 @@ begin
 
   case Cmd of
     'BIB', 'BIBLIOTECA': ChooseCatalog(nil);
+    'SETUP': SetupClick(nil);
+    'LASTPROJECT': OpenLastProject(nil);
     'DEMOUBS': LoadSampleFloorPlan(nil);
     'DEMOHOSPITAL': LoadHospitalExample(nil);
     'DEMOGERAL': LoadGeneralSampleFloorPlan(nil);
@@ -2823,6 +2828,7 @@ begin
     D.Visible := FLayerVisible; D.Locked := FLayerLocked;
     D.Save(FileName);
     FPath := ExpandFileName(FileName); FSaveSucceeded := True; FDirty := False;
+    RememberProject;
     UpdateDocumentTitle;
   finally D.Free; end;
 end;
@@ -2839,6 +2845,7 @@ begin
     FMillimetersPerPixel := 1; FNextGroup := NextGroup;
     FHistory.Clear; SetLength(FUndo,0); FSelected := -1; FHasStart := False;
     FPath := ExpandFileName(FileName); FDirty := False;
+    RememberProject;
     UpdateDocumentTitle; SyncLayerPanel;
     Application.QueueAsyncCall(@FitDrawingAsync,0);
     FCanvas.Invalidate;
@@ -2882,6 +2889,9 @@ procedure TCADMainForm.DrawingShown(Sender: TObject);
 begin
   if FInitialFitPending then begin
     FInitialFitPending := False;
+    if (FTaskID='') and (WFArg('--open')<>'') then begin
+      try LoadDocumentFile(WFArg('--open')); except on E: Exception do ShowMessage('Não foi possível abrir o projeto: '+E.Message); end;
+    end;
     Application.QueueAsyncCall(@FitDrawingAsync,0);
   end;
 end;
@@ -2990,6 +3000,24 @@ begin
 end;
 
 
+procedure TCADMainForm.SetupClick(Sender: TObject);
+begin EAShowSetup(Self); end;
+procedure TCADMainForm.RememberProject;
+begin
+  try EARememberProject('cad2d',FPath);
+  except on E: Exception do ShowMessage('Projeto disponível; falha ao atualizar Setup: '+E.Message); end;
+end;
+procedure TCADMainForm.OpenLastProject(Sender: TObject);
+var Path: string;
+begin
+  try
+    Path:=EALastProject('cad2d');
+    if Path='' then begin ShowMessage('Nenhum projeto anterior do CAD.'); Exit; end;
+    if not FileExists(Path) then begin ShowMessage('O último projeto não foi encontrado: '+Path); Exit; end;
+    if ConfirmDrawingSwitch then LoadDocumentFile(Path);
+  except on E: Exception do ShowMessage(E.Message); end;
+end;
+
 procedure TCADMainForm.BuildDropMenus;
 var Item, Header: TMenuItem;
   {$IFDEF WINDOWS}Info: Windows.TMenuInfo;{$ENDIF}
@@ -3048,6 +3076,9 @@ begin
   Group('&Gestão'); Entry('Tarefa e arquivo', 'TAREFA', '');
   Entry('Responder tarefa', 'RESPONDER', ''); Entry('Devolver tarefa', 'DEVOLVER', '');
   Entry('Voltar ao Planejador', 'PLANEJADOR', '');
+  Group('&Setup'); Entry('Configurações compartilhadas...', 'SETUP', '');
+  Entry('Abrir último projeto do CAD', 'LASTPROJECT', '');
+  try Header.Hint:=EALastProject('cad2d'); except on E: Exception do ShowMessage('Falha ao ler Setup: '+E.Message); end;
   Group('A&juda'); Entry('Comandos e atalhos', 'AJUDA', 'F1');
   {$IFDEF WINDOWS}
   FMenuBrush := Windows.CreateSolidBrush(RGBToColor(30, 64, 145));

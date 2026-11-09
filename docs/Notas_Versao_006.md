@@ -23,13 +23,14 @@ e os exemplos prioritariamente à saúde, incluindo hospitais, UBS e SUS.
 
 | Suíte | Verificações |
 |---|---:|
-| Planejador e exemplos | 73 |
+| Planejador, exemplos, datas e executores | 95 |
 | Persistência CAD | 33 |
 | Importação DXF | 15 |
 | Biblioteca e exemplos de saúde | 59 |
-| CAD: interface, blocos e perfis | 67 |
+| CAD: interface, blocos, perfis e Setup | 68 |
 | Gestão, usuários e CSV | 41 |
-| Total | 288 |
+| Configuração compartilhada e concorrência | 26 |
+| Total | 337 |
 
 O resultado efetivo está em qa-tests-006.json. Manifesto, hashes e instalador
 ficam em setup e bin. Os três executáveis têm versão 0.6.0.0.
@@ -46,3 +47,23 @@ local. Os módulos 3D, sincronização entre computadores, validação normativa
 automática, PDF em escala e intercâmbio arquitetônico completo permanecem pendentes.
 A inspeção visual manual e a instalação/desinstalação em ambiente limpo não
 são declaradas concluídas pelos testes automatizados.
+
+## Ajustes do Planejador após a entrega inicial
+
+- Primeiro botão **Planejador**, seguido de **Gestão de tarefas**; abertura inicial
+  no planejamento para os perfis autorizados.
+- Início solicitado por tarefa, com cálculo não anterior à data indicada e
+  respeito às dependências e ao calendário.
+- Executor com nome, login e identidade do usuário; administrador ativo padrão
+  quando não indicado.
+- Sobreposições do mesmo executor sinalizadas em vermelho e com texto CONFLITO,
+  sem bloquear gravação. Datas sem sobreposição continuam aceitas.
+- Validação de conflitos no projeto aberto; não agrega projetos distintos.
+
+## Setup compartilhado
+
+Menu Setup nos três aplicativos, com último projeto, URL de nuvem e último login.
+Configuração única por usuário, histórico geral e por aplicativo, login
+pré-preenchido, gravação protegida contra atualizações concorrentes e reabertura
+pelo lançador. Nenhuma senha é gravada na configuração. Consulte
+[Setup e configuração compartilhada](Setup_Configuracao_Compartilhada.md).

@@ -113,3 +113,18 @@ Consulte [Notas da versão 005](../docs/Notas_Versao_005.md) para correções de
 ## Direcionamento da versão 0.06
 
 A ferramenta permanece de uso geral, com foco em projetos de saúde e SUS. Os exemplos de UBS e ala assistencial são esquemáticos. Consulte [Direcionamento para saúde e SUS](../docs/Direcionamento_Saude_SUS.md) e [Notas da versão 006](../docs/Notas_Versao_006.md).
+
+## Recursos e custos — entrega 007
+
+Etapa Recursos habilitada, arquivos opcionais de entrada/saída e custos compostos.
+Consulte [Recursos, arquivos e custos](../docs/Recursos_Arquivos_Custos.md) e [Notas da versão 007](../docs/Notas_Versao_007.md).
+
+## Acompanhamento — entrega 008
+
+Sprints, quadro TO-DO filtrado por usuário/recurso e evolução semanal do custo previsto e computado.
+Veja [o guia de acompanhamento](../docs/Sprints_TODO_Custos_Semanais.md) e [as notas 008](../docs/Notas_Versao_008.md).
+
+## Relatórios por sprint — entrega 009
+
+Pendências e carga por usuário, com horas apontadas, estimativas separadas e exportação HTML/CSV.
+Veja [o guia de relatórios de sprint](../docs/Relatorios_Sprint_Carga_Usuarios.md) e [as notas 009](../docs/Notas_Versao_009.md).

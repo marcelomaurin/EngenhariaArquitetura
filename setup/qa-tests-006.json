@@ -2,7 +2,7 @@
     {
         "test":  "test_planejador_core",
         "passed":  true,
-        "summary":  "73 verificações, 0 falhas"
+        "summary":  "95 verificações, 0 falhas"
     },
     {
         "test":  "test_cad_document",
@@ -20,9 +20,14 @@
         "summary":  "59 verificacoes de biblioteca e exemplos de saude, 0 falhas"
     },
     {
+        "test":  "test_config",
+        "passed":  true,
+        "summary":  "26 verificacoes de configuracao compartilhada, 0 falhas"
+    },
+    {
         "test":  "test_cad2d",
         "passed":  true,
-        "summary":  "67 verificacoes CAD 2D, 0 falhas"
+        "summary":  "68 verificacoes CAD 2D, 0 falhas"
     },
     {
         "test":  "test_workflow",

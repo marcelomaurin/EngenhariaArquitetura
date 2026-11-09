@@ -4,11 +4,11 @@ program test_planejador_core;
   recusa de ciclo, caminho critico e ida e volta em JSON.
   Uso: test_planejador_core   (codigo de saida 0 = todos passaram) }
 
-{$mode objfpc}{$H+}
+{$mode objfpc}{$H+}{$codepage utf8}
 
 uses
   Classes, SysUtils, DateUtils, fpjson, aiprojectduration, aitaskgraph, plan_tipos, plan_documento,
-  plan_cronograma, plan_json, plan_exemplos;
+  plan_cronograma, plan_json, plan_exemplos, plan_executor;
 
 var
   Falhas, Total: Integer;
@@ -254,6 +254,55 @@ begin
   finally C.Free; P.Free; end;
 end;
 
+procedure TesteDatasEExecutores;
+var P,Q: TPLProjeto; C: TPLCronograma; A,B: TPLTarefa;
+    Users: TJSONArray; U,O: TJSONObject; D,Boundary: TDateTime; DummyErr: string;
+begin
+  P:=TPLProjeto.Create; Q:=TPLProjeto.Create; C:=TPLCronograma.Create; Users:=TJSONArray.Create;
+  try
+    D:=EncodeDate(2026,11,9); P.Novo('Datas e executores',D);
+    P.Calendario.Clear; P.Calendario.SetStandard;
+    U:=TJSONObject.Create; U.Add('id','admin-id'); U.Add('login','admin'); U.Add('name','Administrador'); U.Add('role','admin'); U.Add('active',True); Users.Add(U);
+    U:=TJSONObject.Create; U.Add('id','ana-id'); U.Add('login','ana'); U.Add('name',String('Ana Médica')); U.Add('role','user'); U.Add('active',True); Users.Add(U);
+    A:=P.NovaTarefa('Primeira'); B:=P.NovaTarefa('Segunda');
+    Confere(PLResolverExecutor(A,Users),'executor ausente recebe administrador');
+    ConfereTexto(A.ExecutorID,'admin-id','administrador por identidade');
+    ConfereTexto(A.ExecutorNome,'Administrador','nome do executor preenchido');
+    Confere(not PLResolverExecutor(A,Users),'resolver executor é idempotente');
+    PLResolverExecutor(B,Users); A.InicioSolicitado:=D; B.InicioSolicitado:=D;
+    C.Calcular(P); Confere(C.Valido,'sobreposição aceita sem invalidar cronograma');
+    Confere(C.Conflito[0] and C.Conflito[1],'mesmo executor sobreposto marca as duas tarefas');
+    Confere(C.Avisos.Count>0,'conflito explica tarefas envolvidas');
+    B.Responsavel:='ana'; B.ExecutorID:=''; PLResolverExecutor(B,Users);
+    C.Calcular(P); Confere(not C.Conflito[0] and not C.Conflito[1],'executores diferentes sem conflito');
+    ConfereTexto(B.ExecutorNome,'Ana Médica','usuário indicado mantém nome real');
+    B.Responsavel:='admin'; B.ExecutorID:=''; PLResolverExecutor(B,Users);
+    Boundary:=C.Resultado[0].Finish; B.InicioSolicitado:=Boundary;
+    C.Calcular(P); Confere(not C.Conflito[0] and not C.Conflito[1],'início no término exato não conflita');
+    B.InicioSolicitado:=D+3; C.Calcular(P);
+    Confere(Trunc(C.Resultado[1].Start)=D+3,'data posterior indicada é respeitada');
+    Confere(not C.Conflito[1],'data posterior ao término aceita sem conflito');
+    Confere(P.DefinirPredecessoras(B,A.Id,DummyErr),'dependência com data própria aceita');
+    B.InicioSolicitado:=D; C.Calcular(P);
+    Confere(C.Resultado[1].Start>=C.Resultado[0].Finish,'dependências continuam respeitadas');
+    Confere(not C.Conflito[1],'tarefas sequenciais do executor sem conflito');
+    B.InicioSolicitado:=D+3;
+    O:=PLProjetoParaJSON(P);
+    try PLProjetoDeJSON(Q,O); finally O.Free; end;
+    Confere(Q[1].InicioSolicitado=D+3,'data própria persiste em JSON');
+    ConfereTexto(Q[1].ExecutorID,'admin-id','identidade do executor persiste');
+    ConfereTexto(Q[1].ExecutorNome,'Administrador','nome do executor persiste');
+    A.Assign(B); Confere(A.InicioSolicitado=B.InicioSolicitado,'cópia mantém data própria');
+    ConfereTexto(A.ExecutorID,B.ExecutorID,'cópia mantém executor');
+    A.Id:='T-0001'; A.Predecessoras:=nil;
+    A.Responsavel:='historico'; A.ExecutorID:=''; A.ExecutorNome:='';
+    PLResolverExecutor(A,Users); ConfereTexto(A.Responsavel,'historico','responsável legado desconhecido preservado');
+    B.InicioSolicitado:=0; O:=PLProjetoParaJSON(P);
+    try PLProjetoDeJSON(Q,O); finally O.Free; end;
+    Confere(Q[1].InicioSolicitado=0,'início automático sem data preservado');
+  finally Users.Free; C.Free; Q.Free; P.Free; end;
+end;
+
 begin
   { como nos aplicativos LCL (LazUTF8): textos em UTF-8 }
   DefaultSystemCodePage := CP_UTF8;
@@ -267,6 +316,7 @@ begin
   TesteJSON;
   TesteIntegridadeArquivo;
   TesteExemplosSaude;
+  TesteDatasEExecutores;
   WriteLn;
   WriteLn(Format('%d verificações, %d falhas', [Total, Falhas]));
   if Falhas > 0 then Halt(1);
