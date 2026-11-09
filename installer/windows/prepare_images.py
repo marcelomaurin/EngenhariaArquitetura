@@ -57,17 +57,28 @@ def main():
         tw = d.textlength(texto, font=f)
         d.text(((w - tw) / 2, y), texto, font=f, fill=cor)
     im.save(os.path.join(a.out, "welcome.bmp"))
+    im.save(os.path.join(a.out, "wizard-large.bmp"))
 
     # imagem pequena do cabecalho das paginas internas (55x55 a 100%)
     pequeno = Image.new("RGB", (80, 80), (255, 255, 255))
     ic = icone(72)
     pequeno.paste(ic, (4, 4), ic)
     pequeno.save(os.path.join(a.out, "small.bmp"))
+    pequeno.save(os.path.join(a.out, "wizard-small.bmp"))
 
     # imagem exibida durante a copia dos arquivos
     cap = Image.open(os.path.join(ROOT, "planejador", "screenshots", "planejador_gantt.png")).convert("RGB")
     cap.thumbnail((1000, 640), Image.LANCZOS)
     cap.save(os.path.join(a.out, "slide0.bmp"))
+    cap.save(os.path.join(a.out, "slide1.bmp"))
+
+    cap2_path = os.path.join(ROOT, "planejador", "screenshots", "planejador_rede.png")
+    if os.path.exists(cap2_path):
+        cap2 = Image.open(cap2_path).convert("RGB")
+        cap2.thumbnail((1000, 640), Image.LANCZOS)
+        cap2.save(os.path.join(a.out, "slide2.bmp"))
+    else:
+        cap.save(os.path.join(a.out, "slide2.bmp"))
     print("imagens geradas em", a.out)
 
 

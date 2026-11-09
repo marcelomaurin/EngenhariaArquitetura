@@ -156,6 +156,13 @@ Copy-Item cad2d\examples\*.eacad (Join-Path $App "exemplos")
 New-Item -ItemType Directory -Force (Join-Path $App "bibliotecas") | Out-Null
 Copy-Item libraries\catalogo_2d.json (Join-Path $App "bibliotecas")
 Copy-Item third_party\chatgpt\LICENSE (Join-Path $App "licencas\CHATGPT_LICENSE.txt")
+if (Test-Path "samples") {
+  Copy-Item -Recurse -Force "samples" (Join-Path $App "samples")
+}
+if (Test-Path "updater\windows\update.ps1") {
+  New-Item -ItemType Directory -Force (Join-Path $App "updater\windows") | Out-Null
+  Copy-Item "updater\windows\update.ps1" (Join-Path $App "updater\windows\update.ps1")
+}
 
 $clean = @("--require-clean"); if ($AllowDirty) { $clean = @() }
 & $Python tools\release_manifest.py --app-dir $App --version $Version --seq $SetupSeq --version-include (Join-Path $Dist "version.iss") @clean

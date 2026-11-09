@@ -41,3 +41,4 @@ O instalador distribui:
 - **007:** Gestão de recursos, arquivos opcionais e custos compostos.
 - **008:** Acompanhamento por Sprints, TO-DO e evolução semanal de custos.
 - **009:** Relatórios por sprint, carga por usuário e apontamentos diários de horas.
+- **010:** Interoperabilidade BIM/CAD (DXF, DWG, IFC), amostras de engenharia e release 0.10.

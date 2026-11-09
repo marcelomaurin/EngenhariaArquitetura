@@ -29,7 +29,7 @@ O instalador para Windows 64 bits e os executáveis portáteis ficam na pasta `b
 
 | Arquivo | Conteúdo |
 |---|---|
-| `bin/setup_engenhariaarquitetura_009.exe` | Instalador da plataforma (versão 0.09) |
+| `bin/setup_engenhariaarquitetura_010.exe` | Instalador da plataforma (versão 0.10) |
 | `bin/planejador.exe` | Planejador para Windows 64 bits |
 | `bin/cad2d.exe` | CAD Arquitetônico 2D para Windows 64 bits |
 | `bin/engenhariaarquitetura.exe` | Central de Aplicativos (lançador) |
@@ -91,3 +91,8 @@ Veja [o guia de acompanhamento](docs/Sprints_TODO_Custos_Semanais.md) e [as nota
 
 Pendências e carga por usuário, com horas apontadas, estimativas separadas e exportação HTML/CSV.
 Veja [o guia de relatórios de sprint](docs/Relatorios_Sprint_Carga_Usuarios.md) e [as notas 009](docs/Notas_Versao_009.md).
+
+## Versão 0.10 — instalador 010
+
+Interoperabilidade BIM/CAD (DXF, DWG, IFC), modelos hospitalares demonstrativos e pipeline de releases contínuos.
+Consulte [Notas da versão 010](docs/Notas_Versao_010.md).

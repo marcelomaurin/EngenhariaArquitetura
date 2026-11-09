@@ -9,6 +9,14 @@
 
 #include "..\..\dist\version.iss"
 
+#ifndef MySetupSeq
+  #ifdef SetupSeq
+    #define MySetupSeq SetupSeq
+  #else
+    #define MySetupSeq "010"
+  #endif
+#endif
+
 [Setup]
 AppId={{5E3F8A1C-4B9D-4E2F-8A3B-1C5E7F9A2B4D}
 AppName={#MyAppName}
@@ -23,7 +31,7 @@ DisableProgramGroupPage=yes
 LicenseFile=..\..\LICENSE
 OutputBaseFilename=setup_engenhariaarquitetura_{#MySetupSeq}
 OutputDir=..\..\dist
-SetupIconFile=..\icones\engenhariaarquitetura.ico
+SetupIconFile=..\..\launcher\src\app\engenhariaarquitetura.ico
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
@@ -94,53 +102,24 @@ Filename: "{app}\engenhariaarquitetura.exe"; Description: "Abrir a Central de Ap
 
 [Code]
 var
-  SlideTimer: TTimer;
   ProjectImage: TBitmapImage;
-  ProjectCaption: TLabel;
-  SlideIndex: Integer;
-
-procedure NextSlide(Sender: TObject);
-var
-  SlideFile: string;
-begin
-  SlideIndex := (SlideIndex mod 2) + 1;
-  SlideFile := ExpandConstant('{tmp}\slide' + IntToStr(SlideIndex) + '.bmp');
-  if FileExists(SlideFile) then
-    ProjectImage.Bitmap.LoadFromFile(SlideFile);
-end;
+  ProjectCaption: TNewStaticText;
 
 procedure InitializeWizard;
 var
-  FirstSlide: string;
+  ImageTop: Integer;
 begin
-  ExtractTemporaryFile('slide1.bmp');
-  ExtractTemporaryFile('slide2.bmp');
-
+  ExtractTemporaryFile('slide0.bmp');
+  ImageTop := WizardForm.ProgressGauge.Top + WizardForm.ProgressGauge.Height + ScaleY(18);
   ProjectImage := TBitmapImage.Create(WizardForm);
   ProjectImage.Parent := WizardForm.InstallingPage;
-  ProjectImage.SetBounds(0, WizardForm.ProgressGauge.Top + WizardForm.ProgressGauge.Height + ScaleY(16),
-    WizardForm.InstallingPage.ClientWidth, ScaleY(120));
+  ProjectImage.SetBounds(0, ImageTop, WizardForm.InstallingPage.ClientWidth,
+    WizardForm.InstallingPage.ClientHeight - ImageTop - ScaleY(24));
   ProjectImage.Stretch := True;
-
-  FirstSlide := ExpandConstant('{tmp}\slide1.bmp');
-  if FileExists(FirstSlide) then
-    ProjectImage.Bitmap.LoadFromFile(FirstSlide);
-
-  ProjectCaption := TLabel.Create(WizardForm);
+  ProjectImage.Bitmap.LoadFromFile(ExpandConstant('{tmp}\slide0.bmp'));
+  ProjectCaption := TNewStaticText.Create(WizardForm);
   ProjectCaption.Parent := WizardForm.InstallingPage;
   ProjectCaption.SetBounds(0, ProjectImage.Top + ProjectImage.Height + ScaleY(4),
     WizardForm.InstallingPage.ClientWidth, ScaleY(20));
   ProjectCaption.Caption := 'EngenhariaArquitetura - Planejador e CAD Arquitetônico 2D';
-
-  SlideIndex := 1;
-  SlideTimer := TTimer.Create(WizardForm);
-  SlideTimer.Interval := 4000;
-  SlideTimer.OnTimer := @NextSlide;
-  SlideTimer.Enabled := True;
-end;
-
-procedure DeinitializeSetup;
-begin
-  if SlideTimer <> nil then
-    SlideTimer.Enabled := False;
 end;

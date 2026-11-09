@@ -496,7 +496,7 @@
   },
   "recursos" : [
     {
-      "id" : "R-{C8230437-9DE6-42E2-9035-26299903BE9B}",
+      "id" : "R-{CEE1AD43-3DCE-41DA-9F23-295C2B1A6144}",
       "name" : "Estação CAD — exemplo",
       "kind" : "equipment",
       "user_id" : "",
@@ -572,7 +572,7 @@
       ]
     },
     {
-      "id" : "R-{8D30484A-42A1-46B9-A8D8-AB1CC44DD36B}",
+      "id" : "R-{84BA8492-4775-4BB4-A84C-AF0D0C0BF0F6}",
       "name" : "Papel A3 — exemplo",
       "kind" : "material",
       "user_id" : "",
@@ -648,7 +648,7 @@
       ]
     },
     {
-      "id" : "R-{31461502-4D63-4617-9B68-476577F13D0F}",
+      "id" : "R-{F4A80D8A-F4D7-47A4-8064-5F2B6CB67F94}",
       "name" : "Toner — exemplo",
       "kind" : "material",
       "user_id" : "",
@@ -724,7 +724,7 @@
       ]
     },
     {
-      "id" : "R-{A9CA404A-8593-4529-A632-A4B7663F38CF}",
+      "id" : "R-{B9295720-DEC8-4CE3-861B-C0700EC01FCA}",
       "name" : "Programa de necessidades â preencher",
       "kind" : "file",
       "user_id" : "",
@@ -800,7 +800,7 @@
       ]
     },
     {
-      "id" : "R-{3E749868-A515-4DF9-ADAA-1D829A50C82C}",
+      "id" : "R-{1637E7D5-9400-4230-AF01-EAD4A7B89A66}",
       "name" : "Planta de estudo â saÃ­da prevista",
       "kind" : "file",
       "user_id" : "",
@@ -880,7 +880,7 @@
   ],
   "sprints" : [
     {
-      "id" : "SP-{34D99E8B-6B7A-437A-85AA-A462C7DFD7C4}",
+      "id" : "SP-{B04513CE-62FA-484F-8405-2CBE84FB8B01}",
       "name" : "Sprint 1 — estudo preliminar",
       "start" : "2026-11-03",
       "end" : "2026-11-16",
@@ -904,7 +904,7 @@
       ]
     },
     {
-      "id" : "SP-{2F254830-D39E-4735-B8AB-2EC6CD70CD90}",
+      "id" : "SP-{70990C92-2A99-414B-95F2-FC519706C889}",
       "name" : "Sprint 2 — desenvolvimento",
       "start" : "2026-11-17",
       "end" : "2026-11-30",
@@ -1060,21 +1060,21 @@
       "notas" : "Desenvolver o desenho em milímetros; identificar ambientes e acessos.",
       "alocacoes" : [
         {
-          "resource_id" : "R-{C8230437-9DE6-42E2-9035-26299903BE9B}",
+          "resource_id" : "R-{CEE1AD43-3DCE-41DA-9F23-295C2B1A6144}",
           "units" : 1.0000000000000000E+000,
           "unit_cost_cents" : 500,
           "accounted" : false,
           "direction" : "use"
         },
         {
-          "resource_id" : "R-{A9CA404A-8593-4529-A632-A4B7663F38CF}",
+          "resource_id" : "R-{B9295720-DEC8-4CE3-861B-C0700EC01FCA}",
           "units" : 1.0000000000000000E+000,
           "unit_cost_cents" : 0,
           "accounted" : false,
           "direction" : "input"
         },
         {
-          "resource_id" : "R-{3E749868-A515-4DF9-ADAA-1D829A50C82C}",
+          "resource_id" : "R-{1637E7D5-9400-4230-AF01-EAD4A7B89A66}",
           "units" : 1.0000000000000000E+000,
           "unit_cost_cents" : 0,
           "accounted" : false,
@@ -1280,14 +1280,14 @@
       "notas" : "Consolidar desenhos, memoriais, inventário de equipamentos, respostas e pendências.",
       "alocacoes" : [
         {
-          "resource_id" : "R-{8D30484A-42A1-46B9-A8D8-AB1CC44DD36B}",
+          "resource_id" : "R-{84BA8492-4775-4BB4-A84C-AF0D0C0BF0F6}",
           "units" : 1.0000000000000000E+001,
           "unit_cost_cents" : 150,
           "accounted" : true,
           "direction" : "input"
         },
         {
-          "resource_id" : "R-{31461502-4D63-4617-9B68-476577F13D0F}",
+          "resource_id" : "R-{F4A80D8A-F4D7-47A4-8064-5F2B6CB67F94}",
           "units" : 1.0000000000000001E-001,
           "unit_cost_cents" : 10000,
           "accounted" : true,

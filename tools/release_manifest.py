@@ -84,7 +84,7 @@ def main():
     with open(os.path.join(a.app_dir, "build-manifest.json"), "w", encoding="utf-8") as f:
         json.dump(manifesto, f, ensure_ascii=False, indent=2)
     with open(a.version_include, "w", encoding="utf-8") as f:
-        f.write('#define MyAppVersion "%s"\n#define MyBinaryVersion "%s"\n' % (a.version, binaria))
+        f.write('#define MyAppVersion "%s"\n#define MyBinaryVersion "%s"\n#define MySetupSeq "%s"\n' % (a.version, binaria, a.seq))
     print("manifesto:", len(arquivos), "arquivos, commit", manifesto["source_commit"][:7],
           "(alterações locais)" if sujo else "")
 
