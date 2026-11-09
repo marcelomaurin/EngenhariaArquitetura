@@ -1,71 +1,43 @@
-# Instalador Windows — EngenhariaArquitetura
+# Instalador oficial para Windows
 
-Windows 64 bits, Git, Python 3.9+ com Pillow, Lazarus/Free Pascal 64 bits e Inno Setup 6.3 ou superior.
+Este diretório contém os scripts e configurações para gerar o instalador oficial do
+Engenharia e Arquitetura no Windows 64-bit utilizando o Inno Setup.
 
-## Gerar no Windows
+## Pré-requisitos para compilação
 
-    installer\windows\build_release.bat -Version 0.09 -SetupSeq 009
+- Windows 10/11 64-bit
+- Inno Setup 6.x ou superior (comando `iscc` disponível no PATH)
+- Free Pascal / Lazarus (para compilar os executáveis)
+- Python 3.8+ (para preparação de recursos e manifesto)
+- Git (para metadados de versão)
 
-Sem parâmetros, a versão e a sequência vêm de [installer/VERSION.ini](../VERSION.ini). O script procura as ferramentas nas pastas usuais; os caminhos podem ser definidos pelas variáveis LAZBUILD, FPC, PYTHON e ISCC. EA_CHATGPT_DIR aponta para o repositório CHATGPT quando ele não estiver ao lado deste (padrão: `..\CHATGPT`).
+## Como gerar o instalador
 
-A publicação exige árvore Git limpa. Para gerar e testar um instalador local antes do commit, acrescente `-AllowDirty`; o manifesto registra `source_dirty=true`.
+Execute o script PowerShell a partir da raiz do repositório:
 
-## Gerar no Linux (compilação cruzada)
+```powershell
+.\installer\windows\build_release.ps1 -Version 0.09 -SetupSeq 009 -AllowDirty
+```
 
-    ISCC=/caminho/ISCC.exe installer/windows/build_release_wine.sh 0.06 006
+## Estrutura do pacote
 
-Mesmos passos do `build_release.ps1`:
+O instalador distribui:
+- `engenhariaarquitetura.exe` — Central de Aplicativos
+- `planejador.exe` — Planejador de Obras
+- `cad2d.exe` — CAD Arquitetônico 2D
+- `samples/` — Modelos demonstrativos (DWG, DXF, IFC, EACAD)
+- `bibliotecas/` — Catálogo 2D de itens arquitetônicos e de saúde
+- `exemplos/` — Arquivos `.plan.json`, `.eacad`, `.html` e `.csv`
+- `documentation/` — Manuais e notas de versão
+- `updater/windows/update.ps1` — Atualizador automático integrado
 
-1. compila os executáveis win64 com o FPC/Lazarus do Linux (unidades x86_64-win64 do RTL e dos pacotes instaladas);
-2. roda os testes de console win64 no Wine;
-3. copia documentação, exemplos e licenças para `dist\app`;
-4. gera o manifesto e as imagens do instalador (`prepare_images.py`, com Pillow);
-5. gera o instalador com o ISCC.exe do Inno Setup no Wine (32 e 64 bits).
+## Histórico de versões do instalador
 
-O Wine precisa de localidade UTF-8 para criar atalhos com acento; o script define `C.UTF-8` quando nenhuma estiver configurada.
-
-## Saídas
-
-| Arquivo | Conteúdo |
-|---|---|
-| `bin\planejador.exe` | Planejador para Windows 64 bits |
-| `bin\cad2d.exe` | CAD 2D para Windows 64 bits |
-| `bin\engenhariaarquitetura.exe` | Central de Aplicativos |
-| `bin\setup_engenhariaarquitetura_NNN.exe` | Instalador |
-| `setup\setup_engenhariaarquitetura_NNN.exe` | Cópia do instalador publicada |
-| `setup\SHA256SUMS` | Somas de verificação dos instaladores |
-| `setup\build-manifest-NNN.json` | Versão, commit de origem, testes e soma de cada arquivo instalado |
-| `setup\qa-tests-NNN.json` | Resultado dos testes de console |
-| `dist\` | Área de montagem e registros da compilação (não versionada) |
-
-## Conteúdo do instalador
-
-| Componente | Itens | Instalação básica |
-|---|---|---|
-| Aplicativos | Central de Aplicativos, Planejador e CAD 2D | Sim (obrigatório) |
-| Projetos de exemplo | `residencia.plan.json`, também copiado para `Documentos\EngenhariaArquitetura Projetos\Exemplos` | Não |
-| Documentação | README e todos os documentos de `docs` | Não |
-
-O instalador cria o grupo **EngenhariaArquitetura** no menu Iniciar com a Central, Planejador, CAD 2D, exemplo e documentação. O atalho principal da Central vem selecionado por padrão; a conclusão oferece abrir a Central. A desinstalação preserva os projetos em Documentos e o espaço de trabalho local de contas e tarefas.
-
-Os próximos aplicativos da plataforma entram como novos componentes em `engenhariaarquitetura.iss` e novas linhas em `TARGETS` dos dois scripts de geração.
-
-## Validação
-
-Não distribuir um instalador se a compilação ou os testes falharem. A versão 0.01 (sequência 001) e a 0.02 (002) foram geradas no Linux pelo `build_release_wine.sh` e testadas no Wine: assistente em português, instalação completa, atalhos, abertura do Planejador instalado com o exemplo e desinstalação. O `build_release.ps1` também foi executado no Windows: os três aplicativos e o instalador compilaram. A versão 0.04 executa 137 verificações (52 do núcleo do Planejador, 47 do CAD e 38 de gestão e permissões); o resultado é registrado em qa-tests-004.json. A instalação e a desinstalação desta compilação ainda exigem homologação visual.
-
-## Acesso principal e ícones
-
-A Central de Aplicativos (engenhariaarquitetura.exe) é instalada com os aplicativos e abre ao concluir a instalação. Seu atalho EngenhariaArquitetura na área de trabalho vem selecionado por padrão. Central, Planejador e CAD 2D incorporam o ícone da plataforma nos executáveis, usado também pelos atalhos e pelas janelas do Windows.
-
-## Versão atual
-
-A versão 0.04 usa a sequência 004. O pacote inclui o guia de gestão de tarefas e usuários, os quatro perfis e as notas da versão em documentation/docs. No primeiro acesso ao Planejador, crie o Administrador. Consulte [Notas da versão 004](../../docs/Notas_Versao_004.md).
-
-## Versão 0.05 / sequência 005
-
-A geração inclui cinco suítes com 210 verificações esperadas. Consulte o resultado efetivo em qa-tests-005.json e [Notas da versão 005](../../docs/Notas_Versao_005.md).
-
-## Versão 0.06 / sequência 006
-
-Inclui o catálogo 2D de saúde e uso geral, exemplos CAD e de planejamento de UBS/ala hospitalar e os exemplos gerais existentes. A geração executa seis suítes (288 verificações esperadas). Consulte qa-tests-006.json e [Notas da versão 006](../../docs/Notas_Versao_006.md).
+- **001 / 002:** Versões iniciais de validação do instalador.
+- **003:** Inclusão do CAD 2D e modelos de hospital.
+- **004:** Gestão de tarefas e usuários local integrada com 4 perfis de acesso.
+- **005:** Melhorias de confiabilidade, formato EACAD4 e DXF.
+- **006:** Catálogo 2D de saúde e SUS (UBS e ala hospitalar).
+- **007:** Gestão de recursos, arquivos opcionais e custos compostos.
+- **008:** Acompanhamento por Sprints, TO-DO e evolução semanal de custos.
+- **009:** Relatórios por sprint, carga por usuário e apontamentos diários de horas.

@@ -1,35 +1,31 @@
-# EngenhariaArquitetura
+# Engenharia e Arquitetura
 
-Software de Engenharia e Arquitetura de uso geral, direcionado prioritariamente a hospitais, UBS e centros assistenciais, incluindo o setor público do SUS. O direcionamento não restringe outros usos.
+Suite integrada para gestão, planejamento e desenvolvimento de projetos de engenharia civil e arquitetura, desenvolvida em Lazarus/Free Pascal com suporte a Windows e Linux.
 
-Plataforma de aplicações independentes em Lazarus/Free Pascal que funcionam como uma linha de produção de projetos de edificações:
+[English](docs/README.en.md)
 
-| # | Aplicativo | Pasta | Função |
-|---|---|---|---|
-| 1 | **Planejador** | [`planejador/`](planejador/README.md) | Tarefas, cronograma e coordenação das etapas |
-| 2 | **CAD Arquitetônico 2D** | [`cad2d/`](cad2d/README.md) | Plantas baixas com objetos inteligentes (paredes, portas, janelas, ambientes) |
-| 3 | **Maquete 3D** | [`maquete3d/`](maquete3d/README.md) | Reconstrução da edificação, editor de objetos e gerador de texturas |
-| 4 | **Criador de Cenas Realistas** | [`criadorcenas/`](criadorcenas/README.md) | Câmeras, iluminação, animação e renderização fotorrealista |
-| 5 | **Elétrica 3D** | [`eletrica3d/`](eletrica3d/README.md) | Projeto das instalações elétricas sobre a maquete |
-| 6 | **SimuEletrica** | [`simueletrica/`](simueletrica/README.md) | Simulação elétrica, falhas, proteções e análise térmica |
-| 7 | **SimuTubulações** | [`simutubulacoes/`](simutubulacoes/README.md) | Redes de água, gás, ar comprimido, ventilação e esgoto, com simulação de fluidos |
+## Aplicativos da plataforma
 
-Cada pasta tem um README com o resumo do aplicativo. A documentação completa, com um documento por componente, integrações e plano de desenvolvimento, começa em [`docs/README.md`](docs/README.md).
+- **Central de Aplicativos:** lançador que organiza o acesso às ferramentas da suíte.
+- **Planejador:** planejamento de obras com cronograma, dependências e caminho crítico.
+- **CAD Arquitetônico 2D:** desenho técnico 2D com paredes, portas, janelas e cotas.
+- **Modelador 3D:** em especificação.
+- **Estruturas:** em especificação.
+- **Hidráulica:** em especificação.
+- **Elétrica:** em especificação.
+- **Orçamentista:** em especificação.
 
-| Documento | Conteúdo |
-|---|---|
-| [Visão geral](docs/Visao_Geral_Plataforma.md) | Aplicativos, objetivos, escopo e requisitos comuns |
-| [Integrações](docs/Integracoes.md) | Tudo o que cada componente troca com os demais |
-| [Plano de desenvolvimento](docs/Plano_Desenvolvimento.md) | Fases, etapas e decisões pendentes |
-| [Decisões](docs/Decisoes.md) | Decisões tomadas e questões em aberto |
+## Atualização automática
 
-## Central de Aplicativos
+A partir da versão 0.03, os instaladores configuram atualização automática com
+base nos lançamentos do GitHub Releases. A checagem ocorre na abertura do launcher
+e sob demanda; a integridade é verificada por SHA256 e a instalação aguarda o
+fechamento dos aplicativos abertos. Para detalhes, limites e arquitetura, consulte
+[Atualização Automática](docs/Atualizacao_Automatica.md).
 
-O launcher independente em [`launcher/`](launcher/README.md) segue o catálogo do MultiSuite: relaciona sete softwares, mostra a disponibilidade dos executáveis e abre programas instalados. Os módulos ainda não compilados ficam indisponíveis. A homologação Windows/Linux está pendente.
+## Executáveis e instalador Windows
 
-## Instalação
-
-O instalador para Windows 64 bits e os executáveis ficam em [`bin/`](bin/), como no MultiCNC:
+O instalador para Windows 64 bits e os executáveis portáteis ficam na pasta `bin/`:
 
 | Arquivo | Conteúdo |
 |---|---|
@@ -41,6 +37,10 @@ O instalador para Windows 64 bits e os executáveis ficam em [`bin/`](bin/), com
 Como gerar o instalador: [installer/windows](installer/windows/README.md).
 
 > **Estado:** Planejador e CAD 2D têm executáveis Windows, com gestão local integrada de tarefas, usuários e quatro perfis. O CAD trabalha exclusivamente em 2D e continua em evolução; os demais aplicativos permanecem em especificação.
+
+## Modelos de hospital
+
+A pasta [samples/files](samples/README.md) inclui o mesmo hospital demonstrativo em IFC4, DWG, DXF e formato nativo CAD2D. Os instaladores incluem os modelos no componente CAD2D.
 
 ## Versão 0.06 — instalador 006
 

@@ -39,6 +39,7 @@ CORE="$ROOT/third_party/chatgpt/AIProjectCore"
 
 TARGETS=(
   "planejador/src/app/planejador|planejador"
+  "cad2d/src/app/cad2d|cad2d"
   "launcher/src/app/engenhariaarquitetura|engenhariaarquitetura"
   "cad2d/src/app/cad2d|cad2d"
 )
@@ -135,6 +136,9 @@ cp cad2d/examples/*.eacad "$APP/exemplos/"
 mkdir -p "$APP/bibliotecas"
 cp libraries/catalogo_2d.json "$APP/bibliotecas/"
 cp third_party/chatgpt/LICENSE "$APP/licencas/CHATGPT_LICENSE.txt"
+cp -R samples "$APP/samples"
+mkdir -p "$APP/updater/windows"
+cp updater/windows/update.ps1 "$APP/updater/windows/"
 
 CLEAN=--require-clean; [ "$ALLOW_DIRTY" = "--allow-dirty" ] && CLEAN=
 python3 tools/release_manifest.py --app-dir "$APP" --version "$VERSION" --seq "$SEQ" \

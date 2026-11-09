@@ -33,6 +33,7 @@ def sha256(caminho):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--app-dir", required=True)
+    ap.add_argument("--arch", choices=["amd64", "x86"], default="amd64")
     ap.add_argument("--version", required=True)
     ap.add_argument("--seq", required=True)
     ap.add_argument("--version-include", required=True)
@@ -61,7 +62,7 @@ def main():
     testes = {}
     qa = os.path.join(a.app_dir, "qa-tests.json")
     if os.path.exists(qa):
-        with open(qa, encoding="utf-8") as f:
+        with open(qa, encoding="utf-8-sig") as f:
             testes = json.load(f)
 
     manifesto = {
@@ -72,7 +73,7 @@ def main():
         "binary_version": binaria,
         "setup_seq": a.seq,
         "os": "windows",
-        "arch": "amd64",
+        "arch": a.arch,
         "built_at": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
         "source_commit": git("rev-parse", "HEAD"),
         "source_branch": git("rev-parse", "--abbrev-ref", "HEAD"),

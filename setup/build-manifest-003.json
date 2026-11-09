@@ -6,11 +6,11 @@
   "binary_version": "0.3.0.0",
   "setup_seq": "003",
   "os": "windows",
-  "arch": "amd64",
-  "built_at": "2026-10-30T20:40:39+00:00",
-  "source_commit": "c026b4ea93c03b1ebf183574107dc2abdd0cd769",
+  "arch": "x86",
+  "built_at": "2026-11-06T18:27:35+00:00",
+  "source_commit": "0688d7ed86418b18c63039ad32b3996bd248fb7c",
   "source_branch": "fila",
-  "source_dirty": true,
+  "source_dirty": false,
   "tests": [
     {
       "test": "test_planejador_core",
@@ -18,41 +18,56 @@
       "summary": "52 verificações, 0 falhas"
     },
     {
-      "test": "test_cad2d",
+      "test": "test_cad2d_import",
       "passed": true,
-      "summary": "47 verificacoes CAD 2D, 0 falhas"
+      "summary": "Total de verificacoes: 22 | Falhas: 0"
     },
     {
-      "test": "test_workflow",
+      "test": "test_cad2d_ui",
       "passed": true,
-      "summary": "38 verificacoes de gestao, usuarios e permissoes, 0 falhas"
+      "summary": "PASS: all tabs opened"
+    },
+    {
+      "test": "test_cad2d_commands",
+      "passed": true,
+      "summary": "TOTAL: 33 checks passed"
     }
   ],
   "files": [
     {
       "path": "cad2d.exe",
-      "bytes": 3499008,
-      "sha256": "28ac98972c52d0566e451a96ad8231a0ad431896af288a74933644b0cedb129c"
+      "bytes": 22523062,
+      "sha256": "9e11524ad6b99cfcdd9631c3bae2c6acecfbf400990f699be171cc44e7954dcd"
     },
     {
       "path": "documentation/CAD2D_README.md",
-      "bytes": 20089,
-      "sha256": "7dfce76302ef19cfd419c93e6e36f3573f9701cbda303aa0fc976e4cf232ccc0"
+      "bytes": 19845,
+      "sha256": "3f714ab9721dfd6510539b1acb98af6bfe42fab00322c14222df39be1678193e"
     },
     {
       "path": "documentation/Planejador_README.md",
-      "bytes": 9680,
-      "sha256": "53caf2a4cfd0da64467272cc637cdc128f6749abe301cd86f163f627543aeddb"
+      "bytes": 9457,
+      "sha256": "4ae0c00928bc5e3e11767f106b705e4d950a87e1f8356a8eb8b32d77e78fbae6"
     },
     {
       "path": "documentation/README.md",
-      "bytes": 2738,
-      "sha256": "094445636b7535192c09bd1e595109f128af6cade6e99bc763d950f7d9f99287"
+      "bytes": 3680,
+      "sha256": "00179be0470ef2a8d5bfe3eecf96b2052bf2bbc724e2a56069e905b86d061cf7"
+    },
+    {
+      "path": "documentation/docs/Atualizacao_Automatica.md",
+      "bytes": 5700,
+      "sha256": "ee99151a6508370887e074e1ee45f9db64f262e956a0185742951e23bcba6dab"
     },
     {
       "path": "documentation/docs/Auditoria_Lacunas_2026-10-30.md",
       "bytes": 17541,
       "sha256": "3639993cd2d22bdc0d4e8b8c7eafc4f1ae36f6e95769064d384d8a715f0035e7"
+    },
+    {
+      "path": "documentation/docs/CAD2D_Comandos_2026-11-06.md",
+      "bytes": 7792,
+      "sha256": "4dc71fcfd1a7468b889a9022a11a505988cf0fc57d91587b1caaf941cde11de9"
     },
     {
       "path": "documentation/docs/CAD_Arquitetonico_2D.md",
@@ -83,11 +98,6 @@
       "path": "documentation/docs/Gerador_Texturas.md",
       "bytes": 11005,
       "sha256": "33d99ac8b7acc37349376d8a9b989fc74881511ce6211c4f91327af18648985c"
-    },
-    {
-      "path": "documentation/docs/Gestao_Tarefas_Usuarios.md",
-      "bytes": 4729,
-      "sha256": "488a5df8118c94dd4f6a97bdfbf8c30987fb2363d1f55eed07306338093baca0"
     },
     {
       "path": "documentation/docs/Integracoes.md",
@@ -140,14 +150,24 @@
       "sha256": "8150cbc19b8bcaecd2d7937dc46abd824e1a0ebe54b348487872783e96f413f1"
     },
     {
+      "path": "documentation/docs/UI_CAD2D_2026-11-06.md",
+      "bytes": 6656,
+      "sha256": "17a0cd8f17e5db7e73d7f6ee6e2ef53228f775809fe30c1b47619b1cbefdc7b0"
+    },
+    {
       "path": "documentation/docs/Visao_Geral_Plataforma.md",
       "bytes": 13421,
       "sha256": "0e3e988e62a8affc259798b3be3ff7c51901a6493a167be24c966a3f44a8d230"
     },
     {
       "path": "engenhariaarquitetura.exe",
-      "bytes": 2808320,
-      "sha256": "31a6942c3ff7e3e8e9525b03862238293336127f91428504fff05ee830ab8316"
+      "bytes": 20620360,
+      "sha256": "0db7ee057e300944fb76a18b25dfeca40d9c891405f2eecdbd9277a51e3fd182"
+    },
+    {
+      "path": "exemplos/planta-demonstracao.eacad",
+      "bytes": 1490,
+      "sha256": "a29bb66fec38be969d0d58e7e15d47aa9036169ee61e14e2a589b85b14eb47b2"
     },
     {
       "path": "exemplos/residencia.plan.json",
@@ -161,13 +181,68 @@
     },
     {
       "path": "planejador.exe",
-      "bytes": 4154880,
-      "sha256": "e105824f0687f3d0d1359e481afe4812e5f4798ca584acb1f862ea4be7382b9b"
+      "bytes": 2699776,
+      "sha256": "d7addc904784aac3f6ab381fb2c4423de19c6df807ba92a0507b7f831c27b8ee"
     },
     {
       "path": "qa-tests.json",
-      "bytes": 424,
-      "sha256": "5f1a97c214c8df391bcf69f48a72cc14721cdd358320d2c120f3811501c838f4"
+      "bytes": 454,
+      "sha256": "be04d37f4feca14c95e84c11f1a6da22761d8fdad9056848f97dd992a6b87920"
+    },
+    {
+      "path": "samples/README.md",
+      "bytes": 2342,
+      "sha256": "fcf80c6d6927a5a96ce9c662f0e9935d6ce2103b4a97db19e6690dea647198d3"
+    },
+    {
+      "path": "samples/SHA256SUMS",
+      "bytes": 374,
+      "sha256": "4bd5638a938b9657b3401be515d4888b3393c012af05ee3ae8d3bf93ea84bf05"
+    },
+    {
+      "path": "samples/files/hospital_terreo.dwg",
+      "bytes": 106732,
+      "sha256": "144d2b21a19f66de3c2f1f4f997ea1713723c46c4e7db1580add953e34358216"
+    },
+    {
+      "path": "samples/files/hospital_terreo.dxf",
+      "bytes": 50395,
+      "sha256": "14c78597b767abfc7e5dd24762b8a01e17211dd69e5876ea89936b4444ad37a6"
+    },
+    {
+      "path": "samples/files/hospital_terreo.eacad",
+      "bytes": 6046,
+      "sha256": "dcacc94e1f6d43c4b8b1746038924a5296557d22183d53febe20f31b4a4f22db"
+    },
+    {
+      "path": "samples/files/hospital_terreo.ifc",
+      "bytes": 74272,
+      "sha256": "9e97894e0ac845852405be8aaab3178c30c577b91bc845ed44fd4013faaa0b6d"
+    },
+    {
+      "path": "samples/modelo-hospital.json",
+      "bytes": 10649,
+      "sha256": "af94134fa0ad0770ca59b7c749510f1cc6e4952652c34ee4b0f7e53c226b74f6"
+    },
+    {
+      "path": "samples/tools/generate_hospital.py",
+      "bytes": 8217,
+      "sha256": "86e79057cdccf23d5c20183a5c08a93e65b350b175ed95326e846be2f1e38bca"
+    },
+    {
+      "path": "samples/tools/requirements.txt",
+      "bytes": 56,
+      "sha256": "b03fc211b4cc1018caaf3986abcb56a66c29f2206c51f497a5f410c92720b596"
+    },
+    {
+      "path": "samples/validacao-ifc.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "path": "updater/windows/update.ps1",
+      "bytes": 5927,
+      "sha256": "b9215d28a208b76c58591dc87a1c9aa51905df00a94bc4faec7bcf6148e7710e"
     }
   ]
 }
