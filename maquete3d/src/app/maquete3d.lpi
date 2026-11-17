@@ -13,7 +13,7 @@
  <CompilerOptions>
   <Version Value="11"/>
   <Target><Filename Value="../../../bin/maquete3d"/></Target>
-  <SearchPaths><OtherUnitFiles Value="../core;../../../shared;../../../cad2d/src/app;../../../cad2d/src/io"/><UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/></SearchPaths>
+  <SearchPaths><OtherUnitFiles Value="../core;../../../shared;../../../cad2d/src/app;../../../cad2d/src/io;../../../../CHATGPT/pacote/AI Project Core;../../../../CHATGPT/pacote/AI Graphic;../../../third_party/chatgpt/AIProjectCore;../../../third_party/chatgpt/AIGraphic"/><UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/></SearchPaths>
   <Parsing><SyntaxOptions><SyntaxMode Value="ObjFPC"/></SyntaxOptions></Parsing>
   <CodeGeneration><Optimizations><OptimizationLevel Value="2"/></Optimizations></CodeGeneration>
   <Linking>

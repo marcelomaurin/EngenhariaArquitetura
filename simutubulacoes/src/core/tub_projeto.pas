@@ -12,7 +12,7 @@ interface
 
 uses
   Classes, SysUtils, Math, fpjson, jsonparser,
-  ea_geometria, ea_pacote, ea_modelo, ea_malha3d, ea_fileio;
+  ea_geometria, ea_pacote, ea_modelo, ea_malha3d, ea_fileio, ea_undo;
 
 type
   TTUBFluidDomain = (
@@ -72,8 +72,14 @@ type
     Nodes: array of TTUBNode;
     Segments: array of TTUBSegment;
     Alerts: TStringList;
+    UndoHistory: TEASnapshotUndo;
     constructor Create;
     destructor Destroy; override;
+    function SnapshotToJSON: string;
+    procedure RestoreFromSnapshotJSON(const JsonText: string);
+    procedure BeginUndoStep(const Desc: string);
+    function Undo: Boolean;
+    function Redo: Boolean;
     procedure Clear;
     procedure LoadDemoNetworks;
     procedure ImportMaquetePackage(const FileName: string);
@@ -150,11 +156,13 @@ begin
   inherited Create;
   ArchModel := TEAModel.Create;
   Alerts := TStringList.Create;
+  UndoHistory := TEASnapshotUndo.Create(@SnapshotToJSON, @RestoreFromSnapshotJSON);
   Clear;
 end;
 
 destructor TTUBProject.Destroy;
 begin
+  UndoHistory.Free;
   Alerts.Free;
   ArchModel.Free;
   inherited Destroy;
@@ -696,7 +704,7 @@ begin
   end;
 end;
 
-procedure TTUBProject.SaveTubProject(const FileName: string);
+function TTUBProject.SnapshotToJSON: string;
 var
   Root, O: TJSONObject;
   Arr: TJSONArray;
@@ -731,22 +739,20 @@ begin
       Arr.Add(O);
     end;
     Root.Add('segments', Arr);
-    EAAtomicWriteText(FileName, Root.FormatJSON);
+    Result := Root.FormatJSON;
   finally
     Root.Free;
   end;
 end;
 
-procedure TTUBProject.LoadTubProject(const FileName: string);
+procedure TTUBProject.RestoreFromSnapshotJSON(const JsonText: string);
 var
-  SL: TStringList;
   Data: TJSONData;
   Root, O, P: TJSONObject;
   Arr: TJSONArray;
   I: Integer;
 begin
-  SL := TStringList.Create;
-  try SL.LoadFromFile(FileName); Data := GetJSON(SL.Text); finally SL.Free; end;
+  Data := GetJSON(JsonText);
   try
     if not (Data is TJSONObject) then raise EEAPackageError.Create('Projeto SimuTubulações inválido');
     Root := TJSONObject(Data);
@@ -777,6 +783,40 @@ begin
     RunAllDomainSolvers;
   finally
     Data.Free;
+  end;
+end;
+
+procedure TTUBProject.BeginUndoStep(const Desc: string);
+begin
+  UndoHistory.RecordBefore(Desc);
+end;
+
+function TTUBProject.Undo: Boolean;
+begin
+  Result := UndoHistory.Undo;
+end;
+
+function TTUBProject.Redo: Boolean;
+begin
+  Result := UndoHistory.Redo;
+end;
+
+procedure TTUBProject.SaveTubProject(const FileName: string);
+begin
+  EAAtomicWriteText(FileName, SnapshotToJSON);
+end;
+
+procedure TTUBProject.LoadTubProject(const FileName: string);
+var
+  SL: TStringList;
+begin
+  SL := TStringList.Create;
+  try
+    SL.LoadFromFile(FileName);
+    RestoreFromSnapshotJSON(SL.Text);
+    UndoHistory.Clear;
+  finally
+    SL.Free;
   end;
 end;
 

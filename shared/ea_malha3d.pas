@@ -11,6 +11,7 @@ interface
 
 uses
   Classes, SysUtils, Math, fpjson, jsonparser, zipper, DOM, XMLRead,
+  aigltfloader, aiavatartypes,
   ea_geometria, ea_modelo, ea_pacote, ea_fileio;
 
 type
@@ -88,6 +89,7 @@ procedure EAImport3MF(const FileName: string; Mesh: TEAMesh3D);
 
 procedure EAExportGLB(Mesh: TEAMesh3D; const FileName: string; out Limitations: string);
 procedure EAImportGLB(const FileName: string; Mesh: TEAMesh3D);
+procedure EAImportGLTF(const FileName: string; Mesh: TEAMesh3D);
 
 function EAParseHexColorRGB(const Hex: string; Fallback: LongWord = $CCCCCC): LongWord;
 
@@ -1264,6 +1266,59 @@ begin
   end;
 end;
 
+procedure EAImportGLTF(const FileName: string; Mesh: TEAMesh3D);
+var
+  Loader: TGLTFLoader;
+  Verts: TAIAvatarVertexArray;
+  Faces: TGLTFFaceArray;
+  Mats: TAIAvatarMaterialArray;
+  Texs: TAIAvatarTextureArray;
+  Skins: TAIAvatarSkinArray;
+  Nodes: TGLTFNodeArray;
+  I, MatIdx: Integer;
+  ColRGB: LongWord;
+  R, G, B: Byte;
+  P0, P1, P2: TEAVec3;
+  function ToZUpMM(const V: TVector3D): TEAVec3;
+  begin
+    Result := EAV3(V.X * 1000.0, -V.Z * 1000.0, V.Y * 1000.0);
+  end;
+begin
+  EACheckSupportedExternalFile(FileName);
+  if not FileExists(FileName) then
+    raise EEAPackageError.CreateFmt('glTF/GLB não encontrado: %s', [FileName]);
+  Mesh.Clear;
+  Mesh.Name := ChangeFileExt(ExtractFileName(FileName), '');
+  Loader := TGLTFLoader.Create;
+  try
+    if not Loader.LoadFromFile(FileName, Verts, Faces, Mats, Texs, Skins, Nodes) then
+      raise EEAPackageError.Create('Falha no TGLTFLoader (CHATGPT): ' + Loader.LastError);
+    for I := 0 to High(Mats) do
+    begin
+      R := Round(EnsureRange(Mats[I].BaseColorFactor.X, 0.0, 1.0) * 255);
+      G := Round(EnsureRange(Mats[I].BaseColorFactor.Y, 0.0, 1.0) * 255);
+      B := Round(EnsureRange(Mats[I].BaseColorFactor.Z, 0.0, 1.0) * 255);
+      ColRGB := (LongWord(R) shl 16) or (LongWord(G) shl 8) or LongWord(B);
+      Mesh.AddMaterial(Format('gltf_mat_%d', [I]), Mats[I].Name, ColRGB,
+        Mats[I].RoughnessFactor, Mats[I].MetallicFactor,
+        EnsureRange(Mats[I].BaseColorFactor.W, 0.05, 1.0));
+    end;
+    if Length(Mesh.Materials) = 0 then
+      Mesh.AddMaterial('gltf_mat_0', 'glTF Padrão', $CBD5E1, 0.7, 0.0, 1.0);
+    for I := 0 to High(Faces) do
+    begin
+      MatIdx := EnsureRange(Faces[I].MaterialIndex, 0, High(Mesh.Materials));
+      ColRGB := Mesh.Materials[MatIdx].ColorRGB;
+      P0 := ToZUpMM(Faces[I].V1);
+      P1 := ToZUpMM(Faces[I].V2);
+      P2 := ToZUpMM(Faces[I].V3);
+      Mesh.AddTri(P0, P1, P2, ColRGB, MatIdx, 0, Mesh.Name);
+    end;
+  finally
+    Loader.Free;
+  end;
+end;
+
 procedure EAImportGLB(const FileName: string; Mesh: TEAMesh3D);
 var
   MS: TMemoryStream;
@@ -1282,6 +1337,11 @@ var
   R, G, B: Byte;
 begin
   EACheckSupportedExternalFile(FileName);
+  if SameText(ExtractFileExt(FileName), '.gltf') then
+  begin
+    EAImportGLTF(FileName, Mesh);
+    Exit;
+  end;
   if not FileExists(FileName) then
     raise EEAPackageError.CreateFmt('GLB não encontrado: %s', [FileName]);
   Mesh.Clear;

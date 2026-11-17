@@ -232,6 +232,9 @@ begin
     EAImport3MF(Tmp3MF, Mesh2);
     Check(Mesh2.TriangleCount = 2, 'importacao 3MF real');
     Check(Abs(Mesh2.Bounds.Max.Z - 500.0) < 0.1, '3MF preserva unidade mm');
+
+    EAImportGLTF(TmpGLB, Mesh2);
+    Check(Mesh2.TriangleCount = Mesh.TriangleCount, 'TGLTFLoader CHATGPT importa GLB completo');
   finally
     Mesh2.Free;
     Mesh.Free;

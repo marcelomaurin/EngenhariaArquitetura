@@ -42,6 +42,11 @@ begin
     Cena.AddLight('l1', 'Luz Central', EAV3(3000, 2200, 2600), $FFF7ED, 150.0);
     Cena.AddKeyframe(0.0, EAV3(8500, -5500, 2600), EAV3(3000, 2200, 1400), 0, 13.0);
     Cena.AddKeyframe(1.0, EAV3(7000, -4500, 2200), EAV3(3000, 2200, 1400), 90, 21.0);
+    Cena.BeginUndoStep('Camera extra');
+    Cena.AddCamera('cam-tmp', 'Temp', EAV3(1000, 1000, 1500), EAV3(3000, 2200, 1400), 50.0);
+    Check(Cena.Undo and (Length(Cena.Cameras) = 2), 'Criador de Cenas desfaz via TAIUndoHistory');
+    Check(Cena.Redo and (Length(Cena.Cameras) = 3), 'Criador de Cenas refaz via TAIUndoHistory');
+    Check(Cena.Undo and (Length(Cena.Cameras) = 2), 'Criador de Cenas retorna para 2 cameras');
 
     { Render diurno e noturno }
     Cena.HourOfDay := 13.0;

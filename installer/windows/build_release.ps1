@@ -39,6 +39,8 @@ $Iscc = Find-Tool "ISCC" @("ISCC.exe", "C:\Program Files (x86)\Inno Setup 6\ISCC
 $Chatgpt = if ($env:EA_CHATGPT_DIR) { $env:EA_CHATGPT_DIR } else { Join-Path (Split-Path $Root -Parent) "CHATGPT" }
 $Core = Join-Path $Root "third_party\chatgpt\AIProjectCore"
 if (Test-Path (Join-Path $Chatgpt "pacote\AI Project Core")) { $Core = Join-Path $Chatgpt "pacote\AI Project Core" }
+$Graphic = Join-Path $Root "third_party\chatgpt\AIGraphic"
+if (Test-Path (Join-Path $Chatgpt "pacote\AI Graphic")) { $Graphic = Join-Path $Chatgpt "pacote\AI Graphic" }
 
 $Dist = Join-Path $Root "dist"; $App = Join-Path $Dist "app"; $Bin = Join-Path $Root "bin"
 if (Test-Path $App) { Remove-Item -Recurse -Force $App }
@@ -94,7 +96,7 @@ foreach ($t in $Tests) {
   $name = Split-Path $t.Source -Leaf
   $out = Join-Path $Dist "tests\$name"
   New-Item -ItemType Directory -Force $out | Out-Null
-  $fpcArgs = @("-Px86_64", "-Twin64", "-Mobjfpc", "-Sh", "-FU$out") + ($t.Paths | ForEach-Object { "-Fu$Root\$_" }) + @("-Fu$Core", "-Fu$Root\shared", "-o$out.exe", "$($t.Source).lpr")
+  $fpcArgs = @("-Px86_64", "-Twin64", "-Mobjfpc", "-Sh", "-FU$out") + ($t.Paths | ForEach-Object { "-Fu$Root\$_" }) + @("-Fu$Core", "-Fu$Graphic", "-Fu$Root\shared", "-o$out.exe", "$($t.Source).lpr")
   & $Fpc @fpcArgs *> (Join-Path $Dist "build-logs\$name.log")
   if ($LASTEXITCODE -ne 0) { Get-Content (Join-Path $Dist "build-logs\$name.log") -Tail 20; throw "Falha ao compilar $name" }
   $run = & "$out.exe" 2>&1

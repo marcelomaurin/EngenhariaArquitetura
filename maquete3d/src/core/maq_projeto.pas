@@ -10,7 +10,7 @@ interface
 
 uses
   Classes, SysUtils, Math, fpjson, jsonparser,
-  ea_geometria, ea_pacote, ea_modelo, ea_ancoras, ea_malha3d, ea_fileio,
+  ea_geometria, ea_pacote, ea_modelo, ea_ancoras, ea_malha3d, ea_fileio, ea_undo,
   cad_document, cad2d_importador, cad_interop,
   maq_texturas, maq_objetos;
 
@@ -42,8 +42,14 @@ type
     ExternalSegments: array of TMAQExternalSegment;
     CoordRequests: array of TMAQCoordRequest;
     Alerts: TStringList;
+    UndoHistory: TEASnapshotUndo;
     constructor Create;
     destructor Destroy; override;
+    function SnapshotToJSON: string;
+    procedure RestoreFromSnapshotJSON(const JsonText: string);
+    procedure BeginUndoStep(const Desc: string);
+    function Undo: Boolean;
+    function Redo: Boolean;
     procedure Clear;
     procedure LoadDemoTwoFloors;
     procedure ImportArchitecture2D(const FileName, TargetFloorId, TargetFloorName: string;
@@ -75,11 +81,13 @@ begin
   Objects := TMAQObjectLibrary.Create;
   HiddenFloors := TStringList.Create;
   Alerts := TStringList.Create;
+  UndoHistory := TEASnapshotUndo.Create(@SnapshotToJSON, @RestoreFromSnapshotJSON);
   Clear;
 end;
 
 destructor TMAQProject.Destroy;
 begin
+  UndoHistory.Free;
   Alerts.Free;
   HiddenFloors.Free;
   Objects.Free;
@@ -484,7 +492,7 @@ begin
         ExternalSegments[I].RadiusMM, 8, ExternalSegments[I].ColorRGB, 0, ExternalSegments[I].Id);
 end;
 
-procedure TMAQProject.SaveMaqueteFile(const FileName: string);
+function TMAQProject.SnapshotToJSON: string;
 var
   Root, InstObj: TJSONObject;
   InstArr, AssetsArr: TJSONArray;
@@ -512,28 +520,20 @@ begin
       InstArr.Add(InstObj);
     end;
     Root.Add('instances', InstArr);
-    EAAtomicWriteText(FileName, Root.FormatJSON);
+    Result := Root.FormatJSON;
   finally
     Root.Free;
   end;
 end;
 
-procedure TMAQProject.LoadMaqueteFile(const FileName: string);
+procedure TMAQProject.RestoreFromSnapshotJSON(const JsonText: string);
 var
-  SL: TStringList;
   Data: TJSONData;
   Root, InstObj: TJSONObject;
   InstArr: TJSONArray;
   I: Integer;
 begin
-  EACheckSupportedExternalFile(FileName);
-  SL := TStringList.Create;
-  try
-    SL.LoadFromFile(FileName);
-    Data := GetJSON(SL.Text);
-  finally
-    SL.Free;
-  end;
+  Data := GetJSON(JsonText);
   try
     if not (Data is TJSONObject) then raise EEAPackageError.Create('Arquivo de maquete inválido');
     Root := TJSONObject(Data);
@@ -561,6 +561,41 @@ begin
     ReconcileAnchors;
   finally
     Data.Free;
+  end;
+end;
+
+procedure TMAQProject.BeginUndoStep(const Desc: string);
+begin
+  UndoHistory.RecordBefore(Desc);
+end;
+
+function TMAQProject.Undo: Boolean;
+begin
+  Result := UndoHistory.Undo;
+end;
+
+function TMAQProject.Redo: Boolean;
+begin
+  Result := UndoHistory.Redo;
+end;
+
+procedure TMAQProject.SaveMaqueteFile(const FileName: string);
+begin
+  EAAtomicWriteText(FileName, SnapshotToJSON);
+end;
+
+procedure TMAQProject.LoadMaqueteFile(const FileName: string);
+var
+  SL: TStringList;
+begin
+  EACheckSupportedExternalFile(FileName);
+  SL := TStringList.Create;
+  try
+    SL.LoadFromFile(FileName);
+    RestoreFromSnapshotJSON(SL.Text);
+    UndoHistory.Clear;
+  finally
+    SL.Free;
   end;
 end;
 

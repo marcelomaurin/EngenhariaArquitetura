@@ -50,6 +50,12 @@ begin
     Ele.ExportQuantitiesCSV(TmpCSV);
     Check(FileExists(TmpLayer) and FileExists(TmpLuz) and FileExists(TmpSim) and FileExists(TmpCoord) and FileExists(TmpCSV),
       'todos os contratos I-13..I-16 e CSV exportados');
+    Check(Ele.EstimateMaterialCostBRL > 100.0, 'AICostModel calcula custo estimado de materiais');
+    Ele.BeginUndoStep('Adicionar tomada');
+    Ele.AddPoint('TOM-EXTRA', 'Tomada Extra', epkTomada, 'terreo', 'w1', ahkWall, EAV3(1000, 50, 300), 'C2', 600);
+    Check(Ele.Undo and (Length(Ele.Points) = 5), 'Eletrica 3D desfaz via TAIUndoHistory');
+    Check(Ele.Redo and (Length(Ele.Points) = 6), 'Eletrica 3D refaz via TAIUndoHistory');
+    Check(Ele.Undo and (Length(Ele.Points) = 5), 'Eletrica 3D restaura 5 pontos');
 
     { Maquete 3D carrega camada eletrica exportada sem erro }
     Maq.ImportDisciplineOverlay(TmpLayer);

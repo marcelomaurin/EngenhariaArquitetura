@@ -30,6 +30,8 @@ type
     procedure ExportResClick(Sender: TObject);
     procedure ExportCSVClick(Sender: TObject);
     procedure ExportHTMLClick(Sender: TObject);
+    procedure UndoClick(Sender: TObject);
+    procedure RedoClick(Sender: TObject);
     procedure SetupClick(Sender: TObject);
   public
     constructor Create(AOwner: TComponent); override;
@@ -79,6 +81,9 @@ begin
   Add(TopMenu, 'Exportar Resultados para Elétrica 3D / Maquete (I-17)...', @ExportResClick);
   Add(TopMenu, 'Exportar Relatório CSV...', @ExportCSVClick);
   Add(TopMenu, 'Exportar Relatório HTML...', @ExportHTMLClick);
+  TopMenu := TMenuItem.Create(M); TopMenu.Caption := '&Editar'; M.Items.Add(TopMenu);
+  Add(TopMenu, 'Desfazer', @UndoClick);
+  Add(TopMenu, 'Refazer', @RedoClick);
   TopMenu := TMenuItem.Create(M); TopMenu.Caption := '&Simulação'; M.Items.Add(TopMenu);
   Add(TopMenu, 'Executar Solver Elétrico e Térmico', @RunSimClick);
   TopMenu := TMenuItem.Create(M); TopMenu.Caption := '&Setup'; M.Items.Add(TopMenu);
@@ -196,6 +201,7 @@ end;
 
 procedure TSimEleMainForm.RunSimClick(Sender: TObject);
 begin
+  FSim.BeginUndoStep('Executar simulação ' + FScenarioCombo.Text);
   FSim.ScenarioKind := TSIMScenarioKind(Max(0, FScenarioCombo.ItemIndex));
   FSim.ScenarioName := FScenarioCombo.Text;
   FSim.AmbientTempC := StrToFloatDef(FAmbientEdit.Text, 30.0);
@@ -205,6 +211,16 @@ begin
   FSim.TimeInstSec := StrToFloatDef(FTimeEdit.Text, 1800.0);
   FSim.RunSimulation;
   RefreshUI;
+end;
+
+procedure TSimEleMainForm.UndoClick(Sender: TObject);
+begin
+  if FSim.Undo then begin RefreshUI; FStatusLabel.Caption := 'Cenário anterior restaurado (AIUndoHistory).'; end;
+end;
+
+procedure TSimEleMainForm.RedoClick(Sender: TObject);
+begin
+  if FSim.Redo then begin RefreshUI; FStatusLabel.Caption := 'Cenário refeito (AIUndoHistory).'; end;
 end;
 
 procedure TSimEleMainForm.ImportModelClick(Sender: TObject);

@@ -64,9 +64,12 @@ begin
     Check(Length(Proj.Model.Floors) = 2, 'dois pavimentos alinhados');
     Check(Length(Proj.Model.Walls) = 8, 'oito paredes nos dois pavimentos');
 
-    { 3. Inserir ancora na parede terreo_wall-1 e depois mover parede na revisao }
+    { 3. Inserir ancora na parede terreo_wall-1 e validar Undo/Redo (AIUndoHistory CHATGPT) }
+    Proj.BeginUndoStep('Inserir mesa');
     Proj.InsertObjectInstance('mesa_1200x700', 'terreo', 'terreo_wall-1', ahkWall, EAV3(1500, 500, 0), 0, 'madeira_carvalho');
     Check(Length(Proj.Instances) = 1, 'instancia inserida');
+    Check(Proj.Undo and (Length(Proj.Instances) = 0), 'Maquete 3D desfaz insercao com TAIUndoHistory');
+    Check(Proj.Redo and (Length(Proj.Instances) = 1), 'Maquete 3D refaz insercao com TAIUndoHistory');
 
     { 4. Importar STL externo, aplicar skin e exportar GLB }
     Mesh.Clear;

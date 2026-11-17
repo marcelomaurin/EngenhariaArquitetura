@@ -8,8 +8,8 @@ unit ele_projeto;
 interface
 
 uses
-  Classes, SysUtils, Math, fpjson, jsonparser,
-  ea_geometria, ea_pacote, ea_modelo, ea_ancoras, ea_malha3d, ea_fileio;
+  Classes, SysUtils, Math, fpjson, jsonparser, aicostmodel,
+  ea_geometria, ea_pacote, ea_modelo, ea_ancoras, ea_malha3d, ea_fileio, ea_undo;
 
 type
   TELEPointKind = (epkQuadro, epkTomada, epkInterruptor, epkLuminaria, epkCaixa);
@@ -62,6 +62,7 @@ type
     Conduits: array of TELEConduit;
     Circuits: array of TELECircuit;
     Alerts: TStringList;
+    UndoHistory: TEASnapshotUndo;
     SimOverlays: array of record
       SegmentId: string;
       TempC: Double;
@@ -70,6 +71,12 @@ type
     end;
     constructor Create;
     destructor Destroy; override;
+    function SnapshotToJSON: string;
+    procedure RestoreFromSnapshotJSON(const JsonText: string);
+    procedure BeginUndoStep(const Desc: string);
+    function Undo: Boolean;
+    function Redo: Boolean;
+    function EstimateMaterialCostBRL: Double;
     procedure Clear;
     procedure LoadDemoProject;
     procedure ImportMaquetePackage(const FileName: string; Reconcile: Boolean);
@@ -129,11 +136,13 @@ begin
   inherited Create;
   ArchModel := TEAModel.Create;
   Alerts := TStringList.Create;
+  UndoHistory := TEASnapshotUndo.Create(@SnapshotToJSON, @RestoreFromSnapshotJSON);
   Clear;
 end;
 
 destructor TELEProject.Destroy;
 begin
+  UndoHistory.Free;
   Alerts.Free;
   ArchModel.Free;
   inherited Destroy;
@@ -607,10 +616,36 @@ begin
   end;
 end;
 
+function TELEProject.EstimateMaterialCostBRL: Double;
+var
+  I: Integer;
+  PointUnitCost, ConduitUnitCostPerM: Double;
+begin
+  Result := 0.0;
+  for I := 0 to High(Points) do
+  begin
+    case Points[I].Kind of
+      epkQuadro: PointUnitCost := 480.0;
+      epkLuminaria: PointUnitCost := 135.0;
+      epkInterruptor: PointUnitCost := 38.0;
+      epkTomada: PointUnitCost := 42.0;
+    else
+      PointUnitCost := 25.0;
+    end;
+    Result := Result + AIMaterialCost(1.0, PointUnitCost);
+  end;
+  for I := 0 to High(Conduits) do
+  begin
+    ConduitUnitCostPerM := 14.0 + Conduits[I].ConductorCount * (3.5 + Conduits[I].WireSectionMM2 * 2.2);
+    Result := Result + AIMaterialCost(Conduits[I].LengthMM / 1000.0, ConduitUnitCostPerM);
+  end;
+end;
+
 procedure TELEProject.ExportQuantitiesCSV(const FileName: string);
 var
   SL: TStringList;
   I: Integer;
+  TotalBRL: Double;
 begin
   SL := TStringList.Create;
   try
@@ -621,6 +656,8 @@ begin
       SL.Add(Format('Eletroduto;%s;%s->%s;%s;%.2f m;%.1f mm2 (%d cond)', [
         Conduits[I].Id, Conduits[I].FromId, Conduits[I].ToId, Conduits[I].CircuitId,
         Conduits[I].LengthMM / 1000.0, Conduits[I].WireSectionMM2, Conduits[I].ConductorCount]));
+    TotalBRL := EstimateMaterialCostBRL;
+    SL.Add(Format('Resumo;COST-MAT;Custo estimado materiais (AICostModel);-;1;%s', [AIFormatMoney(TotalBRL, 'R$')]));
     EAAtomicWriteText(FileName, #$EF#$BB#$BF + SL.Text);
   finally
     SL.Free;
@@ -656,7 +693,7 @@ begin
   end;
 end;
 
-procedure TELEProject.SaveElectricalFile(const FileName: string);
+function TELEProject.SnapshotToJSON: string;
 var
   Root, O: TJSONObject;
   Arr: TJSONArray;
@@ -698,22 +735,20 @@ begin
       Arr.Add(O);
     end;
     Root.Add('conduits', Arr);
-    EAAtomicWriteText(FileName, Root.FormatJSON);
+    Result := Root.FormatJSON;
   finally
     Root.Free;
   end;
 end;
 
-procedure TELEProject.LoadElectricalFile(const FileName: string);
+procedure TELEProject.RestoreFromSnapshotJSON(const JsonText: string);
 var
-  SL: TStringList;
   Data: TJSONData;
   Root, O: TJSONObject;
   Arr: TJSONArray;
   I: Integer;
 begin
-  SL := TStringList.Create;
-  try SL.LoadFromFile(FileName); Data := GetJSON(SL.Text); finally SL.Free; end;
+  Data := GetJSON(JsonText);
   try
     if not (Data is TJSONObject) then raise EEAPackageError.Create('Projeto elétrico inválido');
     Root := TJSONObject(Data);
@@ -758,6 +793,40 @@ begin
     RecalculateEngineering;
   finally
     Data.Free;
+  end;
+end;
+
+procedure TELEProject.BeginUndoStep(const Desc: string);
+begin
+  UndoHistory.RecordBefore(Desc);
+end;
+
+function TELEProject.Undo: Boolean;
+begin
+  Result := UndoHistory.Undo;
+end;
+
+function TELEProject.Redo: Boolean;
+begin
+  Result := UndoHistory.Redo;
+end;
+
+procedure TELEProject.SaveElectricalFile(const FileName: string);
+begin
+  EAAtomicWriteText(FileName, SnapshotToJSON);
+end;
+
+procedure TELEProject.LoadElectricalFile(const FileName: string);
+var
+  SL: TStringList;
+begin
+  SL := TStringList.Create;
+  try
+    SL.LoadFromFile(FileName);
+    RestoreFromSnapshotJSON(SL.Text);
+    UndoHistory.Clear;
+  finally
+    SL.Free;
   end;
 end;
 

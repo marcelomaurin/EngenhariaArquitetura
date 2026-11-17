@@ -33,6 +33,8 @@ type
     procedure ExportBOMClick(Sender: TObject);
     procedure AddSocketClick(Sender: TObject);
     procedure ClashPlumbingClick(Sender: TObject);
+    procedure UndoClick(Sender: TObject);
+    procedure RedoClick(Sender: TObject);
     procedure SetupClick(Sender: TObject);
   public
     constructor Create(AOwner: TComponent); override;
@@ -86,6 +88,9 @@ begin
   Add(TopMenu, 'Importar Maquete 3D (somente leitura)...', @ImportMaqueteClick);
   Add(TopMenu, 'Abrir Projeto Elétrico (.ele.json)...', @OpenEleClick);
   Add(TopMenu, 'Salvar Projeto Elétrico...', @SaveEleClick);
+  TopMenu := TMenuItem.Create(M); TopMenu.Caption := '&Editar'; M.Items.Add(TopMenu);
+  Add(TopMenu, 'Desfazer', @UndoClick);
+  Add(TopMenu, 'Refazer', @RedoClick);
   TopMenu := TMenuItem.Create(M); TopMenu.Caption := '&Inserir'; M.Items.Add(TopMenu);
   Add(TopMenu, 'Inserir Tomada 127V no Circuito C2', @AddSocketClick);
   TopMenu := TMenuItem.Create(M); TopMenu.Caption := '&Exportar'; M.Items.Add(TopMenu);
@@ -310,10 +315,21 @@ begin
   end;
   NewId := Format('TOM-%d', [Length(FEle.Points) + 1]);
   if Length(FEle.Points) > 0 then LastId := FEle.Points[High(FEle.Points)].Id else LastId := '';
+  FEle.BeginUndoStep('Inserir tomada ' + NewId);
   FEle.AddPoint(NewId, 'Tomada ' + NewId, epkTomada, FlId, WId, ahkWall, EAV3(1500, 80, 300), 'C2', 600);
   if LastId <> '' then
     FEle.AddConduit(Format('ED-%d', [Length(FEle.Conduits) + 1]), 'C2', LastId, NewId, 25.0, 2.5, 3);
   RefreshUI;
+end;
+
+procedure TELEMainForm.UndoClick(Sender: TObject);
+begin
+  if FEle.Undo then begin RefreshUI; FStatusLabel.Caption := 'Projeto elétrico desfeito (AIUndoHistory).'; end;
+end;
+
+procedure TELEMainForm.RedoClick(Sender: TObject);
+begin
+  if FEle.Redo then begin RefreshUI; FStatusLabel.Caption := 'Projeto elétrico refeito (AIUndoHistory).'; end;
 end;
 
 procedure TELEMainForm.ClashPlumbingClick(Sender: TObject);

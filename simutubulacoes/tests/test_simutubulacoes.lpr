@@ -84,6 +84,10 @@ begin
     Tub.SaveTubProject(TmpTubProj);
     Tub2.LoadTubProject(TmpTubProj);
     Check(Length(Tub2.Segments) = Length(Tub.Segments), 'roundtrip projeto SimuTubulacoes');
+    Tub2.BeginUndoStep('No extra');
+    Tub2.AddNode('AF-EX', 'Ponto Extra', tfdAguaFria, tnkConsumo, EAV3(1500, 500, 800), 0.1, 0, 22);
+    Check(Tub2.Undo and (Tub2.FindNode('AF-EX') < 0), 'SimuTubulacoes desfaz via TAIUndoHistory');
+    Check(Tub2.Redo and (Tub2.FindNode('AF-EX') >= 0), 'SimuTubulacoes refaz via TAIUndoHistory');
 
     WriteLn(Checks, ' verificacoes do SimuTubulacoes, 0 falhas');
   finally

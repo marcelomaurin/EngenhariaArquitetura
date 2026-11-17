@@ -10,7 +10,7 @@ interface
 uses
   Classes, SysUtils, Math, fpjson, jsonparser,
   FPImage, FPWritePNG,
-  ea_geometria, ea_pacote, ea_modelo, ea_malha3d, ea_fileio;
+  ea_geometria, ea_pacote, ea_modelo, ea_malha3d, ea_fileio, ea_undo;
 
 type
   TCenaAtmosphere = (caClear, caFog, caRain);
@@ -58,8 +58,14 @@ type
     WaterLevelMM: Double;
     HasPeople: Boolean;
     HasVegetation: Boolean;
+    UndoHistory: TEASnapshotUndo;
     constructor Create;
     destructor Destroy; override;
+    function SnapshotToJSON: string;
+    procedure RestoreFromSnapshotJSON(const JsonText: string);
+    procedure BeginUndoStep(const Desc: string);
+    function Undo: Boolean;
+    function Redo: Boolean;
     procedure Clear;
     procedure LoadDemoScene;
     procedure ImportMaquetePackage(const FileName: string; Reconcile: Boolean);
@@ -83,11 +89,13 @@ constructor TCenaProject.Create;
 begin
   inherited Create;
   SceneMesh := TEAMesh3D.Create;
+  UndoHistory := TEASnapshotUndo.Create(@SnapshotToJSON, @RestoreFromSnapshotJSON);
   Clear;
 end;
 
 destructor TCenaProject.Destroy;
 begin
+  UndoHistory.Free;
   SceneMesh.Free;
   inherited Destroy;
 end;
@@ -587,7 +595,7 @@ begin
   end;
 end;
 
-procedure TCenaProject.SaveSceneFile(const FileName: string);
+function TCenaProject.SnapshotToJSON: string;
 var
   Root, C, L: TJSONObject;
   Arr: TJSONArray;
@@ -630,27 +638,20 @@ begin
     end;
     Root.Add('lights', Arr);
 
-    EAAtomicWriteText(FileName, Root.FormatJSON);
+    Result := Root.FormatJSON;
   finally
     Root.Free;
   end;
 end;
 
-procedure TCenaProject.LoadSceneFile(const FileName: string);
+procedure TCenaProject.RestoreFromSnapshotJSON(const JsonText: string);
 var
-  SL: TStringList;
   Data: TJSONData;
   Root, O: TJSONObject;
   Arr: TJSONArray;
   I: Integer;
 begin
-  SL := TStringList.Create;
-  try
-    SL.LoadFromFile(FileName);
-    Data := GetJSON(SL.Text);
-  finally
-    SL.Free;
-  end;
+  Data := GetJSON(JsonText);
   try
     if not (Data is TJSONObject) then raise EEAPackageError.Create('Arquivo de cena inválido');
     Root := TJSONObject(Data);
@@ -688,6 +689,40 @@ begin
       ImportMaquetePackage(MaqueteRefPath, True);
   finally
     Data.Free;
+  end;
+end;
+
+procedure TCenaProject.BeginUndoStep(const Desc: string);
+begin
+  UndoHistory.RecordBefore(Desc);
+end;
+
+function TCenaProject.Undo: Boolean;
+begin
+  Result := UndoHistory.Undo;
+end;
+
+function TCenaProject.Redo: Boolean;
+begin
+  Result := UndoHistory.Redo;
+end;
+
+procedure TCenaProject.SaveSceneFile(const FileName: string);
+begin
+  EAAtomicWriteText(FileName, SnapshotToJSON);
+end;
+
+procedure TCenaProject.LoadSceneFile(const FileName: string);
+var
+  SL: TStringList;
+begin
+  SL := TStringList.Create;
+  try
+    SL.LoadFromFile(FileName);
+    RestoreFromSnapshotJSON(SL.Text);
+    UndoHistory.Clear;
+  finally
+    SL.Free;
   end;
 end;
 

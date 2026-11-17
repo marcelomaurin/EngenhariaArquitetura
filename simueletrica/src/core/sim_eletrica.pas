@@ -11,7 +11,7 @@ interface
 
 uses
   Classes, SysUtils, Math, fpjson, jsonparser,
-  ea_geometria, ea_pacote, ea_malha3d, ea_fileio;
+  ea_geometria, ea_pacote, ea_malha3d, ea_fileio, ea_undo;
 
 type
   TSIMScenarioKind = (sskNormal, sskMaxLoad, sskShortCircuit, sskHotAmbient);
@@ -81,8 +81,14 @@ type
     Branches: array of TSIMBranchResult;
     Events: array of TSIMEvent;
     Warnings: TStringList;
+    UndoHistory: TEASnapshotUndo;
     constructor Create;
     destructor Destroy; override;
+    function SnapshotToJSON: string;
+    procedure RestoreFromSnapshotJSON(const JsonText: string);
+    procedure BeginUndoStep(const Desc: string);
+    function Undo: Boolean;
+    function Redo: Boolean;
     procedure Clear;
     procedure LoadDemoModel;
     procedure ImportElectricalModel(const FileName: string);
@@ -127,11 +133,13 @@ constructor TSIMProject.Create;
 begin
   inherited Create;
   Warnings := TStringList.Create;
+  UndoHistory := TEASnapshotUndo.Create(@SnapshotToJSON, @RestoreFromSnapshotJSON);
   Clear;
 end;
 
 destructor TSIMProject.Destroy;
 begin
+  UndoHistory.Free;
   Warnings.Free;
   inherited Destroy;
 end;
@@ -446,6 +454,144 @@ begin
   finally
     SL.Free;
   end;
+end;
+
+function TSIMProject.SnapshotToJSON: string;
+var
+  Root, O: TJSONObject;
+  Arr: TJSONArray;
+  I: Integer;
+begin
+  Root := TJSONObject.Create;
+  try
+    Root.Add('project_id', ProjectId);
+    Root.Add('ref_path', ElectricalRefPath);
+    Root.Add('ref_hash', ElectricalRefHash);
+    Root.Add('scenario_name', ScenarioName);
+    Root.Add('scenario_kind', Ord(ScenarioKind));
+    Root.Add('ambient_c', AmbientTempC);
+    Root.Add('load_factor', LoadFactor);
+    Root.Add('fault_target', FaultTargetId);
+    Root.Add('fault_z', FaultImpedanceOhm);
+    Root.Add('time_s', TimeInstSec);
+    Arr := TJSONArray.Create;
+    for I := 0 to High(Circuits) do
+    begin
+      O := TJSONObject.Create;
+      O.Add('id', Circuits[I].Id); O.Add('name', Circuits[I].Name); O.Add('phase', Circuits[I].Phase);
+      O.Add('v', Circuits[I].VoltageV); O.Add('brk', Circuits[I].BreakerA); O.Add('wire', Circuits[I].WireMM2);
+      Arr.Add(O);
+    end;
+    Root.Add('circuits', Arr);
+    Arr := TJSONArray.Create;
+    for I := 0 to High(Nodes) do
+    begin
+      O := TJSONObject.Create;
+      O.Add('id', Nodes[I].Id); O.Add('name', Nodes[I].Name); O.Add('kind', Nodes[I].Kind);
+      O.Add('cid', Nodes[I].CircuitId); O.Add('w', Nodes[I].PowerW); O.Add('v', Nodes[I].VoltageV);
+      O.Add('x', Nodes[I].PosMM.X); O.Add('y', Nodes[I].PosMM.Y); O.Add('z', Nodes[I].PosMM.Z);
+      Arr.Add(O);
+    end;
+    Root.Add('nodes', Arr);
+    Arr := TJSONArray.Create;
+    for I := 0 to High(Branches) do
+    begin
+      O := TJSONObject.Create;
+      O.Add('id', Branches[I].Id); O.Add('cid', Branches[I].CircuitId);
+      O.Add('from', Branches[I].FromId); O.Add('to', Branches[I].ToId);
+      O.Add('wire', Branches[I].WireMM2); O.Add('len_m', Branches[I].LengthM);
+      O.Add('x0', Branches[I].P0.X); O.Add('y0', Branches[I].P0.Y); O.Add('z0', Branches[I].P0.Z);
+      O.Add('x1', Branches[I].P1.X); O.Add('y1', Branches[I].P1.Y); O.Add('z1', Branches[I].P1.Z);
+      Arr.Add(O);
+    end;
+    Root.Add('branches', Arr);
+    Result := Root.FormatJSON;
+  finally
+    Root.Free;
+  end;
+end;
+
+procedure TSIMProject.RestoreFromSnapshotJSON(const JsonText: string);
+var
+  Data: TJSONData;
+  Root, O: TJSONObject;
+  Arr: TJSONArray;
+  I: Integer;
+begin
+  Data := GetJSON(JsonText);
+  try
+    if not (Data is TJSONObject) then Exit;
+    Root := TJSONObject(Data);
+    Clear;
+    ProjectId := Root.Get('project_id', 'sim-001');
+    ElectricalRefPath := Root.Get('ref_path', '');
+    ElectricalRefHash := Root.Get('ref_hash', '');
+    ScenarioName := Root.Get('scenario_name', 'Operação Normal');
+    ScenarioKind := TSIMScenarioKind(EnsureRange(Root.Get('scenario_kind', 0), 0, 3));
+    AmbientTempC := Root.Get('ambient_c', 30.0);
+    LoadFactor := Root.Get('load_factor', 1.0);
+    FaultTargetId := Root.Get('fault_target', '');
+    FaultImpedanceOhm := Root.Get('fault_z', 0.25);
+    TimeInstSec := Root.Get('time_s', 1800.0);
+    Arr := Root.Get('circuits', TJSONArray(nil));
+    if Arr <> nil then
+    begin
+      SetLength(Circuits, Arr.Count);
+      for I := 0 to Arr.Count - 1 do
+      begin
+        O := Arr.Objects[I];
+        Circuits[I].Id := O.Get('id', ''); Circuits[I].Name := O.Get('name', '');
+        Circuits[I].Phase := O.Get('phase', 'F1'); Circuits[I].VoltageV := O.Get('v', 127.0);
+        Circuits[I].BreakerA := O.Get('brk', 16.0); Circuits[I].WireMM2 := O.Get('wire', 2.5);
+      end;
+    end;
+    Arr := Root.Get('nodes', TJSONArray(nil));
+    if Arr <> nil then
+    begin
+      SetLength(Nodes, Arr.Count);
+      for I := 0 to Arr.Count - 1 do
+      begin
+        O := Arr.Objects[I];
+        Nodes[I].Id := O.Get('id', ''); Nodes[I].Name := O.Get('name', '');
+        Nodes[I].Kind := O.Get('kind', 'socket'); Nodes[I].CircuitId := O.Get('cid', '');
+        Nodes[I].PowerW := O.Get('w', 0.0); Nodes[I].PowerFactor := 0.92;
+        Nodes[I].VoltageV := O.Get('v', 127.0);
+        Nodes[I].PosMM := EAV3(O.Get('x', 0.0), O.Get('y', 0.0), O.Get('z', 0.0));
+      end;
+    end;
+    Arr := Root.Get('branches', TJSONArray(nil));
+    if Arr <> nil then
+    begin
+      SetLength(Branches, Arr.Count);
+      for I := 0 to Arr.Count - 1 do
+      begin
+        O := Arr.Objects[I];
+        Branches[I].Id := O.Get('id', ''); Branches[I].CircuitId := O.Get('cid', '');
+        Branches[I].FromId := O.Get('from', ''); Branches[I].ToId := O.Get('to', '');
+        Branches[I].WireMM2 := O.Get('wire', 2.5); Branches[I].LengthM := O.Get('len_m', 1.0);
+        Branches[I].P0 := EAV3(O.Get('x0', 0.0), O.Get('y0', 0.0), O.Get('z0', 0.0));
+        Branches[I].P1 := EAV3(O.Get('x1', 0.0), O.Get('y1', 0.0), O.Get('z1', 0.0));
+      end;
+    end;
+    RunSimulation;
+  finally
+    Data.Free;
+  end;
+end;
+
+procedure TSIMProject.BeginUndoStep(const Desc: string);
+begin
+  UndoHistory.RecordBefore(Desc);
+end;
+
+function TSIMProject.Undo: Boolean;
+begin
+  Result := UndoHistory.Undo;
+end;
+
+function TSIMProject.Redo: Boolean;
+begin
+  Result := UndoHistory.Redo;
 end;
 
 end.

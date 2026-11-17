@@ -41,5 +41,16 @@ Cópias sem alterações, obtidas do repositório local CHATGPT em 31/10/2026:
 - `AIProject/airesourceview.pas` e `airesourceview_icon.lrs`: visualização de alocações.
   SHA-256 da unidade `4e31aa9451539c688e2cc323194f689de7ce4a2533003eb43a8c84b59d33550c`.
 
+## Núcleo de custos, histórico e loader 3D — integração nos aplicativos 3D e simuladores
+
+Cópias sem alterações obtidas de `..\CHATGPT\pacote\`:
+
+- `AIProjectCore/aicostmodel.pas`: composição de custos e formatação monetária independente de localidade (`AIFormatMoney`, `AIMaterialCost`).
+  SHA-256 `3608b752cb8761e197e1a1d842506e0c12c59415c7798a7741c13c3279a02dc1`.
+- `AIGraphic/aiavatartypes.pas`: tipos base de cena e malha 3D reutilizados pelo loader glTF/GLB.
+  SHA-256 `d053a3d2a94e944ac150c7d7b0b38c3e1c382632da79ef7c3336677625a3cf0a`.
+- `AIGraphic/aigltfloader.pas`: carregador e parser glTF 2.0 / GLB (`TGLTFLoader`) usado em `shared/ea_malha3d.pas`.
+  SHA-256 `ae7301bbe574370d759c9ea0edc8572fa08b31e32bebcb6d2eed8b10aa12d987`.
+
 Licença: a mesma incluída neste diretório. O cálculo monetário em centavos é
 implementado pela plataforma, conforme as regras de contabilização das tarefas.

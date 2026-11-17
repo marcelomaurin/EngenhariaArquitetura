@@ -38,11 +38,14 @@ begin
     Check(Sim.Branches[2].ConductorTempC > Sim.AmbientTempC, 'aquecimento Joule calculado');
 
     { Injetar curto-circuito e verificar disparo e eventos }
+    Sim.BeginUndoStep('Curto-circuito ED-03');
     Sim.ScenarioKind := sskShortCircuit;
     Sim.FaultTargetId := 'ED-03';
     Sim.RunSimulation;
     Check(Sim.Branches[2].FaultCurrentA > 50.0, 'corrente de curto-circuito calculada');
     Check(Length(Sim.Events) >= 2, 'eventos temporais de falta e disparo registrados');
+    Check(Sim.Undo and (Sim.ScenarioKind = sskNormal), 'SimuEletrica desfaz cenario via TAIUndoHistory');
+    Check(Sim.Redo and (Sim.ScenarioKind = sskShortCircuit), 'SimuEletrica refaz cenario via TAIUndoHistory');
 
     Sim.ExportResultsPackage(TmpRes);
     Sim.ExportReportCSV(TmpCSV);

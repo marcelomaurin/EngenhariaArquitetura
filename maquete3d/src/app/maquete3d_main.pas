@@ -55,6 +55,8 @@ type
     procedure ExportSkinPkgClick(Sender: TObject);
     procedure LoadOverlayClick(Sender: TObject);
     procedure CheckClashesClick(Sender: TObject);
+    procedure UndoClick(Sender: TObject);
+    procedure RedoClick(Sender: TObject);
     procedure SetupClick(Sender: TObject);
   public
     constructor Create(AOwner: TComponent); override;
@@ -127,6 +129,10 @@ begin
   Add(TopMenu, '&Importar planta 2D / DXF / DWG / IFC...', @ImportPlanClick);
   Add(TopMenu, '&Exportar pacote Maquete (I-11/I-12/I-18)...', @ExportMaquetePkgClick);
   Add(TopMenu, 'Exportar &GLB (glTF 2.0)...', @ExportGLBClick);
+
+  TopMenu := TMenuItem.Create(M); TopMenu.Caption := '&Editar'; M.Items.Add(TopMenu);
+  Add(TopMenu, 'Desfazer (Ctrl+Z)', @UndoClick);
+  Add(TopMenu, 'Refazer (Ctrl+Y)', @RedoClick);
 
   TopMenu := TMenuItem.Create(M); TopMenu.Caption := '&Exibir'; M.Items.Add(TopMenu);
   Add(TopMenu, 'Isométrica', @ViewPresetClick, 0);
@@ -492,8 +498,9 @@ var
 begin
   D := TOpenDialog.Create(Self);
   try
-    D.Filter := 'Sólidos 3D (*.stl;*.3mf;*.obj;*.glb)|*.stl;*.3mf;*.obj;*.glb|Todos (*.*)|*.*';
+    D.Filter := 'Sólidos 3D (*.stl;*.3mf;*.obj;*.glb;*.gltf)|*.stl;*.3mf;*.obj;*.glb;*.gltf|Todos (*.*)|*.*';
     if not D.Execute then Exit;
+    FProj.BeginUndoStep('Importar sólido');
     FProj.Objects.ImportExternalSolid(D.FileName, '', '');
     RefreshLists;
     FObjLibList.ItemIndex := FObjLibList.Items.Count - 1;
@@ -514,6 +521,7 @@ begin
   if Length(FProj.Model.Floors) > 0 then FloorId := FProj.Model.Floors[0].Id else FloorId := 'terreo';
   if (FFloorList.ItemIndex >= 0) and (FFloorList.ItemIndex < Length(FProj.Model.Floors)) then
     FloorId := FProj.Model.Floors[FFloorList.ItemIndex].Id;
+  FProj.BeginUndoStep('Inserir objeto 3D');
   FProj.InsertObjectInstance(FProj.Objects.Assets[Idx].AssetId, FloorId, FloorId, ahkFloor,
     EAV3(StrToFloatDef(FObjXEdit.Text, 1500), StrToFloatDef(FObjYEdit.Text, 1500), StrToFloatDef(FObjZEdit.Text, 0)));
   RefreshLists; Rebuild3D;
@@ -526,6 +534,7 @@ begin
   SIdx := FSkinLibList.ItemIndex;
   IIdx := FInstList.ItemIndex;
   if (SIdx < 0) or (SIdx >= Length(FProj.Skins.Items)) then Exit;
+  FProj.BeginUndoStep('Aplicar textura');
   if (IIdx >= 0) and (IIdx < Length(FProj.Instances)) then
   begin
     FProj.Instances[IIdx].OverrideSkinId := FProj.Skins.Items[SIdx].Id;
@@ -537,6 +546,16 @@ begin
     ObjSelectClick(nil);
     Rebuild3D;
   end;
+end;
+
+procedure TMaqMainForm.UndoClick(Sender: TObject);
+begin
+  if FProj.Undo then begin RefreshLists; Rebuild3D; FStatusLabel.Caption := 'Alteração desfeita (AIUndoHistory).'; end;
+end;
+
+procedure TMaqMainForm.RedoClick(Sender: TObject);
+begin
+  if FProj.Redo then begin RefreshLists; Rebuild3D; FStatusLabel.Caption := 'Alteração refeita (AIUndoHistory).'; end;
 end;
 
 procedure TMaqMainForm.GenerateTexClick(Sender: TObject);

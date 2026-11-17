@@ -31,6 +31,8 @@ type
     procedure ExportResultsClick(Sender: TObject);
     procedure ExportCSVClick(Sender: TObject);
     procedure ExportHTMLClick(Sender: TObject);
+    procedure UndoClick(Sender: TObject);
+    procedure RedoClick(Sender: TObject);
     procedure SetupClick(Sender: TObject);
   public
     constructor Create(AOwner: TComponent); override;
@@ -79,6 +81,9 @@ begin
   Add(TopMenu, 'Importar Maquete 3D (somente leitura)...', @ImportMaqueteClick);
   Add(TopMenu, 'Abrir Projeto (.stubproj.json)...', @OpenTubClick);
   Add(TopMenu, 'Salvar Projeto...', @SaveTubClick);
+  TopMenu := TMenuItem.Create(M); TopMenu.Caption := '&Editar'; M.Items.Add(TopMenu);
+  Add(TopMenu, 'Desfazer', @UndoClick);
+  Add(TopMenu, 'Refazer', @RedoClick);
   TopMenu := TMenuItem.Create(M); TopMenu.Caption := '&Simulação'; M.Items.Add(TopMenu);
   Add(TopMenu, 'Executar Solvers (Água, Gás, Ar, Dutos, Esgoto)', @RunSolversClick);
   Add(TopMenu, 'Verificar Interferências (I-20)...', @CheckClashesClick);
@@ -189,8 +194,19 @@ end;
 
 procedure TTubMainForm.RunSolversClick(Sender: TObject);
 begin
+  FTub.BeginUndoStep('Executar solvers de fluidos');
   FTub.RunAllDomainSolvers;
   RefreshUI;
+end;
+
+procedure TTubMainForm.UndoClick(Sender: TObject);
+begin
+  if FTub.Undo then begin RefreshUI; FStatusLabel.Caption := 'Rede restaurada (AIUndoHistory).'; end;
+end;
+
+procedure TTubMainForm.RedoClick(Sender: TObject);
+begin
+  if FTub.Redo then begin RefreshUI; FStatusLabel.Caption := 'Alteração refeita (AIUndoHistory).'; end;
 end;
 
 procedure TTubMainForm.CheckClashesClick(Sender: TObject);

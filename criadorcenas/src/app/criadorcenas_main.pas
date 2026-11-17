@@ -37,6 +37,8 @@ type
     procedure DayPresetClick(Sender: TObject);
     procedure NightPresetClick(Sender: TObject);
     procedure AddCamFromViewClick(Sender: TObject);
+    procedure UndoClick(Sender: TObject);
+    procedure RedoClick(Sender: TObject);
     procedure SetupClick(Sender: TObject);
   public
     constructor Create(AOwner: TComponent); override;
@@ -97,6 +99,9 @@ begin
   Add(TopMenu, '-', nil);
   Add(TopMenu, 'Abrir Cena (.cena.json)...', @OpenSceneClick);
   Add(TopMenu, 'Salvar Cena...', @SaveSceneClick);
+  TopMenu := TMenuItem.Create(M); TopMenu.Caption := '&Editar'; M.Items.Add(TopMenu);
+  Add(TopMenu, 'Desfazer', @UndoClick);
+  Add(TopMenu, 'Refazer', @RedoClick);
   TopMenu := TMenuItem.Create(M); TopMenu.Caption := '&Renderizar'; M.Items.Add(TopMenu);
   Add(TopMenu, 'Prévia Raytracer', @RenderPreviewClick);
   Add(TopMenu, 'Exportar Imagem PNG...', @ExportPNGClick);
@@ -253,12 +258,14 @@ end;
 
 procedure TCenaMainForm.DayPresetClick(Sender: TObject);
 begin
+  FCena.BeginUndoStep('Preset Dia');
   FHourEdit.Text := '13.5';
   RenderPreviewClick(nil);
 end;
 
 procedure TCenaMainForm.NightPresetClick(Sender: TObject);
 begin
+  FCena.BeginUndoStep('Preset Noite');
   FHourEdit.Text := '21.5';
   RenderPreviewClick(nil);
 end;
@@ -268,6 +275,7 @@ var
   Yaw, Pitch: Double;
   Eye: TEAVec3;
 begin
+  FCena.BeginUndoStep('Adicionar câmera');
   Yaw := DegToRad(FViewport.YawDeg);
   Pitch := DegToRad(FViewport.PitchDeg);
   Eye := EAV3(
@@ -277,6 +285,30 @@ begin
   FCena.AddCamera(Format('cam-%d', [Length(FCena.Cameras) + 1]),
     Format('Câmera %d', [Length(FCena.Cameras) + 1]), Eye, FViewport.Target, 55.0);
   RefreshLists;
+end;
+
+procedure TCenaMainForm.UndoClick(Sender: TObject);
+begin
+  if FCena.Undo then
+  begin
+    FHourEdit.Text := FormatFloat('0.0', FCena.HourOfDay);
+    FViewport.Mesh.Assign(FCena.SceneMesh);
+    RefreshLists;
+    RenderPreviewClick(nil);
+    FStatusLabel.Caption := 'Cena restaurada (AIUndoHistory).';
+  end;
+end;
+
+procedure TCenaMainForm.RedoClick(Sender: TObject);
+begin
+  if FCena.Redo then
+  begin
+    FHourEdit.Text := FormatFloat('0.0', FCena.HourOfDay);
+    FViewport.Mesh.Assign(FCena.SceneMesh);
+    RefreshLists;
+    RenderPreviewClick(nil);
+    FStatusLabel.Caption := 'Alteração refeita (AIUndoHistory).';
+  end;
 end;
 
 procedure TCenaMainForm.ImportMaqueteClick(Sender: TObject);

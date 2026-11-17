@@ -43,19 +43,20 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist/units dist/tests
-          fpc -O2 -Fushared -FUdist/units -FEdist/tests shared/tests/test_nucleo.lpr
+          CG="-Futhird_party/chatgpt/AIProjectCore -Futhird_party/chatgpt/AIGraphic"
+          fpc -O2 -Fushared $CG -FUdist/units -FEdist/tests shared/tests/test_nucleo.lpr
           ./dist/tests/test_nucleo
-          fpc -O2 -Fushared -Fucad2d/src/app -Fucad2d/src/io -FUdist/units -FEdist/tests cad2d/tests/test_cad_interop.lpr
+          fpc -O2 -Fushared $CG -Fucad2d/src/app -Fucad2d/src/io -FUdist/units -FEdist/tests cad2d/tests/test_cad_interop.lpr
           ./dist/tests/test_cad_interop
-          fpc -O2 -Fushared -Fuplanejador/src/core -Fuplanejador/src/io -FUdist/units -FEdist/tests planejador/tests/test_p234.lpr
+          fpc -O2 -Fushared $CG -Fuplanejador/src/core -Fuplanejador/src/io -FUdist/units -FEdist/tests planejador/tests/test_p234.lpr
           ./dist/tests/test_p234
-          fpc -O2 -Fushared -Fucad2d/src/app -Fucad2d/src/io -Fumaquete3d/src/core -FUdist/units -FEdist/tests maquete3d/tests/test_maquete3d.lpr
+          fpc -O2 -Fushared $CG -Fucad2d/src/app -Fucad2d/src/io -Fumaquete3d/src/core -FUdist/units -FEdist/tests maquete3d/tests/test_maquete3d.lpr
           ./dist/tests/test_maquete3d
-          fpc -O2 -Fushared -Fucad2d/src/app -Fucad2d/src/io -Fumaquete3d/src/core -Fucriadorcenas/src/core -FUdist/units -FEdist/tests criadorcenas/tests/test_criadorcenas.lpr
+          fpc -O2 -Fushared $CG -Fucad2d/src/app -Fucad2d/src/io -Fumaquete3d/src/core -Fucriadorcenas/src/core -FUdist/units -FEdist/tests criadorcenas/tests/test_criadorcenas.lpr
           ./dist/tests/test_criadorcenas
-          fpc -O2 -Fushared -Fucad2d/src/app -Fucad2d/src/io -Fumaquete3d/src/core -Fueletrica3d/src/core -FUdist/units -FEdist/tests eletrica3d/tests/test_eletrica3d.lpr
+          fpc -O2 -Fushared $CG -Fucad2d/src/app -Fucad2d/src/io -Fumaquete3d/src/core -Fueletrica3d/src/core -FUdist/units -FEdist/tests eletrica3d/tests/test_eletrica3d.lpr
           ./dist/tests/test_eletrica3d
-          fpc -O2 -Fushared -Fucad2d/src/app -Fucad2d/src/io -Fumaquete3d/src/core -Fueletrica3d/src/core -Fusimueletrica/src/core -FUdist/units -FEdist/tests simueletrica/tests/test_simueletrica.lpr
+          fpc -O2 -Fushared $CG -Fucad2d/src/app -Fucad2d/src/io -Fumaquete3d/src/core -Fueletrica3d/src/core -Fusimueletrica/src/core -FUdist/units -FEdist/tests simueletrica/tests/test_simueletrica.lpr
           ./dist/tests/test_simueletrica
-          fpc -O2 -Fushared -Fucad2d/src/app -Fucad2d/src/io -Fumaquete3d/src/core -Fueletrica3d/src/core -Fusimutubulacoes/src/core -FUdist/units -FEdist/tests simutubulacoes/tests/test_simutubulacoes.lpr
+          fpc -O2 -Fushared $CG -Fucad2d/src/app -Fucad2d/src/io -Fumaquete3d/src/core -Fueletrica3d/src/core -Fusimutubulacoes/src/core -FUdist/units -FEdist/tests simutubulacoes/tests/test_simutubulacoes.lpr
           ./dist/tests/test_simutubulacoes
