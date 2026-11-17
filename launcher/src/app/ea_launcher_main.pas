@@ -25,6 +25,8 @@ type
     procedure OpenApp(Sender: TObject);
     function ExecutableFor(AIndex: Integer): string;
     procedure AddAppCard(AParent: TWinControl; AIndex, ATop: Integer);
+    procedure PaintAppIcon(Sender: TObject);
+    procedure PaintHeaderIcon(Sender: TObject);
     procedure SetStatus(const S: string);
   public
     constructor Create(AOwner: TComponent); override;
@@ -106,11 +108,14 @@ begin
   try Entry.Hint:=EALastProject(''); except on E: Exception do ShowMessage('Falha ao ler Setup: '+E.Message); end;
   FHeader := TPanel.Create(Self); FHeader.Parent := Self; FHeader.Align := alTop;
   FHeader.Height := 84; FHeader.BevelOuter := bvNone; FHeader.Color := ColorRGB(25,45,89);
+  with TPaintBox.Create(Self) do begin
+    Parent := FHeader; SetBounds(20, 14, 56, 56); OnPaint := @PaintHeaderIcon;
+  end;
   FTitle := TLabel.Create(Self); FTitle.Parent := FHeader;
-  FTitle.SetBounds(22,12,700,31); FTitle.Caption := 'EngenhariaArquitetura';
+  FTitle.SetBounds(90,12,700,31); FTitle.Caption := 'EngenhariaArquitetura';
   FTitle.Font.Size := 18; FTitle.Font.Style := [fsBold]; FTitle.Font.Color := clWhite;
   FSubtitle := TLabel.Create(Self); FSubtitle.Parent := FHeader;
-  FSubtitle.SetBounds(23,49,750,23);
+  FSubtitle.SetBounds(91,49,750,23);
   FSubtitle.Caption := 'Central de aplicativos para engenharia e arquitetura';
   FSubtitle.Font.Color := ColorRGB(206,223,248);
   FFooter := TPanel.Create(Self); FFooter.Parent := Self; FFooter.Align := alBottom;
@@ -222,23 +227,109 @@ procedure TEALauncherForm.Navigate(Sender: TObject);
 begin ShowSection(TSpeedButton(Sender).Tag); end;
 procedure TEALauncherForm.RefreshCatalog(Sender: TObject);
 begin ShowSection(FSection); end;
+procedure TEALauncherForm.PaintHeaderIcon(Sender: TObject);
+var PB: TPaintBox; C: TCanvas;
+begin
+  PB := TPaintBox(Sender); C := PB.Canvas;
+  C.Brush.Color := ColorRGB(15, 23, 42);
+  C.Pen.Color := ColorRGB(96, 165, 250);
+  C.Pen.Width := 2;
+  C.RoundRect(2, 2, PB.Width - 2, PB.Height - 2, 14, 14);
+  C.Pen.Color := ColorRGB(96, 165, 250);
+  C.Pen.Width := 2;
+  C.Brush.Style := bsClear;
+  C.Polygon([Point(12, 34), Point(28, 12), Point(44, 34)]);
+  C.Rectangle(16, 30, 40, 46);
+  C.Pen.Color := ColorRGB(248, 113, 113);
+  C.Line(12, 46, 44, 46);
+end;
+
+procedure TEALauncherForm.PaintAppIcon(Sender: TObject);
+var PB: TPaintBox; C: TCanvas; Bg, Accent, AltCol: TColor; W, H: Integer;
+begin
+  PB := TPaintBox(Sender); C := PB.Canvas;
+  W := PB.Width; H := PB.Height;
+  case PB.Tag of
+    0: begin Bg := ColorRGB(15, 23, 42); Accent := ColorRGB(96, 165, 250); AltCol := ColorRGB(248, 113, 113); end;
+    1: begin Bg := ColorRGB(15, 23, 42); Accent := ColorRGB(56, 189, 248); AltCol := ColorRGB(224, 242, 254); end;
+    2: begin Bg := ColorRGB(24, 62, 138); Accent := ColorRGB(125, 211, 252); AltCol := ColorRGB(248, 250, 252); end;
+    3: begin Bg := ColorRGB(46, 16, 101); Accent := ColorRGB(251, 191, 36); AltCol := ColorRGB(192, 132, 252); end;
+    4: begin Bg := ColorRGB(15, 23, 42); Accent := ColorRGB(250, 204, 21); AltCol := ColorRGB(56, 189, 248); end;
+    5: begin Bg := ColorRGB(20, 83, 45); Accent := ColorRGB(74, 222, 128); AltCol := ColorRGB(250, 204, 21); end;
+  else
+    Bg := ColorRGB(14, 74, 110); Accent := ColorRGB(56, 189, 248); AltCol := ColorRGB(251, 146, 60);
+  end;
+  C.Brush.Color := Bg;
+  C.Pen.Color := Accent;
+  C.Pen.Width := 2;
+  C.RoundRect(2, 2, W - 2, H - 2, 14, 14);
+  C.Pen.Width := 2;
+  case PB.Tag of
+    0: begin
+      C.Brush.Color := Accent; C.Pen.Color := Accent;
+      C.Rectangle(14, 18, 40, 25); C.Rectangle(22, 30, 52, 37);
+      C.Brush.Color := AltCol; C.Pen.Color := AltCol;
+      C.Rectangle(18, 42, 46, 49);
+    end;
+    1: begin
+      C.Brush.Style := bsClear; C.Pen.Color := AltCol;
+      C.Rectangle(14, 14, W - 14, H - 14);
+      C.Line(14, 34, 36, 34); C.Line(36, 14, 36, 38);
+      C.Pen.Color := Accent;
+      C.Arc(24, 24, 48, 48, 36, 24, 48, 36);
+    end;
+    2: begin
+      C.Brush.Color := Accent; C.Pen.Color := AltCol;
+      C.Polygon([Point(W div 2, 12), Point(W - 14, 24), Point(W div 2, 36), Point(14, 24)]);
+      C.Polygon([Point(14, 24), Point(W div 2, 36), Point(W div 2, H - 12), Point(14, H - 24)]);
+      C.Brush.Color := ColorRGB(3, 105, 161);
+      C.Polygon([Point(W div 2, 36), Point(W - 14, 24), Point(W - 14, H - 24), Point(W div 2, H - 12)]);
+    end;
+    3: begin
+      C.Brush.Style := bsClear; C.Pen.Color := AltCol;
+      C.Ellipse(16, 16, W - 16, H - 16);
+      C.Brush.Color := Accent; C.Pen.Color := Accent;
+      C.Polygon([Point(28, 24), Point(44, H div 2), Point(28, H - 24)]);
+    end;
+    4: begin
+      C.Brush.Style := bsClear; C.Pen.Color := AltCol;
+      C.Line(12, 20, 24, 20); C.Line(W - 24, H - 20, W - 12, H - 20);
+      C.Brush.Color := Accent; C.Pen.Color := Accent;
+      C.Polygon([Point(36, 12), Point(22, 34), Point(32, 34), Point(28, H - 12), Point(44, 30), Point(34, 30)]);
+    end;
+    5: begin
+      C.Pen.Color := Accent;
+      C.Polyline([Point(12, 34), Point(20, 18), Point(28, 34), Point(36, 50), Point(44, 34), Point(54, 22)]);
+      C.Pen.Color := AltCol;
+      C.Line(12, H - 16, W - 12, H - 16);
+    end;
+  else
+    C.Pen.Color := Accent; C.Pen.Width := 4;
+    C.Polyline([Point(14, 22), Point(32, 22), Point(32, 44), Point(W - 14, 44)]);
+    C.Pen.Color := AltCol; C.Pen.Width := 3;
+    C.Polyline([Point(14, 46), Point(44, 46), Point(44, 20), Point(W - 14, 20)]);
+  end;
+end;
+
 procedure TEALauncherForm.AddAppCard(AParent: TWinControl; AIndex, ATop: Integer);
-var P: TPanel; Title, Desc, Status: TLabel; B: TButton; Exe: string;
+var P: TPanel; PB: TPaintBox; Title, Desc, Status: TLabel; B: TButton; Exe: string;
 begin
   P := TPanel.Create(Self); P.Parent := AParent; P.Align := alTop;
   P.Height := 116; P.BorderSpacing.Left := 18; P.BorderSpacing.Right := 18;
   P.BorderSpacing.Bottom := 10; P.BevelOuter := bvNone; P.Color := clWhite;
+  PB := TPaintBox.Create(Self); PB.Parent := P;
+  PB.SetBounds(18, 24, 68, 68); PB.Tag := AIndex; PB.OnPaint := @PaintAppIcon;
   Title := TLabel.Create(Self); Title.Parent := P;
-  Title.SetBounds(18,13,390,27); Title.Caption := APP_NAMES[AIndex];
+  Title.SetBounds(104,13,380,27); Title.Caption := APP_NAMES[AIndex];
   Title.Font.Size := 12; Title.Font.Style := [fsBold];
   Title.Font.Color := ColorRGB(25,45,89);
   Desc := TLabel.Create(Self); Desc.Parent := P;
-  Desc.SetBounds(18,44,390,22);
+  Desc.SetBounds(104,44,380,22);
   Desc.AutoSize := False; Desc.WordWrap := True; Desc.Caption := APP_DESCRIPTIONS[AIndex];
   Desc.Font.Color := ColorRGB(95,108,125);
   Exe := ExecutableFor(AIndex);
   Status := TLabel.Create(Self); Status.Parent := P;
-  Status.SetBounds(18,83,390,20);
+  Status.SetBounds(104,83,380,20);
   if Exe <> '' then begin
     Status.Caption := 'Disponível — executável encontrado';
     Status.Font.Color := ColorRGB(22,131,71);
