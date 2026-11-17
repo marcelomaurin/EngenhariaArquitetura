@@ -1,4 +1,4 @@
-# Gera o instalador Windows x64 da plataforma EngenhariaArquitetura.
+﻿# Gera o instalador Windows x64 da plataforma EngenhariaArquitetura.
 # Mesmos passos e saidas do build_release_wine.sh.
 #
 #   installer\windows\build_release.bat [-Version 0.01] [-SetupSeq 001] [-AllowDirty]
@@ -47,7 +47,12 @@ New-Item -ItemType Directory -Force $App, $Bin, (Join-Path $Dist "build-logs"), 
 $Targets = @(
   @{ Project = "planejador\src\app\planejador"; Name = "planejador" },
   @{ Project = "launcher\src\app\engenhariaarquitetura"; Name = "engenhariaarquitetura" },
-  @{ Project = "cad2d\src\app\cad2d"; Name = "cad2d" }
+  @{ Project = "cad2d\src\app\cad2d"; Name = "cad2d" },
+  @{ Project = "maquete3d\src\app\maquete3d"; Name = "maquete3d" },
+  @{ Project = "criadorcenas\src\app\criadorcenas"; Name = "criadorcenas" },
+  @{ Project = "eletrica3d\src\app\eletrica3d"; Name = "eletrica3d" },
+  @{ Project = "simueletrica\src\app\simueletrica"; Name = "simueletrica" },
+  @{ Project = "simutubulacoes\src\app\simutubulacoes"; Name = "simutubulacoes" }
 )
 foreach ($t in $Targets) {
   Write-Host "Compilando $($t.Name)..."
@@ -67,14 +72,22 @@ if ($LASTEXITCODE -ne 0) { throw "Falha ao gerar exemplos de saude" }
 
 Write-Host "Testes de console..."
 $Tests = @(
+  @{ Source = "shared\tests\test_nucleo"; Paths = @("shared") },
   @{ Source = "planejador\tests\test_planejador_core"; Paths = @("planejador\src\core", "planejador\src\io") },
+  @{ Source = "planejador\tests\test_p234"; Paths = @("planejador\src\core", "planejador\src\io", "shared") },
   @{ Source = "cad2d\tests\test_cad_document"; Paths = @("cad2d\src\app", "shared") },
   @{ Source = "cad2d\tests\test_cad_dxf"; Paths = @("cad2d\src\app", "shared") },
   @{ Source = "cad2d\tests\test_cad_catalog"; Paths = @("cad2d\src\app", "shared") },
+  @{ Source = "cad2d\tests\test_cad_interop"; Paths = @("cad2d\src\app", "cad2d\src\io", "shared") },
   @{ Source = "shared\tests\test_config"; Paths = @("shared") },
   @{ Source = "planejador\tests\test_recursos"; Paths = @("planejador\src\core", "planejador\src\io", "shared") },
   @{ Source = "planejador\tests\test_sprints"; Paths = @("planejador\src\core", "planejador\src\io", "shared") },
-  @{ Source = "planejador\tests\test_relatorios_sprint"; Paths = @("planejador\src\core", "planejador\src\io", "shared") }
+  @{ Source = "planejador\tests\test_relatorios_sprint"; Paths = @("planejador\src\core", "planejador\src\io", "shared") },
+  @{ Source = "maquete3d\tests\test_maquete3d"; Paths = @("maquete3d\src\core", "cad2d\src\app", "cad2d\src\io", "shared") },
+  @{ Source = "criadorcenas\tests\test_criadorcenas"; Paths = @("criadorcenas\src\core", "maquete3d\src\core", "cad2d\src\app", "cad2d\src\io", "shared") },
+  @{ Source = "eletrica3d\tests\test_eletrica3d"; Paths = @("eletrica3d\src\core", "maquete3d\src\core", "cad2d\src\app", "cad2d\src\io", "shared") },
+  @{ Source = "simueletrica\tests\test_simueletrica"; Paths = @("simueletrica\src\core", "eletrica3d\src\core", "maquete3d\src\core", "cad2d\src\app", "cad2d\src\io", "shared") },
+  @{ Source = "simutubulacoes\tests\test_simutubulacoes"; Paths = @("simutubulacoes\src\core", "eletrica3d\src\core", "maquete3d\src\core", "cad2d\src\app", "cad2d\src\io", "shared") }
 )
 $qa = @()
 foreach ($t in $Tests) {

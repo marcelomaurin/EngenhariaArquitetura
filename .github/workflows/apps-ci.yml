@@ -3,8 +3,15 @@ on:
   push:
     branches: [fila]
     paths:
+      - 'shared/**'
       - 'launcher/**'
+      - 'planejador/**'
       - 'cad2d/**'
+      - 'maquete3d/**'
+      - 'criadorcenas/**'
+      - 'eletrica3d/**'
+      - 'simueletrica/**'
+      - 'simutubulacoes/**'
       - '.github/workflows/apps-ci.yml'
   workflow_dispatch:
 jobs:
@@ -16,9 +23,39 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y lazarus libgtk2.0-dev pkg-config xvfb xauth
-      - name: Compilar launcher
-        run: lazbuild -B --ws=gtk2 launcher/src/app/engenhariaarquitetura.lpi
-      - name: Compilar CAD 2D
-        run: lazbuild -B --ws=gtk2 cad2d/src/app/cad2d.lpi
+      - name: Compilar aplicativos da plataforma
+        run: |
+          set -euo pipefail
+          lazbuild -B --ws=gtk2 launcher/src/app/engenhariaarquitetura.lpi
+          lazbuild -B --ws=gtk2 planejador/src/app/planejador.lpi
+          lazbuild -B --ws=gtk2 cad2d/src/app/cad2d.lpi
+          lazbuild -B --ws=gtk2 maquete3d/src/app/maquete3d.lpi
+          lazbuild -B --ws=gtk2 criadorcenas/src/app/criadorcenas.lpi
+          lazbuild -B --ws=gtk2 eletrica3d/src/app/eletrica3d.lpi
+          lazbuild -B --ws=gtk2 simueletrica/src/app/simueletrica.lpi
+          lazbuild -B --ws=gtk2 simutubulacoes/src/app/simutubulacoes.lpi
       - name: Conferir executáveis
-        run: test -x bin/engenhariaarquitetura && test -x bin/cad2d
+        run: |
+          for exe in engenhariaarquitetura planejador cad2d maquete3d criadorcenas eletrica3d simueletrica simutubulacoes; do
+            test -x "bin/$exe"
+          done
+      - name: Compilar e executar testes do Núcleo e Apps
+        run: |
+          set -euo pipefail
+          mkdir -p dist/units dist/tests
+          fpc -O2 -Fushared -FUdist/units -FEdist/tests shared/tests/test_nucleo.lpr
+          ./dist/tests/test_nucleo
+          fpc -O2 -Fushared -Fucad2d/src/app -Fucad2d/src/io -FUdist/units -FEdist/tests cad2d/tests/test_cad_interop.lpr
+          ./dist/tests/test_cad_interop
+          fpc -O2 -Fushared -Fuplanejador/src/core -Fuplanejador/src/io -FUdist/units -FEdist/tests planejador/tests/test_p234.lpr
+          ./dist/tests/test_p234
+          fpc -O2 -Fushared -Fucad2d/src/app -Fucad2d/src/io -Fumaquete3d/src/core -FUdist/units -FEdist/tests maquete3d/tests/test_maquete3d.lpr
+          ./dist/tests/test_maquete3d
+          fpc -O2 -Fushared -Fucad2d/src/app -Fucad2d/src/io -Fumaquete3d/src/core -Fucriadorcenas/src/core -FUdist/units -FEdist/tests criadorcenas/tests/test_criadorcenas.lpr
+          ./dist/tests/test_criadorcenas
+          fpc -O2 -Fushared -Fucad2d/src/app -Fucad2d/src/io -Fumaquete3d/src/core -Fueletrica3d/src/core -FUdist/units -FEdist/tests eletrica3d/tests/test_eletrica3d.lpr
+          ./dist/tests/test_eletrica3d
+          fpc -O2 -Fushared -Fucad2d/src/app -Fucad2d/src/io -Fumaquete3d/src/core -Fueletrica3d/src/core -Fusimueletrica/src/core -FUdist/units -FEdist/tests simueletrica/tests/test_simueletrica.lpr
+          ./dist/tests/test_simueletrica
+          fpc -O2 -Fushared -Fucad2d/src/app -Fucad2d/src/io -Fumaquete3d/src/core -Fueletrica3d/src/core -Fusimutubulacoes/src/core -FUdist/units -FEdist/tests simutubulacoes/tests/test_simutubulacoes.lpr
+          ./dist/tests/test_simutubulacoes

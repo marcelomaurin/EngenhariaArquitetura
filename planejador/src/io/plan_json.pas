@@ -13,9 +13,9 @@ uses
   aitaskgraph, plan_tipos, plan_documento, plan_recursos, plan_sprints, plan_apontamentos, ea_fileio;
 
 const
-  PL_SCHEMA_VERSION = '1.3';
+  PL_SCHEMA_VERSION = '1.4';
   PL_PACKAGE_TYPE = 'projeto_planejador';
-  PL_VERSAO_APLICATIVO = '0.9.0';
+  PL_VERSAO_APLICATIVO = '0.10.0';
   PL_EXTENSAO = '.plan.json';
 
 function PLProjetoParaJSON(Doc: TPLProjeto): TJSONObject;
@@ -43,7 +43,7 @@ end;
 function PLProjetoParaJSON(Doc: TPLProjeto): TJSONObject;
 var
   P, T, C, L: TJSONObject;
-  Arr, Deps, ResourcesJSON,AllocationsJSON,CostsJSON,SprintsJSON,HistoryJSON,LogsJSON: TJSONArray;
+  Arr, Deps, ResourcesJSON,AllocationsJSON,CostsJSON,SprintsJSON,HistoryJSON,LogsJSON,BaseJSON,TexJSON,RetJSON: TJSONArray;
   I, J: Integer;
   Tar: TPLTarefa;
 begin
@@ -116,15 +116,61 @@ begin
       Deps.Add(L);
     end;
     T.Add('depende_de', Deps);
+    if Tar.ExecStatus <> '' then T.Add('exec_status', Tar.ExecStatus);
+    if Tar.EntradasHash <> '' then T.Add('entradas_hash', Tar.EntradasHash);
+    if Tar.ObjetoId <> '' then T.Add('objeto_id', Tar.ObjetoId);
+    if Length(Tar.Texturas) > 0 then
+    begin
+      TexJSON := TJSONArray.Create;
+      for J := 0 to High(Tar.Texturas) do
+      begin
+        L := TJSONObject.Create;
+        L.Add('textura_id', Tar.Texturas[J].TexturaId);
+        L.Add('destino', Tar.Texturas[J].Destino);
+        L.Add('face_id', Tar.Texturas[J].FaceId);
+        L.Add('versao', Tar.Texturas[J].Versao);
+        TexJSON.Add(L);
+      end;
+      T.Add('texturas', TexJSON);
+    end;
+    if Length(Tar.HistoricoRetorno) > 0 then
+    begin
+      RetJSON := TJSONArray.Create;
+      for J := 0 to High(Tar.HistoricoRetorno) do
+      begin
+        L := TJSONObject.Create;
+        L.Add('data_hora', Tar.HistoricoRetorno[J].DataHora);
+        L.Add('situacao', Tar.HistoricoRetorno[J].Situacao);
+        L.Add('saida_arquivo', Tar.HistoricoRetorno[J].SaidaArquivo);
+        L.Add('saida_hash', Tar.HistoricoRetorno[J].SaidaHash);
+        L.Add('mensagem', Tar.HistoricoRetorno[J].Mensagem);
+        RetJSON.Add(L);
+      end;
+      T.Add('historico_retorno', RetJSON);
+    end;
     Arr.Add(T);
   end;
   Result.Add('tarefas', Arr); Result.Add('custo_saida_centavos',Doc.CustoProjeto);
+  if Length(Doc.Baseline) > 0 then
+  begin
+    BaseJSON := TJSONArray.Create;
+    for I := 0 to High(Doc.Baseline) do
+    begin
+      L := TJSONObject.Create;
+      L.Add('task_id', Doc.Baseline[I].TaskId);
+      L.Add('inicio', DataISO(Doc.Baseline[I].Inicio));
+      L.Add('termino', DataISO(Doc.Baseline[I].Termino));
+      L.Add('custo_centavos', Doc.Baseline[I].CustoCentavos);
+      BaseJSON.Add(L);
+    end;
+    Result.Add('baseline', BaseJSON);
+  end;
 end;
 
 procedure PLProjetoDeJSON(Doc: TPLProjeto; O: TJSONObject);
 var
   P, T, L: TJSONObject;
-  Arr, Deps, ResourcesJSON,AllocationsJSON,CostsJSON,SprintsJSON,HistoryJSON,LogsJSON: TJSONArray;
+  Arr, Deps, ResourcesJSON,AllocationsJSON,CostsJSON,SprintsJSON,HistoryJSON,LogsJSON,BaseJSON,TexJSON,RetJSON: TJSONArray;
   I, J: Integer;
   Tar: TPLTarefa;
   U: TAIDurationUnit;
@@ -183,6 +229,36 @@ begin
       Tar.Free; raise Exception.Create('Data de início da tarefa inválida');
     end;
     Tar.Notas := T.Get('notas', '');
+    Tar.ExecStatus := T.Get('exec_status', '');
+    Tar.EntradasHash := T.Get('entradas_hash', '');
+    Tar.ObjetoId := T.Get('objeto_id', '');
+    TexJSON := T.Get('texturas', TJSONArray(nil));
+    if TexJSON <> nil then
+    begin
+      SetLength(Tar.Texturas, TexJSON.Count);
+      for J := 0 to TexJSON.Count - 1 do
+      begin
+        L := TexJSON.Objects[J];
+        Tar.Texturas[J].TexturaId := L.Get('textura_id', '');
+        Tar.Texturas[J].Destino := L.Get('destino', 'objeto');
+        Tar.Texturas[J].FaceId := L.Get('face_id', '');
+        Tar.Texturas[J].Versao := L.Get('versao', '1.0');
+      end;
+    end;
+    RetJSON := T.Get('historico_retorno', TJSONArray(nil));
+    if RetJSON <> nil then
+    begin
+      SetLength(Tar.HistoricoRetorno, RetJSON.Count);
+      for J := 0 to RetJSON.Count - 1 do
+      begin
+        L := RetJSON.Objects[J];
+        Tar.HistoricoRetorno[J].DataHora := L.Get('data_hora', '');
+        Tar.HistoricoRetorno[J].Situacao := L.Get('situacao', '');
+        Tar.HistoricoRetorno[J].SaidaArquivo := L.Get('saida_arquivo', '');
+        Tar.HistoricoRetorno[J].SaidaHash := L.Get('saida_hash', '');
+        Tar.HistoricoRetorno[J].Mensagem := L.Get('mensagem', '');
+      end;
+    end;
     try
       Doc.AdicionarTarefa(Tar);
     except
@@ -268,6 +344,19 @@ begin
   end;
   LogsJSON:=O.Get('apontamentos',TJSONArray(nil));
   if LogsJSON<>nil then begin if LogsJSON.Count>100000 then raise Exception.Create('Muitos apontamentos'); SetLength(Doc.Apontamentos,LogsJSON.Count); for I:=0 to LogsJSON.Count-1 do Doc.Apontamentos[I]:=PLApontamentoLer(LogsJSON.Objects[I]); end;
+  BaseJSON := O.Get('baseline', TJSONArray(nil));
+  if BaseJSON <> nil then
+  begin
+    SetLength(Doc.Baseline, BaseJSON.Count);
+    for I := 0 to BaseJSON.Count - 1 do
+    begin
+      L := BaseJSON.Objects[I];
+      Doc.Baseline[I].TaskId := L.Get('task_id', '');
+      Doc.Baseline[I].Inicio := DataDeISO(L.Get('inicio', ''), 0);
+      Doc.Baseline[I].Termino := DataDeISO(L.Get('termino', ''), 0);
+      Doc.Baseline[I].CustoCentavos := L.Get('custo_centavos', Int64(0));
+    end;
+  end;
   Doc.ValidarRecursos; Doc.ValidarAcompanhamento;
   Doc.Modificado := False;
 end;

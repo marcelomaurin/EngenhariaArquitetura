@@ -14,7 +14,7 @@ uses
   ExtCtrls, Menus, Dialogs, Buttons, Spin, EditBtn, LCLType,
   aiprojectduration, aicpmscheduler, aitaskgraph, aiganttview, ainetworkview,
   fpjson, jsonparser, plan_tipos, plan_documento, plan_cronograma, plan_json,
-  plan_sprints, plan_acompanhamento, plan_acompanhamento_ui, ea_money, plan_recursos, plan_recursos_ui, ea_config, ea_config_ui, plan_executor, plan_exemplos, plan_estilo, plan_pg_store, plan_pg_picker, ea_workflow, ea_workflow_ui;
+  plan_sprints, plan_acompanhamento, plan_acompanhamento_ui, ea_money, plan_recursos, plan_recursos_ui, ea_config, ea_config_ui, plan_executor, plan_exemplos, plan_estilo, plan_pg_store, plan_pg_picker, ea_workflow, ea_workflow_ui, plan_p234, plan_p234_ui;
 
 type
   TPLJanelaPrincipal = class(TForm)
@@ -44,6 +44,10 @@ type
     procedure WorkflowIdentityChanged(Sender: TObject);
     procedure SendSelectedTask(Sender: TObject);
     procedure ApplyTaskReturn(Sender: TObject);
+    procedure AoAcompanhamentoP3(Sender: TObject);
+    procedure AoVincularObjetoP4(Sender: TObject);
+    procedure AoDespacharPacoteP2(Sender: TObject);
+    procedure AoReceberRetornoP2(Sender: TObject);
     procedure LoadResponsaveis;
     procedure ResolveExecutors;
     procedure ApplyExecutor(T: TPLTarefa; const Display: string);
@@ -363,6 +367,10 @@ begin
   Add(Item, '-', nil);
   Add(Item, '&Vincular à próxima', @AoVincularProxima, ShortCut(VK_F2, [ssCtrl]));
   Add(Item, 'Desvi&ncular tarefa', @AoDesvincular, ShortCut(VK_F2, [ssCtrl, ssShift]));
+  Add(Item, '-', nil);
+  Add(Item, 'Despachar pacote de tarefa (.task.json)...', @AoDespacharPacoteP2);
+  Add(Item, 'Receber retorno de tarefa (.return.json)...', @AoReceberRetornoP2);
+  Add(Item, 'Vincular Objeto e Textura (P4)...', @AoVincularObjetoP4);
   Item := TMenuItem.Create(M); Item.Caption := '&Exibir'; M.Items.Add(Item);
   Add(Item, '&Ampliar escala', @AoAmpliar, ShortCut(VK_ADD, [ssCtrl]));
   Add(Item, '&Reduzir escala', @AoReduzir, ShortCut(VK_SUBTRACT, [ssCtrl]));
@@ -372,6 +380,7 @@ begin
   Add(Item, '&Diagrama de rede', @AoVistaRede, ShortCut(VK_2, [ssCtrl]));
   Add(Item, 'TO-DO e &sprints', @AoVistaTODO);
   Add(Item, 'Relatório semanal de &custos', @AoVistaCustos);
+  Add(Item, 'Linha de Base, Curva S e &Calendário...', @AoAcompanhamentoP3);
   Add(Item, 'Detalhes da &tarefa', @AoDetalhesTarefa, ShortCut(VK_F2, [ssShift]));
   Add(Item, '&Recalcular cronograma', @AoValidar, ShortCut(VK_F9, []));
   Item := TMenuItem.Create(M); Item.Caption := '&Setup'; M.Items.Add(Item);
@@ -1760,14 +1769,34 @@ begin
 end;
 
 procedure TPLJanelaPrincipal.SendSelectedTask(Sender: TObject);
-var T: TPLTarefa; A,Tasks,Files: TJSONArray; I: Integer; Assignee,ID,Artifact: string;
+var T: TPLTarefa; A,Tasks,Files: TJSONArray; I: Integer; Assignee,ID,Artifact,ExePath,TaskPkgPath: string;
 begin
   if not PlanningAllowed then Exit;
   T := Selecionada;
   if T = nil then begin ShowMessage('Selecione uma tarefa no planejamento.'); Exit; end;
-  if T.Aplicativo <> plaCAD2D then begin ShowMessage('O envio integrado atual é para tarefas do CAD 2D. Selecione uma tarefa desse aplicativo.'); Exit; end;
+  if T.Aplicativo = plaNenhum then begin ShowMessage('Selecione o aplicativo responsável pela tarefa antes de enviar.'); Exit; end;
   AoAplicarTarefa(nil);
   if not SalvarEm(FArquivo) then Exit;
+  ExePath := PLLocalizarExecutavel(T.Aplicativo, ExtractFilePath(ParamStr(0)));
+  if ExePath = '' then
+  begin
+    ShowMessage('Aplicativo destino indisponível (' + PL_APLICATIVO_NOME[T.Aplicativo] + '). Verifique a instalação.');
+    Exit;
+  end;
+  TaskPkgPath := ChangeFileExt(FArquivo, '') + '.' + T.Id + '.task.json';
+  try
+    PLGerarPacoteTarefa(FDoc, FCrono, T, FArquivo, TaskPkgPath);
+  except
+    on E: Exception do begin ShowMessage(E.Message); Exit; end;
+  end;
+  if T.Aplicativo <> plaCAD2D then
+  begin
+    try
+      WFLaunch(ExePath, ['--task-pkg', TaskPkgPath]);
+      Mensagem('Pacote de tarefa despachado para ' + PL_APLICATIVO_NOME[T.Aplicativo] + ': ' + ExtractFileName(TaskPkgPath));
+    except on E: Exception do ShowMessage(E.Message); end;
+    Exit;
+  end;
   Assignee := ''; ID := ''; Artifact := '';
   try
     A := FWorkflow.Users(FWorkflowToken);
@@ -1780,6 +1809,62 @@ begin
     try FWorkflow.SetPlanningData(FWorkflowToken,ID,Files,FDoc.CustoTarefa(T),FDoc.CustoTarefa(T,False)); finally Files.Free; end;
     WorkflowShow(nil); FWorkflowView.SelectTask(ID); WorkflowOpenCAD(nil);
   except on E: Exception do ShowMessage(E.Message); end;
+end;
+
+procedure TPLJanelaPrincipal.AoAcompanhamentoP3(Sender: TObject);
+begin
+  PLAbrirDialogoAcompanhamentoP3(Self, FDoc, FCrono);
+  AtualizarTitulo;
+end;
+
+procedure TPLJanelaPrincipal.AoVincularObjetoP4(Sender: TObject);
+var T: TPLTarefa;
+begin
+  T := Selecionada;
+  if T = nil then begin ShowMessage('Selecione uma tarefa.'); Exit; end;
+  if PLEditarObjetoTexturaP4(Self, FDoc, T) then
+  begin
+    MostrarTarefa;
+    AtualizarTitulo;
+    Mensagem('Objeto/textura vinculado à tarefa ' + T.Id);
+  end;
+end;
+
+procedure TPLJanelaPrincipal.AoDespacharPacoteP2(Sender: TObject);
+var T: TPLTarefa; D: TSaveDialog;
+begin
+  T := Selecionada;
+  if T = nil then begin ShowMessage('Selecione uma tarefa.'); Exit; end;
+  D := TSaveDialog.Create(Self);
+  try
+    D.Filter := 'Pacote de Tarefa (*.task.json)|*.task.json';
+    D.DefaultExt := 'task.json';
+    D.FileName := T.Id + '.task.json';
+    if not D.Execute then Exit;
+    try
+      PLGerarPacoteTarefa(FDoc, FCrono, T, FArquivo, D.FileName);
+      MostrarTarefa;
+      Mensagem('Pacote de tarefa salvo: ' + ExtractFileName(D.FileName));
+    except on E: Exception do ShowMessage(E.Message); end;
+  finally D.Free; end;
+end;
+
+procedure TPLJanelaPrincipal.AoReceberRetornoP2(Sender: TObject);
+var T: TPLTarefa; D: TOpenDialog;
+begin
+  T := Selecionada;
+  if T = nil then begin ShowMessage('Selecione uma tarefa.'); Exit; end;
+  D := TOpenDialog.Create(Self);
+  try
+    D.Filter := 'Pacote de Retorno (*.return.json)|*.return.json';
+    if not D.Execute then Exit;
+    try
+      PLProcessarRetornoTarefa(FDoc, T, D.FileName);
+      MostrarTarefa;
+      Recalcular(T.Id);
+      Mensagem('Retorno processado para ' + T.Id);
+    except on E: Exception do ShowMessage(E.Message); end;
+  finally D.Free; end;
 end;
 
 procedure TPLJanelaPrincipal.ApplyTaskReturn(Sender: TObject);

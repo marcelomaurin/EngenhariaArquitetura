@@ -3,7 +3,7 @@ unit cad2d_main;
 {$codepage utf8}
 interface
 uses {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, SysUtils, Forms, Controls, ExtCtrls, StdCtrls, Menus,
-  Graphics, Types, Math, Dialogs, LCLType, CheckLst, aiundohistory, fpjson, ea_workflow, ea_workflow_ui, ea_config, ea_config_ui, cad_document, cad_dxf, cad_catalog, cad_catalog_ui, cad_health_examples;
+  Graphics, Types, Math, Dialogs, LCLType, CheckLst, aiundohistory, fpjson, ea_workflow, ea_workflow_ui, ea_config, ea_config_ui, cad_document, cad_dxf, cad_catalog, cad_catalog_ui, cad_health_examples, cad2d_importador, cad_interop;
 type
   TCADIndices = array of Integer;
   TCADMainForm = class(TForm)
@@ -179,7 +179,11 @@ type
     procedure NewDrawing(Sender: TObject);
     procedure ExportDXF(Sender: TObject);
     procedure ImportDXF(Sender: TObject);
+    procedure ImportBIMCAD(Sender: TObject);
     procedure ExportSVG(Sender: TObject);
+    procedure ExportPDF(Sender: TObject);
+    procedure ExportMaquetePackage(Sender: TObject);
+    procedure DetectRooms(Sender: TObject);
     procedure MeasureSelected(Sender: TObject);
     procedure ToggleDimensions(Sender: TObject);
     procedure SaveDrawing(Sender: TObject);
@@ -2083,6 +2087,10 @@ begin
     'OPEN', 'ABRIR': OpenDrawing(nil);
     'DXF': ExportDXF(nil);
     'IMPORTDXF', 'DXFIN': ImportDXF(nil);
+    'IMPORTCAD', 'IMPORTDWG', 'IMPORTIFC': ImportBIMCAD(nil);
+    'EXPORTMAQUETE', 'MAQUETE': ExportMaquetePackage(nil);
+    'PDF', 'EXPORTPDF': ExportPDF(nil);
+    'AMBIENTES', 'AREAS': DetectRooms(nil);
     'PROPERTIES', 'PROPRIEDADES': EditLastObject(nil);
     'SOFA': begin FToolSelect.ItemIndex := 7; FLayerSelect.ItemIndex := 2; SelectionChanged(nil); end;
     'MESA': begin FToolSelect.ItemIndex := 8; FLayerSelect.ItemIndex := 2; SelectionChanged(nil); end;
@@ -3045,7 +3053,10 @@ begin
   Entry('Novo desenho', 'NEW', 'Ctrl+N'); Entry('Abrir projeto...', 'OPEN', 'Ctrl+O');
   Entry('Salvar projeto...', 'SAVE', 'Ctrl+S'); Entry('Salvar como...', 'SAVE', 'Ctrl+Shift+S');
   Entry('Importar DXF (linhas)...', 'IMPORTDXF', 'DXFIN');
+  Entry('Importar DWG / DXF / IFC...', 'IMPORTCAD', '');
   Entry('Exportar DXF 2D...', 'DXF', 'DXF'); Entry('Exportar SVG 2D...', 'SVG', 'SVG');
+  Entry('Exportar PDF em escala...', 'EXPORTPDF', '');
+  Entry('Exportar para Maquete 3D...', 'EXPORTMAQUETE', '');
   Entry('Carregar exemplo 2D', 'EXEMPLO', '');
   Group('&Editar');
   Entry('Desfazer', 'UNDO', 'Ctrl+Z'); Entry('Refazer', 'REDO', 'Ctrl+Y');
@@ -3063,6 +3074,7 @@ begin
   Entry('Janela baixa', 'JANELA', 'JA'); Entry('Janela alta tracejada', 'JANELAALTA', 'JAA');
   Entry('Símbolo de sofá', 'SOFA', ''); Entry('Símbolo de mesa', 'MESA', '');
   Entry('Símbolo de rack', 'RACK', ''); Entry('Símbolo de vegetação', 'PLANTA', '');
+  Entry('Reconhecer ambientes e áreas', 'AMBIENTES', '');
   Group('An&otar');
   Entry('Exibir comprimentos', 'DIM', 'DIM'); Entry('Medir seleção', 'DIST', 'DI');
   Group('E&xibir');
@@ -3307,6 +3319,141 @@ begin
       LogCommand(Report); RefreshStatus('Linhas DXF importadas. Salve como projeto .eacad.');
     except on E: Exception do MessageDlg('Falha na importação',E.Message,mtError,[mbOK],0); end;
   finally D.Free; Dialog.Free; end;
+end;
+
+procedure TCADMainForm.ImportBIMCAD(Sender: TObject);
+var
+  Dialog: TOpenDialog;
+  Fmt: TFileFormat;
+  Ver, TargetFloor: string;
+  Entities: array[0..8191] of TImportedEntity;
+  Count, I: Integer;
+  Report: TImportReport;
+  Floors: TStringList;
+  OK: Boolean;
+begin
+  if not WorkflowEditAllowed then Exit;
+  Dialog := TOpenDialog.Create(Self);
+  Floors := TStringList.Create;
+  try
+    Dialog.Filter := 'CAD / BIM (*.dxf;*.dwg;*.ifc)|*.dxf;*.dwg;*.ifc|Todos (*.*)|*.*';
+    if not Dialog.Execute then Exit;
+    InitReport(Report, Dialog.FileName);
+    try
+      Fmt := DetectFormat(Dialog.FileName, Ver);
+      case Fmt of
+        fmtDXF: OK := cad2d_importador.ImportDXF(Dialog.FileName, Entities, Count, Report, 1);
+        fmtDWG: OK := ImportDWG(Dialog.FileName, Entities, Count, Report, 1);
+        fmtIFC:
+          begin
+            TargetFloor := '';
+            if GetIFCFloors(Dialog.FileName, Floors) and (Floors.Count > 1) then
+            begin
+              TargetFloor := Floors[0];
+              if not InputQuery('Pavimento IFC', 'Pavimentos detectados: ' + Floors.CommaText + LineEnding + 'Informe o pavimento:', TargetFloor) then Exit;
+            end
+            else if Floors.Count = 1 then
+              TargetFloor := Floors[0];
+            OK := ImportIFC(Dialog.FileName, TargetFloor, Entities, Count, Report, 1);
+          end;
+      else
+        begin
+          ShowMessage('Formato não suportado pelo importador CAD/BIM (' + Ver + ').');
+          Exit;
+        end;
+      end;
+      if not OK then
+      begin
+        MessageDlg('Importação CAD / BIM', FormatReportSummary(Report), mtWarning, [mbOK], 0);
+        Exit;
+      end;
+      if MessageDlg('Importar CAD / BIM', FormatReportSummary(Report) + LineEnding +
+        'Importar estas entidades substituindo o desenho atual?', mtConfirmation, [mbYes, mbNo], 0) <> mrYes then Exit;
+      if not ConfirmDrawingSwitch then Exit;
+      RecordChange;
+      FLines := CADConvertImportedEntities(Entities, Count, 1);
+      SetLength(FLabels, 0);
+      FMillimetersPerPixel := 1;
+      FNextGroup := 1;
+      for I := 0 to High(FLines) do FNextGroup := Max(FNextGroup, FLines[I].GroupID + 1);
+      FSelected := -1; FHasStart := False; FPath := ''; FDirty := True;
+      SyncLayerPanel; UpdateDocumentTitle; ZoomExtents(nil);
+      LogCommand(Format('IMPORTCAD %s (%d objetos)', [ExtractFileName(Dialog.FileName), Count]));
+      RefreshStatus(Format('Importação concluída (%d entidades). Origem SHA-1: %s', [Count, Report.SourceHash]));
+    finally
+      FreeReport(Report);
+    end;
+  finally
+    Floors.Free;
+    Dialog.Free;
+  end;
+end;
+
+procedure TCADMainForm.ExportMaquetePackage(Sender: TObject);
+var
+  D: TSaveDialog;
+  ProjName: string;
+begin
+  D := TSaveDialog.Create(Self);
+  try
+    D.Filter := 'Pacote Arquitetura 2D (*.ea2d.json)|*.ea2d.json';
+    D.DefaultExt := 'ea2d.json';
+    D.FileName := 'planta.ea2d.json';
+    D.Options := D.Options + [ofOverwritePrompt];
+    if not D.Execute then Exit;
+    if FPath <> '' then ProjName := ChangeFileExt(ExtractFileName(FPath), '')
+    else ProjName := 'Planta CAD 2D';
+    CADExportModelPackage(FLines, FLabels, D.FileName, ProjName);
+    LogCommand('_EXPORTMAQUETE ' + ExtractFileName(D.FileName));
+    RefreshStatus('Pacote para Maquete 3D exportado: ' + ExtractFileName(D.FileName));
+  finally
+    D.Free;
+  end;
+end;
+
+procedure TCADMainForm.ExportPDF(Sender: TObject);
+var
+  D: TSaveDialog;
+  ScaleStr, ProjName: string;
+  ScaleVal: Integer;
+begin
+  ScaleStr := '50';
+  if not InputQuery('Exportar PDF em escala', 'Denominador da escala (ex.: 20, 50, 75, 100, 200):', ScaleStr) then Exit;
+  if not TryStrToInt(Trim(ScaleStr), ScaleVal) or (ScaleVal < 1) or (ScaleVal > 10000) then
+  begin
+    ShowMessage('Informe um denominador numérico válido (ex.: 50 para 1:50).');
+    Exit;
+  end;
+  D := TSaveDialog.Create(Self);
+  try
+    D.Filter := 'PDF Vetorial (*.pdf)|*.pdf';
+    D.DefaultExt := 'pdf';
+    D.FileName := Format('prancha_1_%d.pdf', [ScaleVal]);
+    D.Options := D.Options + [ofOverwritePrompt];
+    if not D.Execute then Exit;
+    if FPath <> '' then ProjName := ChangeFileExt(ExtractFileName(FPath), '')
+    else ProjName := 'Planta Arquitetonica 2D';
+    CADExportScaledPDF(FLines, FLabels, D.FileName, ProjName, ScaleVal);
+    LogCommand(Format('_EXPORTPDF 1:%d %s', [ScaleVal, ExtractFileName(D.FileName)]));
+    RefreshStatus(Format('PDF 1:%d exportado: %s', [ScaleVal, ExtractFileName(D.FileName)]));
+  finally
+    D.Free;
+  end;
+end;
+
+procedure TCADMainForm.DetectRooms(Sender: TObject);
+var
+  Found: Integer;
+begin
+  if not WorkflowEditAllowed then Exit;
+  RecordChange;
+  Found := CADDetectRoomsAndLabels(FLines, FLabels);
+  FDirty := FDirty or (Found > 0);
+  FCanvas.Invalidate;
+  if Found > 0 then
+    RefreshStatus(Format('%d ambiente(s) fechado(s) reconhecido(s) com cálculo de área.', [Found]))
+  else
+    RefreshStatus('Nenhum ambiente fechado por paredes foi detectado.');
 end;
 
 function TCADMainForm.Catalog: TCADCatalog;

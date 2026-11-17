@@ -17,6 +17,31 @@ type
 
   TPLSituacao = (plsAFazer, plsEmAndamento, plsConcluida);
 
+  TPLTexturaVinculo = record
+    TexturaId: string;
+    Destino: string; // 'objeto' ou 'face'
+    FaceId: string;
+    Versao: string;
+  end;
+  TPLTexturaVinculos = array of TPLTexturaVinculo;
+
+  TPLRetornoRegistro = record
+    DataHora: string;
+    Situacao: string;
+    SaidaArquivo: string;
+    SaidaHash: string;
+    Mensagem: string;
+  end;
+  TPLRetornoRegistros = array of TPLRetornoRegistro;
+
+  TPLBaselineItem = record
+    TaskId: string;
+    Inicio: TDateTime;
+    Termino: TDateTime;
+    CustoCentavos: Int64;
+  end;
+  TPLBaselineItems = array of TPLBaselineItem;
+
   TPLTarefa = class
   public
     Id: string;
@@ -33,6 +58,11 @@ type
     Situacao: TPLSituacao;
     Progresso: Integer;               // 0..100
     Predecessoras: TAIPredecessorItems;
+    ExecStatus: string;               // P2: bloqueada, pronta, em_execucao, em_revisao, concluida, falhou, desatualizada
+    EntradasHash: string;             // P2: hash das entradas na última execução
+    ObjetoId: string;                 // P4: object_id da Maquete 3D
+    Texturas: TPLTexturaVinculos;     // P4: skins vinculadas por objeto ou face
+    HistoricoRetorno: TPLRetornoRegistros;
     constructor Create(const AId, ANome: string);
     procedure Assign(Source: TPLTarefa);
   end;
@@ -86,6 +116,11 @@ begin
   Situacao := plsAFazer;
   Progresso := 0;
   Predecessoras := nil;
+  ExecStatus := 'pronta';
+  EntradasHash := '';
+  ObjetoId := '';
+  Texturas := nil;
+  HistoricoRetorno := nil;
 end;
 
 procedure TPLTarefa.Assign(Source: TPLTarefa);
@@ -104,6 +139,11 @@ begin
   Situacao := Source.Situacao;
   Progresso := Source.Progresso;
   Predecessoras := Copy(Source.Predecessoras);
+  ExecStatus := Source.ExecStatus;
+  EntradasHash := Source.EntradasHash;
+  ObjetoId := Source.ObjetoId;
+  Texturas := Copy(Source.Texturas);
+  HistoricoRetorno := Copy(Source.HistoricoRetorno);
 end;
 
 end.

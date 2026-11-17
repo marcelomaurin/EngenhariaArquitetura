@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+ <ProjectOptions>
+  <Version Value="12"/>
+  <General><Title Value="Maquete 3D"/><UseAppBundle Value="False"/><ResourceType Value="res"/><UseXPManifest Value="True"/></General>
+  <VersionInfo><UseVersionInfo Value="True"/><MinorVersionNr Value="10"/><StringTable CompanyName="Maurinsoft" FileDescription="Maquete 3D, Editor de Objetos e Gerador de Texturas" ProductName="EngenhariaArquitetura" ProductVersion="0.10.0"/></VersionInfo>
+  <Units Count="2">
+   <Unit0><Filename Value="maquete3d.lpr"/><IsPartOfProject Value="True"/></Unit0>
+   <Unit1><Filename Value="maquete3d_main.pas"/><IsPartOfProject Value="True"/></Unit1>
+  </Units>
+  <RequiredPackages Count="1"><Item1><PackageName Value="LCL"/></Item1></RequiredPackages>
+ </ProjectOptions>
+ <CompilerOptions>
+  <Version Value="11"/>
+  <Target><Filename Value="../../../bin/maquete3d"/></Target>
+  <SearchPaths><OtherUnitFiles Value="../core;../../../shared;../../../cad2d/src/app;../../../cad2d/src/io"/><UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/></SearchPaths>
+  <Parsing><SyntaxOptions><SyntaxMode Value="ObjFPC"/></SyntaxOptions></Parsing>
+  <CodeGeneration><Optimizations><OptimizationLevel Value="2"/></Optimizations></CodeGeneration>
+  <Linking>
+   <Debugging><GenerateDebugInfo Value="False"/><StripSymbols Value="True"/></Debugging>
+   <Options><Win32><GraphicApplication Value="True"/></Win32></Options>
+  </Linking>
+ </CompilerOptions>
+</CONFIG>

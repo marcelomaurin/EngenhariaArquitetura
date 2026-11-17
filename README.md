@@ -6,14 +6,15 @@ Suite integrada para gestão, planejamento e desenvolvimento de projetos de enge
 
 ## Aplicativos da plataforma
 
-- **Central de Aplicativos:** lançador que organiza o acesso às ferramentas da suíte.
-- **Planejador:** planejamento de obras com cronograma, dependências e caminho crítico.
-- **CAD Arquitetônico 2D:** desenho técnico 2D com paredes, portas, janelas e cotas.
-- **Modelador 3D:** em especificação.
-- **Estruturas:** em especificação.
-- **Hidráulica:** em especificação.
-- **Elétrica:** em especificação.
-- **Orçamentista:** em especificação.
+- **Central de Aplicativos (`engenhariaarquitetura`):** lançador que organiza o acesso às ferramentas da suíte.
+- **Planejador (`planejador`):** planejamento de obras com cronograma, dependências, caminho crítico, Baseline, Curva S, calendário visual, contratos `.task.json`/`.return.json` (P2–P3) e vínculo Objeto-Textura (P4).
+- **CAD Arquitetônico 2D (`cad2d`):** desenho técnico 2D com paredes, portas, janelas, cotas, importação DXF/DWG/IFC, detecção automática de ambientes, exportação PDF escalado e pacote `arquitetura_2d`.
+- **Maquete 3D (`maquete3d`):** edificação multipavimentos 3D, importação de pacotes `arquitetura_2d`, extrusão automática de paredes/vãos, editor interno de objetos 3D (STL/OBJ/3MF/GLB), gerador procedural de texturas e exportação de pacote GLB com âncoras.
+- **Criador de Cenas (`criadorcenas`):** câmeras, keyframes e interpolação, planos de corte/seção, sol/azimute e gravação de sequências em frames BMP.
+- **Elétrica 3D (`eletrica3d`):** quadros de distribuição, eletrodutos, caixas e circuitos sobre a maquete 3D, cálculo de demanda/disjuntor/seção/queda de tensão, quadro de cargas CSV e pacote `camada_eletrica`.
+- **SimuEletrica (`simueletrica`):** análise nodal de fluxo de carga (CA/CC/R1), dimensionamento de cabo, curto-circuito simétrico, queda de tensão e coordenação com `camada_tubulacoes`.
+- **SimuTubulações (`simutubulacoes`):** redes separadas por fluido (água fria, água quente, gás, ar comprimido, ventilação e esgoto), detecção de contrapendência/refluxo e coordenação espacial com `camada_eletrica`.
+- **Núcleo Comum (`shared/`):** geometria 2D/3D em `mm`, pacotes versionados com SHA-256 (`ea_pacote`), modelo arquitetônico (`ea_modelo`), âncoras (`ea_ancoras`), malha 3D/GLB/STL/OBJ/3MF (`ea_malha3d`) e viewport 3D (`ea_visual3d`).
 
 ## Atualização automática
 
@@ -30,13 +31,18 @@ O instalador para Windows 64 bits e os executáveis portáteis ficam na pasta `b
 | Arquivo | Conteúdo |
 |---|---|
 | `bin/setup_engenhariaarquitetura_010.exe` | Instalador da plataforma (versão 0.10) |
+| `bin/engenhariaarquitetura.exe` | Central de Aplicativos (lançador) |
 | `bin/planejador.exe` | Planejador para Windows 64 bits |
 | `bin/cad2d.exe` | CAD Arquitetônico 2D para Windows 64 bits |
-| `bin/engenhariaarquitetura.exe` | Central de Aplicativos (lançador) |
+| `bin/maquete3d.exe` | Maquete 3D (com Editor de Objetos 3D e Gerador de Texturas) |
+| `bin/criadorcenas.exe` | Criador de Cenas e Animação |
+| `bin/eletrica3d.exe` | Elétrica 3D e Traçado de Eletrodutos |
+| `bin/simueletrica.exe` | SimuEletrica (fluxo de carga, curto-circuito e coordenação) |
+| `bin/simutubulacoes.exe` | SimuTubulações (redes hidráulicas, gás, ar e esgoto) |
 
 Como gerar o instalador: [installer/windows](installer/windows/README.md).
 
-> **Estado:** Planejador e CAD 2D têm executáveis Windows, com gestão local integrada de tarefas, usuários e quatro perfis. O CAD trabalha exclusivamente em 2D e continua em evolução; os demais aplicativos permanecem em especificação.
+> **Estado:** Os 7 aplicativos da plataforma e a Central de Aplicativos estão compilados em `bin/`, integrados por pacotes versionados com SHA-256 e contratos `.task.json`/`.return.json`, além do Núcleo Comum em `shared/`. Consulte [docs/README.md](docs/README.md) para os documentos de arquitetura e especificações técnicas.
 
 ## Modelos de hospital
 

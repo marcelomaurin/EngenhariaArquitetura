@@ -16,7 +16,7 @@ begin
       Check(F.Menu is TMainMenu, 'menu principal nativo no topo da janela');
       Check(F.Menu = F.FMainMenu, 'menu associado ao formulario');
       Check(F.Menu.Items.Count = 11, 'onze menus superiores com Setup');
-      Check(F.Menu.Items[0].Count = 8, 'comandos de arquivo');
+      Check(F.Menu.Items[0].Count = 11, 'comandos de arquivo');
       Check(F.Menu.Items[9].Caption='&Setup','menu Setup disponível');
       Check(F.Menu.Items[0].Items[0].Hint = 'NEW', 'comando do submenu');
       Check(Assigned(F.Menu.Items[0].Items[0].OnClick), 'acao do submenu');

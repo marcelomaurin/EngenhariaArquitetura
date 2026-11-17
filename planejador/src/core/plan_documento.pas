@@ -37,6 +37,7 @@ type
     OrcamentoCentavos: Int64;
     HistoricoCustos: TPLHistoricoCustos;
     Apontamentos: TPLApontamentos;
+    Baseline: TPLBaselineItems;
     Inicio: TDateTime;
     constructor Create;
     destructor Destroy; override;
@@ -360,6 +361,7 @@ var
   ResourcesList: TPLListaRecursos;
   Logs: TPLApontamentos;
   SprintList: TPLListaSprints; History: TPLHistoricoCustos; Budget: Int64; FixedBudget: Boolean;
+  BaseArr: TPLBaselineItems;
   C: TAIWorkCalendar;
   N: Integer;
   B: Boolean;
@@ -373,6 +375,7 @@ begin
   SprintList:=FSprints; FSprints:=Outro.FSprints; Outro.FSprints:=SprintList;
   Logs:=Apontamentos; Apontamentos:=Outro.Apontamentos; Outro.Apontamentos:=Logs;
   History:=HistoricoCustos; HistoricoCustos:=Outro.HistoricoCustos; Outro.HistoricoCustos:=History;
+  BaseArr:=Baseline; Baseline:=Outro.Baseline; Outro.Baseline:=BaseArr;
   Budget:=OrcamentoCentavos; OrcamentoCentavos:=Outro.OrcamentoCentavos; Outro.OrcamentoCentavos:=Budget;
   FixedBudget:=OrcamentoFixado; OrcamentoFixado:=Outro.OrcamentoFixado; Outro.OrcamentoFixado:=FixedBudget;
   C := FCalendario; FCalendario := Outro.FCalendario; Outro.FCalendario := C;
@@ -397,7 +400,7 @@ procedure TPLProjeto.Limpar;
 begin
   FTarefas.Clear;
   FRecursos.Clear;
-  FSprints.Clear; SetLength(Apontamentos,0); SetLength(HistoricoCustos,0); OrcamentoFixado:=False; OrcamentoCentavos:=0;
+  FSprints.Clear; SetLength(Apontamentos,0); SetLength(HistoricoCustos,0); SetLength(Baseline,0); OrcamentoFixado:=False; OrcamentoCentavos:=0;
   FProximo := 1;
   FModificado := False;
 end;

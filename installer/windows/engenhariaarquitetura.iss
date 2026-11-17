@@ -52,8 +52,13 @@ Name: "custom"; Description: "Instalação personalizada"; Flags: iscustom
 
 [Components]
 Name: "apps"; Description: "Aplicativos da plataforma"; Types: full compact custom; Flags: fixed
-Name: "apps\planejador"; Description: "Planejador - tarefas, dependências, caminho crítico e Gantt"; Types: full compact custom; Flags: fixed
+Name: "apps\planejador"; Description: "Planejador - tarefas, dependências, caminho crítico, Baseline, Curva S e contratos"; Types: full compact custom; Flags: fixed
 Name: "apps\cad2d"; Description: "CAD Arquitetônico 2D - plantas baixas, paredes, esquadrias e cotas"; Types: full compact custom; Flags: fixed
+Name: "apps\maquete3d"; Description: "Maquete 3D - pavimentos, objetos 3D, texturas e pacotes GLB"; Types: full compact custom; Flags: fixed
+Name: "apps\criadorcenas"; Description: "Criador de Cenas - câmera, iluminação, cortes e animação"; Types: full compact custom; Flags: fixed
+Name: "apps\eletrica3d"; Description: "Elétrica 3D - quadros, eletrodutos, circuitos e cargas"; Types: full compact custom; Flags: fixed
+Name: "apps\simueletrica"; Description: "SimuEletrica - fluxo de carga, curto-circuito e coordenação"; Types: full compact custom; Flags: fixed
+Name: "apps\simutubulacoes"; Description: "SimuTubulações - redes hidráulicas, gás, ar e esgoto"; Types: full compact custom; Flags: fixed
 Name: "extra"; Description: "Recursos complementares"; Types: full custom
 Name: "extra\exemplos"; Description: "Projetos de exemplo"; Types: full custom
 Name: "extra\docs"; Description: "Documentação da plataforma"; Types: full custom
@@ -67,6 +72,11 @@ Name: "{userdocs}\EngenhariaArquitetura Projetos\samples\files"; Flags: uninsnev
 Source: "..\..\dist\app\engenhariaarquitetura.exe"; DestDir: "{app}"; Components: apps; Flags: ignoreversion
 Source: "..\..\dist\app\cad2d.exe"; DestDir: "{app}"; Components: apps\cad2d; Flags: ignoreversion
 Source: "..\..\dist\app\planejador.exe"; DestDir: "{app}"; Components: apps\planejador; Flags: ignoreversion
+Source: "..\..\dist\app\maquete3d.exe"; DestDir: "{app}"; Components: apps\maquete3d; Flags: ignoreversion
+Source: "..\..\dist\app\criadorcenas.exe"; DestDir: "{app}"; Components: apps\criadorcenas; Flags: ignoreversion
+Source: "..\..\dist\app\eletrica3d.exe"; DestDir: "{app}"; Components: apps\eletrica3d; Flags: ignoreversion
+Source: "..\..\dist\app\simueletrica.exe"; DestDir: "{app}"; Components: apps\simueletrica; Flags: ignoreversion
+Source: "..\..\dist\app\simutubulacoes.exe"; DestDir: "{app}"; Components: apps\simutubulacoes; Flags: ignoreversion
 Source: "..\..\dist\app\bibliotecas\*"; DestDir: "{app}\bibliotecas"; Components: apps; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\..\dist\app\updater\windows\update.ps1"; DestDir: "{app}\updater\windows"; Components: apps; Flags: ignoreversion
 Source: "..\..\dist\app\exemplos\*"; DestDir: "{app}\exemplos"; Components: extra\exemplos; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -91,6 +101,11 @@ Name: "{autoprograms}\EngenhariaArquitetura\Planejador - exemplo UBS"; Filename:
 Name: "{autoprograms}\EngenhariaArquitetura\Planejador - exemplo ala hospitalar"; Filename: "{app}\planejador.exe"; Parameters: """{app}\exemplos\ala_hospitalar.plan.json"""; Components: apps\planejador and extra\exemplos
 Name: "{autoprograms}\EngenhariaArquitetura\Planejador - exemplo da residência"; Filename: "{app}\planejador.exe"; Parameters: """{app}\exemplos\residencia.plan.json"""; Components: apps\planejador and extra\exemplos
 Name: "{autoprograms}\EngenhariaArquitetura\CAD Arquitetônico 2D"; Filename: "{app}\cad2d.exe"; Components: apps\cad2d
+Name: "{autoprograms}\EngenhariaArquitetura\Maquete 3D"; Filename: "{app}\maquete3d.exe"; Components: apps\maquete3d
+Name: "{autoprograms}\EngenhariaArquitetura\Criador de Cenas"; Filename: "{app}\criadorcenas.exe"; Components: apps\criadorcenas
+Name: "{autoprograms}\EngenhariaArquitetura\Elétrica 3D"; Filename: "{app}\eletrica3d.exe"; Components: apps\eletrica3d
+Name: "{autoprograms}\EngenhariaArquitetura\SimuEletrica"; Filename: "{app}\simueletrica.exe"; Components: apps\simueletrica
+Name: "{autoprograms}\EngenhariaArquitetura\SimuTubulações"; Filename: "{app}\simutubulacoes.exe"; Components: apps\simutubulacoes
 Name: "{autoprograms}\EngenhariaArquitetura\Documentação"; Filename: "{app}\documentation"; Components: extra\docs
 Name: "{autoprograms}\EngenhariaArquitetura\Samples - modelos de hospital"; Filename: "{app}\samples\files"; Components: apps\cad2d
 Name: "{autodesktop}\EngenhariaArquitetura"; Filename: "{app}\engenhariaarquitetura.exe"; Tasks: desktopicon_launcher; Components: apps

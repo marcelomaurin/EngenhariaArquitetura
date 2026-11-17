@@ -4,9 +4,15 @@ on:
   push:
     branches: [main]
     paths:
+      - 'shared/**'
       - 'launcher/**'
       - 'cad2d/**'
       - 'planejador/**'
+      - 'maquete3d/**'
+      - 'criadorcenas/**'
+      - 'eletrica3d/**'
+      - 'simueletrica/**'
+      - 'simutubulacoes/**'
       - 'updater/**'
       - 'installer/**'
       - '.github/workflows/release-updates.yml'
@@ -44,16 +50,21 @@ jobs:
           set -euo pipefail
           python3 -m unittest discover -s updater/tests -v
           lazbuild -B --ws=gtk2 launcher/src/app/engenhariaarquitetura.lpi
-          lazbuild -B --ws=gtk2 cad2d/src/app/cad2d.lpi
           lazbuild -B --ws=gtk2 planejador/src/app/planejador.lpi
-          test -x bin/engenhariaarquitetura
-          test -x bin/cad2d
-          test -x bin/planejador
+          lazbuild -B --ws=gtk2 cad2d/src/app/cad2d.lpi
+          lazbuild -B --ws=gtk2 maquete3d/src/app/maquete3d.lpi
+          lazbuild -B --ws=gtk2 criadorcenas/src/app/criadorcenas.lpi
+          lazbuild -B --ws=gtk2 eletrica3d/src/app/eletrica3d.lpi
+          lazbuild -B --ws=gtk2 simueletrica/src/app/simueletrica.lpi
+          lazbuild -B --ws=gtk2 simutubulacoes/src/app/simutubulacoes.lpi
+          for exe in engenhariaarquitetura planejador cad2d maquete3d criadorcenas eletrica3d simueletrica simutubulacoes; do
+            test -x "bin/$exe"
+          done
       - name: Montar pacote Linux
         run: |
           set -euo pipefail
           mkdir -p dist/linux-package/bin dist/linux-package/updater/linux
-          cp bin/engenhariaarquitetura bin/cad2d bin/planejador dist/linux-package/bin/
+          cp bin/engenhariaarquitetura bin/planejador bin/cad2d bin/maquete3d bin/criadorcenas bin/eletrica3d bin/simueletrica bin/simutubulacoes dist/linux-package/bin/
           cp updater/linux/update.py dist/linux-package/updater/linux/
           printf '%s\n' "${{ needs.metadata.outputs.version }}" > dist/linux-package/release-version.txt
           tar -czf dist/engenhariaarquitetura-linux-x86_64.tar.gz -C dist/linux-package .

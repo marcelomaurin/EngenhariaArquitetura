@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+ <ProjectOptions>
+  <Version Value="12"/>
+  <General><Title Value="SimuTubulações"/><UseAppBundle Value="False"/><ResourceType Value="res"/><UseXPManifest Value="True"/></General>
+  <VersionInfo><UseVersionInfo Value="True"/><MinorVersionNr Value="10"/><StringTable CompanyName="Maurinsoft" FileDescription="SimuTubulacoes 3D" ProductName="EngenhariaArquitetura" ProductVersion="0.10.0"/></VersionInfo>
+  <Units Count="2">
+   <Unit0><Filename Value="simutubulacoes.lpr"/><IsPartOfProject Value="True"/></Unit0>
+   <Unit1><Filename Value="simutubulacoes_main.pas"/><IsPartOfProject Value="True"/></Unit1>
+  </Units>
+  <RequiredPackages Count="1"><Item1><PackageName Value="LCL"/></Item1></RequiredPackages>
+ </ProjectOptions>
+ <CompilerOptions>
+  <Version Value="11"/>
+  <Target><Filename Value="../../../bin/simutubulacoes"/></Target>
+  <SearchPaths><OtherUnitFiles Value="../core;../../../shared"/><UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/></SearchPaths>
+  <Parsing><SyntaxOptions><SyntaxMode Value="ObjFPC"/></SyntaxOptions></Parsing>
+  <CodeGeneration><Optimizations><OptimizationLevel Value="2"/></Optimizations></CodeGeneration>
+  <Linking>
+   <Debugging><GenerateDebugInfo Value="False"/><StripSymbols Value="True"/></Debugging>
+   <Options><Win32><GraphicApplication Value="True"/></Win32></Options>
+  </Linking>
+ </CompilerOptions>
+</CONFIG>
